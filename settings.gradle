@@ -1,0 +1,3 @@
+rootProject.name='VideoDownloader'
+include ':app'
+include ':libdownloader'
