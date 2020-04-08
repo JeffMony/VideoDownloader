@@ -60,7 +60,7 @@ public class VideoDownloadListActivity extends AppCompatActivity {
                 if (item.isInitialTask()) {
                     VideoDownloadManager.getInstance().startDownload(item);
                 } else if (item.isRunningTask()) {
-                    VideoDownloadManager.getInstance().pauseDownloadTask(item);
+                    VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
                 } else if (item.isInterruptTask()) {
                     VideoDownloadManager.getInstance().resumeDownload(item.getUrl());
                 }

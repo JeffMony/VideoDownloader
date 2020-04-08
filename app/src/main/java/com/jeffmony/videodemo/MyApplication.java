@@ -21,7 +21,8 @@ public class MyApplication extends Application {
                 .setCacheRoot(file)
                 .setUrlRedirect(true)
                 .setTimeOut(VideoDownloadManager.READ_TIMEOUT, VideoDownloadManager.CONN_TIMEOUT)
-                .setConcurrentCount(3)
+                .setConcurrentCount(VideoDownloadManager.CONCURRENT)
+                .setIgnoreCertErrors(true)
                 .buildConfig();
         VideoDownloadManager.getInstance().initConfig(config);
     }

@@ -32,6 +32,7 @@ public class VideoDownloadManager {
     private static final String TAG = "VideoDownloadManager";
     public static final int READ_TIMEOUT = 30 * 1000;
     public static final int CONN_TIMEOUT = 30 * 1000;
+    public static final int CONCURRENT = 3;
     private static final int MSG_DOWNLOAD_DEFAULT = 0x0;
     private static final int MSG_DOWNLOAD_PENDING = 0x1;
     private static final int MSG_DOWNLOAD_PREPARE = 0x2;
@@ -105,7 +106,13 @@ public class VideoDownloadManager {
     }
 
     public void pauseDownloadTask(VideoTaskItem taskItem) {
-
+        if (taskItem == null || TextUtils.isEmpty(taskItem.getUrl()))
+            return;
+        String url = taskItem.getUrl();
+        VideoDownloadTask task = mVideoDownloadTaskMap.get(url);
+        if (task != null) {
+            task.pauseDownload();
+        }
     }
 
     public void resumeDownload(String videoUrl) {
