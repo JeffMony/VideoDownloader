@@ -116,4 +116,18 @@ public class VideoDownloadQueue {
                 || taskState == VideoTaskState.PROXYREADY;
     }
 
+    public VideoTaskItem peekPendingTask() {
+        try {
+            for (int index = 0; index < mQueue.size(); index++) {
+                VideoTaskItem item = mQueue.get(index);
+                if (isTaskPending(item)) {
+                    return item;
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.w(TAG,"DownloadQueue getDownloadingCount failed.");
+        }
+        return null;
+    }
+
 }

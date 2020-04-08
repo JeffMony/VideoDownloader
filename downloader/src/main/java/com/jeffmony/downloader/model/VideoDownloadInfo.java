@@ -91,4 +91,8 @@ public class VideoDownloadInfo implements Serializable {
     public void setFileHash(String name) { mFileHash = name; }
 
     public String getFileHash() { return mFileHash; }
+
+    public String toString() {
+        return "VideoDownloadInfo[VideoUrl="+mVideoUrl+",VideoType="+mVideoType+",TotalTs="+mTotalTs+",MimeType="+mMimeType+"]";
+    }
 }

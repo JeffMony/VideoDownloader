@@ -30,6 +30,7 @@ public class DownloadExceptionUtils {
             5102; // https://api.xiaomingming.org/cloud/h
     private static final int MIMETYPE_NOT_FOUND =
             5103; // https://sina.com-h-sina.com/share/fb5ac34d9ac3cc3883230cb5b2b417bb
+    public static final int LIVE_M3U8_ERROR = 5104;
 
     public static final String FILE_LENGTH_FETCHED_ERROR_STRING = "File Length Cannot be fetched";
     public static final String M3U8_FILE_CONTENT_ERROR_STRING = "M3U8 File content error";

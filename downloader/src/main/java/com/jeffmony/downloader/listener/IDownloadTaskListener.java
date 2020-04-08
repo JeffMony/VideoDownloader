@@ -6,8 +6,6 @@ public interface IDownloadTaskListener {
 
     void onTaskStart(String url);
 
-    void onLocalProxyReady(String proxyUrl);
-
     void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8);
 
     void onTaskSpeedChanged(float speed);

@@ -1,7 +1,10 @@
 package com.jeffmony.downloader.utils;
 
+import android.content.Context;
+
 import com.jeffmony.downloader.model.VideoDownloadInfo;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -18,6 +21,10 @@ public class VideoDownloadUtils {
     public static final int UPDATE_INTERVAL = 1000;
     public static final String INFO_FILE = "video.info";
     private static Object sFileLock = new Object();
+
+    public static File getVideoCacheDir(Context context) {
+        return new File(context.getExternalCacheDir(), ".video-cache");
+    }
 
     public static String computeMD5(String string) {
         try {
@@ -122,6 +129,29 @@ public class VideoDownloadUtils {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                LogUtils.w(TAG,"VideoProxyCacheUtils close " + closeable +
+                        " failed, exception = " + e);
+            }
+        }
+    }
+
+    public static long countTotalSize(File file) {
+        if (file.isDirectory()) {
+            long totalSize = 0;
+            for (File f : file.listFiles()) {
+                totalSize += countTotalSize(f);
+            }
+            return totalSize;
+        } else {
+            return file.length();
         }
     }
 }
