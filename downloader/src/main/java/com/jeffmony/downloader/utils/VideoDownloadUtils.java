@@ -21,6 +21,7 @@ public class VideoDownloadUtils {
     public static final int UPDATE_INTERVAL = 1000;
     public static final String INFO_FILE = "video.info";
     public static final String VIDEO_SUFFIX = ".video";
+    public static final String LOCAL_M3U8 = "local.m3u8";
     private static Object sFileLock = new Object();
 
     public static File getVideoCacheDir(Context context) {

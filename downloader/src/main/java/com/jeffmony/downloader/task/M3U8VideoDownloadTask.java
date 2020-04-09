@@ -5,14 +5,17 @@ import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Ts;
+import com.jeffmony.downloader.m3u8.M3U8Utils;
 import com.jeffmony.downloader.model.VideoDownloadInfo;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -27,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -39,6 +41,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private static final String TAG = "M3U8VideoDownloadTask";
     private static final int REDIRECTED_COUNT = 3;
+    private final Object mFileLock = new Object();
 
     private static final String TS_PREFIX = "video_";
     private final M3U8 mM3U8;
@@ -189,6 +192,11 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                         mCurrentCachedSize, mCurrentCachedSize, mM3U8);
                 mDownloadTaskListener.onTaskFinished(mTotalSize);
                 writeDownloadInfo();
+                try {
+                    createLocalM3U8File();
+                } catch (Exception e) {
+                    notifyDownloadError(e);
+                }
             }
         }
     }
@@ -211,6 +219,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         if (e instanceof InterruptedIOException) {
             if (e instanceof SocketTimeoutException) {
                 LogUtils.w(TAG,"M3U8VideoDownloadTask notifyFailed: " + e);
+                if (mDownloadExecutor != null && !mDownloadExecutor.isShutdown()) {
+                    mDownloadExecutor.shutdownNow();
+                }
                 resumeDownload();
                 return;
             }
@@ -329,6 +340,61 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         } finally {
             VideoDownloadUtils.close(inputStream);
             VideoDownloadUtils.close(fos);
+        }
+    }
+
+    private void createLocalM3U8File() throws IOException {
+        synchronized (mFileLock) {
+            File tempM3U8File = new File(mSaveDir, "temp.m3u8");
+            if (tempM3U8File.exists()) {
+                tempM3U8File.delete();
+            }
+
+            BufferedWriter bfw =
+                    new BufferedWriter(new FileWriter(tempM3U8File, false));
+            bfw.write(M3U8Utils.PLAYLIST_HEADER + "\n");
+            bfw.write(M3U8Utils.TAG_VERSION + ":" + mM3U8.getVersion() + "\n");
+            bfw.write(M3U8Utils.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() +
+                    "\n");
+
+            bfw.write(M3U8Utils.TAG_TARGET_DURATION + ":" +
+                    mM3U8.getTargetDuration() + "\n");
+
+            for (M3U8Ts m3u8Ts : mTsList) {
+                if (m3u8Ts.hasKey()) {
+                    if (m3u8Ts.getMethod() != null) {
+                        String key = "METHOD=" + m3u8Ts.getMethod();
+                        if (m3u8Ts.getKeyUri() != null) {
+                            File keyFile = new File(mSaveDir, m3u8Ts.getLocalKeyUri());
+                            if (!m3u8Ts.isMessyKey() && keyFile.exists()) {
+                                key += ",URI=\"" + m3u8Ts.getLocalKeyUri() + "\"";
+                            } else {
+                                key += ",URI=\"" + m3u8Ts.getKeyUri() + "\"";
+                            }
+                        }
+                        if (m3u8Ts.getKeyIV() != null) {
+                            key += ",IV=" + m3u8Ts.getKeyIV();
+                        }
+                        bfw.write(M3U8Utils.TAG_KEY + ":" + key + "\n");
+                    }
+                }
+                if (m3u8Ts.hasDiscontinuity()) {
+                    bfw.write(M3U8Utils.TAG_DISCONTINUITY + "\n");
+                }
+                bfw.write(M3U8Utils.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() +
+                        ",\n");
+                bfw.write(m3u8Ts.getIndexName());
+                bfw.newLine();
+            }
+            bfw.write(M3U8Utils.TAG_ENDLIST);
+            bfw.flush();
+            bfw.close();
+
+            File localM3U8File = new File(mSaveDir, VideoDownloadUtils.LOCAL_M3U8);
+            if (localM3U8File.exists()) {
+                localM3U8File.delete();
+            }
+            tempM3U8File.renameTo(localM3U8File);
         }
     }
 }
