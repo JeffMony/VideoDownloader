@@ -10,6 +10,7 @@ public class Video {
         public static final int WEBM_TYPE = 4;
         public static final int QUICKTIME_TYPE = 5;
         public static final int GP3_TYPE = 6;
+        public static final int MKV_TYPE = 7;
     }
 
     public static class Mime {
@@ -34,10 +35,16 @@ public class Video {
         // Test urls:
         // 1.https://api.37live.com/api/ngyun/index.php?vid=We2egMd6z3owhm8LjOO0OOOgpQ0O0O00O0O0&hd=m3u8
         // ignore cert example;
+
+        // Test urls:
+        //  http://api.xundog.top/sp/320.mkv
+        public static String MIME_TYPE_MKV = "video/x-matroska";
+
         public static String M3U8 = "m3u8";
         public static String MP4 = "mp4";
         public static String MOV = "mov";
         public static String WEBM = "webm";
         public static String GP3 = "3gp";
+        public static String MKV = "mkv";
     }
 }

@@ -88,29 +88,29 @@ public class VideoInfoParserManager {
                     parseM3U8Info(downloadInfo, null, headers);
                     return;
                 } else if (fileName.endsWith(".mp4")) {
-                    LogUtils.i(TAG,"parseVideoInfo MP4_TYPE");
                     downloadInfo.setMimeType(Video.Mime.MP4);
                     downloadInfo.setVideoType(Video.Type.MP4_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                     return;
                 } else if (fileName.endsWith(".mov")) {
-                    LogUtils.i(TAG,"parseVideoInfo QUICKTIME_TYPE");
                     downloadInfo.setMimeType(Video.Mime.MOV);
                     downloadInfo.setVideoType(Video.Type.QUICKTIME_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                     return;
                 } else if (fileName.endsWith(".webm")) {
-                    LogUtils.i(TAG,"parseVideoInfo WEBM_TYPE");
                     downloadInfo.setMimeType(Video.Mime.WEBM);
                     downloadInfo.setVideoType(Video.Type.WEBM_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                     return;
                 } else if (fileName.endsWith(".3gp")) {
-                    LogUtils.i(TAG,"parseVideoInfo GP3_TYPE");
                     downloadInfo.setMimeType(Video.Mime.GP3);
                     downloadInfo.setVideoType(Video.Type.GP3_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                     return;
+                } else if (fileName.endsWith(".mkv")) {
+                    downloadInfo.setMimeType(Video.Mime.MIME_TYPE_MKV);
+                    downloadInfo.setVideoType(Video.Type.MKV_TYPE);
+                    mListener.onBaseVideoInfoSuccess(downloadInfo);
                 }
             }
             // Add more video mimeType.
@@ -120,22 +120,21 @@ public class VideoInfoParserManager {
                 mimeType = mimeType.toLowerCase();
                 downloadInfo.setMimeType(mimeType);
                 if (mimeType.contains(Video.Mime.MIME_TYPE_MP4)) {
-                    LogUtils.i(TAG,"parseVideoInfo MP4_TYPE");
                     downloadInfo.setVideoType(Video.Type.MP4_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                 } else if (isM3U8Mimetype(mimeType)) {
                     parseM3U8Info(downloadInfo, null, headers);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_WEBM)) {
-                    LogUtils.i(TAG,"parseVideoInfo QUICKTIME_TYPE");
                     downloadInfo.setVideoType(Video.Type.WEBM_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_QUICKTIME)) {
-                    LogUtils.i(TAG,"parseVideoInfo WEBM_TYPE");
                     downloadInfo.setVideoType(Video.Type.QUICKTIME_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_3GP)) {
-                    LogUtils.i(TAG,"parseVideoInfo GP3_TYPE");
                     downloadInfo.setVideoType(Video.Type.GP3_TYPE);
+                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                } else if (mimeType.contains(Video.Mime.MIME_TYPE_MKV)) {
+                    downloadInfo.setVideoType(Video.Type.MKV_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                 } else {
                     mListener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NOT_FOUND_STRING));

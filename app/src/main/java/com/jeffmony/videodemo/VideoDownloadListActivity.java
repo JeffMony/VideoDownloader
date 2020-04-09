@@ -33,7 +33,7 @@ public class VideoDownloadListActivity extends AppCompatActivity {
     private void initDatas() {
         VideoTaskItem item1 = new VideoTaskItem("http://dov.mkanav1.com/20200203/UxM4G8Wt/index.m3u8");
         VideoTaskItem item2 = new VideoTaskItem(
-                "http://gv.vivo.com.cn/appstore/gamecenter/upload/video/201701/2017011314414026850.mp4");
+                "http://api.xundog.top/sp/320.mkv");
         VideoTaskItem item3 = new VideoTaskItem("https://tv.youkutv.cc/2020/01/15/SZpLQDUmJZKF9O0D/playlist.m3u8");
         VideoTaskItem item4 = new VideoTaskItem("https://tv.youkutv.cc/2020/01/15/3d97sO5xQUYB5bvY/playlist.m3u8");
         VideoTaskItem item5 = new VideoTaskItem("https://hls.aoxtv.com/v3.szjal.cn/20200122/TIj9Ekt9/index.m3u8");

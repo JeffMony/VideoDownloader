@@ -191,7 +191,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         WorkerThreadHandler.submitRunnableTask(new Runnable() {
             @Override
             public void run() {
-                LogUtils.i(TAG, "writeProxyCacheInfo : " + mDownloadInfo);
+                LogUtils.i(TAG, "writeDownloadInfo : " + mDownloadInfo);
                 VideoDownloadUtils.writeDownloadInfo(mDownloadInfo, mSaveDir);
             }
         });

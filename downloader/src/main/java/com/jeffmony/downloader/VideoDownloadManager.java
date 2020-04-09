@@ -188,7 +188,8 @@ public class VideoDownloadManager {
             if (downloadInfo.getVideoType() == Video.Type.MP4_TYPE
                     || downloadInfo.getVideoType() == Video.Type.WEBM_TYPE
                     || downloadInfo.getVideoType() == Video.Type.QUICKTIME_TYPE
-                    || downloadInfo.getVideoType() == Video.Type.GP3_TYPE) {
+                    || downloadInfo.getVideoType() == Video.Type.GP3_TYPE
+                    || downloadInfo.getVideoType() == Video.Type.MKV_TYPE) {
                 startBaseVideoDownloadTask(taskItem, downloadInfo, headers);
             } else if (downloadInfo.getVideoType() == Video.Type.HLS_TYPE) {
                 VideoInfoParserManager.getInstance()
