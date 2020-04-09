@@ -15,6 +15,7 @@ public class VideoTaskItem {
     private float mPercent;         //当前下载百分比, 0 ~ 100,是浮点数
     private long mDownloadSize;     //已下载大小, getDownloadSizeString 函数可以将大小格式化
     private long mTotalSize;        //文件总大小, M3U8文件无法准确获知
+    private String mLocalUrl;       //已下载的本地文件的file path
 
     public VideoTaskItem(String url) {
         mUrl = url;
@@ -93,6 +94,10 @@ public class VideoTaskItem {
     }
 
     public long getTotalSize() { return mTotalSize; }
+
+    public void setLocalUrl(String localUrl) { mLocalUrl = localUrl; }
+
+    public String getLocalUrl() { return mLocalUrl; }
 
     public boolean isRunningTask() {
         return mTaskState == VideoTaskState.DOWNLOADING || mTaskState == VideoTaskState.PROXYREADY;

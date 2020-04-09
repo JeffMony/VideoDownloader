@@ -258,6 +258,7 @@ public class VideoDownloadManager {
                         taskItem.setTaskState(VideoTaskState.SUCCESS);
                         taskItem.setPercent(100f);
                         taskItem.setDownloadSize(totalSize);
+                        taskItem.setLocalUrl(downloadInfo.getSaveDir() + File.separator + VideoDownloadUtils.LOCAL_M3U8);
                         mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
                     }
                 }
@@ -322,6 +323,7 @@ public class VideoDownloadManager {
                         taskItem.setTaskState(VideoTaskState.SUCCESS);
                         taskItem.setDownloadSize(totalSize);
                         taskItem.setPercent(100f);
+                        taskItem.setLocalUrl(downloadInfo.getSaveDir() + File.separator + downloadInfo.getFileHash() + VideoDownloadUtils.VIDEO_SUFFIX);
                         mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
                     }
                 }

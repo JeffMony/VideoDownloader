@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextureView
+        android:id="@+id/video_view"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
+    <SeekBar
+        android:id="@+id/video_progress_view"
+        android:layout_margin="10dp"
+        android:max="1000"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="5dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:clickable="false"
+            android:id="@+id/video_state_btn"
+            android:src="@mipmap/video_play"
+            android:layout_marginLeft="20dp"
+            android:background="#ffffffff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_marginLeft="20dp"
+            android:id="@+id/time_view"
+            android:text="XXX/XXXX"
+            android:visibility="invisible"
+            android:textColor="@color/black"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 </LinearLayout>

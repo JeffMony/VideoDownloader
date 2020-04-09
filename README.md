@@ -1,15 +1,12 @@
 # VideoDownloader
-专注视频下载，hls/mp4等等视频文件下载；
-
-
-视频下载SDK功能
+#### 视频下载SDK功能
 > * 下载整视频，如mp4/mkv/mov/3gp等视频
 > * 下载HLS，即M3U8视频
 > * M3U8 视频下载完成，会生成一个本地的local.m3u8文件
 > * 视频下载完成，可以点击播放视频文件
 
-视频下载SDK接入<br>
-1.应用启动的时候注册download config
+#### 视频下载SDK接入<br>
+##### 1.应用启动的时候注册download config
 ```
 File file = VideoDownloadUtils.getVideoCacheDir(this);
 if (!file.exists()) {
@@ -24,7 +21,7 @@ VideoDownloadConfig config = new VideoDownloadManager.Build(this)
     .buildConfig();
 VideoDownloadManager.getInstance().initConfig(config);
 ```
-2.注册download listener回调，这个回调只要注册一次就行了，是全局回调
+##### 2.注册download listener回调，这个回调只要注册一次就行了，是全局回调
 ```
 VideoDownloadManager.getInstance().setGlobalDownloadListener(mListener);
 
@@ -87,19 +84,21 @@ public class VideoTaskState {
     public static final int ENOSPC = 8;//空间不足
 }
 ```
-3.启动下载
+##### 3.启动下载
 ```
 VideoDownloadManager.getInstance().startDownload(item);
 ```
-4.暂停下载
+##### 4.暂停下载
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
 ```
-5.恢复下载
+##### 5.恢复下载
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
 ```
 
+##### 功能示意
+![](./files/test1.jpg)![](./files/test2.jpg)
 
 欢迎关注我的公众号JeffMony，我会持续为你带来音视频---算法---Android---python 方面的知识分享
 ![](./files/JeffMony.jpg)

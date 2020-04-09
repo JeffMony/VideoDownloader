@@ -1,6 +1,7 @@
 package com.jeffmony.videodemo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +16,11 @@ import com.jeffmony.downloader.model.VideoTaskState;
 
 public class VideoListAdapter extends ArrayAdapter<VideoTaskItem> {
 
+    private Context mContext;
+
     public VideoListAdapter(Context context, int resource, VideoTaskItem[] items) {
         super(context, resource, items);
+        mContext = context;
     }
     @NonNull
     @Override
@@ -27,6 +31,14 @@ public class VideoListAdapter extends ArrayAdapter<VideoTaskItem> {
         urlTextView.setText(item.getUrl());
         TextView stateTextView = (TextView) view.findViewById(R.id.status_txt);
         TextView playBtn = (TextView) view.findViewById(R.id.download_play_btn);
+        playBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, PlayerActivity.class);
+                intent.putExtra("videoUrl", item.getLocalUrl());
+                mContext.startActivity(intent);
+            }
+        });
         setStateText(stateTextView, playBtn, item);
         TextView infoTextView = (TextView) view.findViewById(R.id.download_txt);
         setDownloadInfoText(infoTextView, item);
