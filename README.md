@@ -5,6 +5,20 @@
 > * M3U8 视频下载完成，会生成一个本地的local.m3u8文件
 > * 视频下载完成，可以点击播放视频文件
 
+#### 版本更新
+##### 1.0.0
+```
+allprojects {
+    repositories {
+	    maven { url 'https://jitpack.io' }
+	}
+}
+
+dependencies {
+    implementation 'com.github.JeffMony:VideoDownloader:1.0.0'
+}
+```
+
 #### 视频下载SDK接入<br>
 ##### 1.应用启动的时候注册download config
 ```
