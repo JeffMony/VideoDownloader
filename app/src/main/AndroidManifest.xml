@@ -23,6 +23,10 @@
         </activity>
 
         <activity android:name=".VideoDownloadListActivity" />
+
+        <activity android:name=".DownloadSettingsActivity" />
+
+        <activity android:name=".PlayerActivity" />
     </application>
 
 </manifest>

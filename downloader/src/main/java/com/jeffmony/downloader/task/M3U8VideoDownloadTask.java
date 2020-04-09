@@ -43,7 +43,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private static final String TS_PREFIX = "video_";
     private final M3U8 mM3U8;
     private List<M3U8Ts> mTsList;
-    private AtomicInteger mCurTs = new AtomicInteger(0);
+    private volatile int mCurTs = 0;
     private int mTotalTs;
     private long mTotalSize;
     private long mDuration;
@@ -61,7 +61,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             mDuration = 1;
         }
         downloadInfo.setTotalTs(mTotalTs);
-        downloadInfo.setCachedTs(mCurTs.get());
+        downloadInfo.setCachedTs(mCurTs);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         if (listener != null) {
             listener.onTaskStart(mDownloadInfo.getVideoUrl());
         }
-        startDownload(mCurTs.get());
+        startDownload(mCurTs);
     }
 
     private void startDownload(int curDownloadTs) {
@@ -80,7 +80,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             return;
         }
         startTimerTask();
-        mCurTs.getAndSet(curDownloadTs);
+        mCurTs = curDownloadTs;
         LogUtils.i(TAG,"seekToDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(
                 THREAD_COUNT, THREAD_COUNT, 0L, TimeUnit.MILLISECONDS,
@@ -115,20 +115,14 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             throws Exception {
         if (!tsFile.exists()) {
             // ts is network resource, download ts file then rename it to local file.
-            boolean status = downloadFile(ts.getUrl(), tsFile);
-            if (status) {
-                // rename network ts name to local file name.
-                ts.setName(tsName);
-                ts.setTsSize(tsFile.length());
-                mCurTs.incrementAndGet();
-                LogUtils.w(TAG, "# CurTs = " + mCurTs);
-                notifyDownloadProgress();
-            }
-        } else {
+            downloadFile(ts.getUrl(), tsFile);
+        }
+
+        if (tsFile.exists()) {
             // rename network ts name to local file name.
             ts.setName(tsName);
             ts.setTsSize(tsFile.length());
-            mCurTs.incrementAndGet();
+            mCurTs++;
             LogUtils.w(TAG, "## CurTs = " + mCurTs);
             notifyDownloadProgress();
         }
@@ -136,7 +130,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     @Override
     public void resumeDownload() {
-        startDownload(mCurTs.get());
+        startDownload(mCurTs);
     }
 
     @Override
@@ -158,7 +152,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 mCurrentCachedSize = VideoDownloadUtils.countTotalSize(mSaveDir);
             }
             if (mDownloadInfo.getIsCompleted()) {
-                mCurTs.getAndSet(mTotalTs);
+                mCurTs = mTotalTs;
                 mDownloadTaskListener.onTaskProgress(100.0f,
                         mCurrentCachedSize, mCurrentCachedSize, mM3U8);
                 mPercent = 100.0f;
@@ -166,12 +160,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 mDownloadTaskListener.onTaskFinished(mTotalSize);
                 return;
             }
-            if (mCurTs.get() >= mTotalTs - 1) {
-                mCurTs.getAndSet(mTotalTs);
+            if (mCurTs >= mTotalTs - 1) {
+                mCurTs = mTotalTs;
             }
-            mDownloadInfo.setCachedTs(mCurTs.get());
-            mM3U8.setCurTsIndex(mCurTs.get());
-            float percent = mCurTs.get() * 1.0f * 100 / mTotalTs;
+            mDownloadInfo.setCachedTs(mCurTs);
+            mM3U8.setCurTsIndex(mCurTs);
+            float percent = mCurTs * 1.0f * 100 / mTotalTs;
             if (!isFloatEqual(percent, mPercent)) {
                 mDownloadTaskListener.onTaskProgress(percent,
                         mCurrentCachedSize, mCurrentCachedSize, mM3U8);

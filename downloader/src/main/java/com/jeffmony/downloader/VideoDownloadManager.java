@@ -12,11 +12,13 @@ import com.jeffmony.downloader.listener.DownloadListener;
 import com.jeffmony.downloader.listener.IDownloadListener;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.listener.IVideoInfoListener;
+import com.jeffmony.downloader.listener.IVideoInfoParseListener;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.model.Video;
 import com.jeffmony.downloader.model.VideoDownloadInfo;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
+import com.jeffmony.downloader.task.BaseVideoDownloadTask;
 import com.jeffmony.downloader.task.M3U8VideoDownloadTask;
 import com.jeffmony.downloader.task.VideoDownloadTask;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
@@ -127,6 +129,7 @@ public class VideoDownloadManager {
         String videoUrl = taskItem.getUrl();
         String saveName = VideoDownloadUtils.computeMD5(videoUrl);
         VideoDownloadInfo downloadInfo = VideoDownloadUtils.readDownloadInfo(new File(mConfig.getCacheRoot(), saveName));
+        LogUtils.i(TAG,  "" + downloadInfo);
         if (downloadInfo != null) {
             downloadInfo.setFileHash(saveName);
             taskItem.setMimeType(downloadInfo.getMimeType());
@@ -134,9 +137,21 @@ public class VideoDownloadManager {
                     || downloadInfo.getVideoType() == Video.Type.WEBM_TYPE
                     || downloadInfo.getVideoType() == Video.Type.QUICKTIME_TYPE
                     || downloadInfo.getVideoType() == Video.Type.GP3_TYPE) {
-
+                startBaseVideoDownloadTask(taskItem, downloadInfo, headers);
             } else if (downloadInfo.getVideoType() == Video.Type.HLS_TYPE) {
+                VideoInfoParserManager.getInstance()
+                        .parseM3U8File(downloadInfo, new IVideoInfoParseListener() {
 
+                            @Override
+                            public void onM3U8FileParseSuccess(VideoDownloadInfo info, M3U8 m3u8) {
+                                startM3U8VideoDownloadTask(taskItem, info, headers, m3u8);
+                            }
+
+                            @Override
+                            public void onM3U8FileParseFailed(VideoDownloadInfo info, Throwable error) {
+                                parseNetworkVideoInfo(taskItem, info, headers);
+                            }
+                        });
             }
         } else {
             downloadInfo = new VideoDownloadInfo(videoUrl);
@@ -259,7 +274,67 @@ public class VideoDownloadManager {
     }
 
     private void startBaseVideoDownloadTask(VideoTaskItem taskItem, VideoDownloadInfo downloadInfo, HashMap<String, String> headers) {
+        taskItem.setVideoType(downloadInfo.getVideoType());
+        VideoDownloadTask downloadTask = null;
+        if (!mVideoDownloadTaskMap.containsKey(downloadInfo.getVideoUrl())) {
+            downloadTask = new BaseVideoDownloadTask(mConfig, downloadInfo, headers);
+            mVideoDownloadTaskMap.put(downloadInfo.getVideoUrl(), downloadTask);
+        } else {
+            downloadTask = mVideoDownloadTaskMap.get(downloadInfo.getVideoUrl());
+        }
 
+        if (downloadTask != null) {
+            downloadTask.startDownload(new IDownloadTaskListener() {
+                @Override
+                public void onTaskStart(String url) {
+                    taskItem.setTaskState(VideoTaskState.START);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_START, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8) {
+                    if (taskItem.getTaskState() == VideoTaskState.PAUSE || taskItem.getTaskState() == VideoTaskState.SUCCESS) {
+                    } else {
+                        taskItem.setTaskState(VideoTaskState.DOWNLOADING);
+                        taskItem.setPercent(percent);
+                        taskItem.setDownloadSize(cachedSize);
+                        taskItem.setTotalSize(totalSize);
+                        taskItem.setM3U8(m3u8);
+                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PROCESSING, taskItem).sendToTarget();
+                    }
+                }
+
+                @Override
+                public void onTaskSpeedChanged(float speed) {
+                    taskItem.setSpeed(speed);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SPEED, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskPaused() {
+                    taskItem.setTaskState(VideoTaskState.PAUSE);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskFinished(long totalSize) {
+                    if (taskItem.getTaskState() != VideoTaskState.SUCCESS) {
+                        taskItem.setTaskState(VideoTaskState.SUCCESS);
+                        taskItem.setDownloadSize(totalSize);
+                        taskItem.setPercent(100f);
+                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
+                    }
+                }
+
+                @Override
+                public void onTaskFailed(Throwable e) {
+                    int errorCode = DownloadExceptionUtils.getErrorCode(e);
+                    taskItem.setErrorCode(errorCode);
+                    taskItem.setTaskState(VideoTaskState.ERROR);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+                }
+            });
+        }
     }
 
     private void removeDownloadQueue(VideoTaskItem item) {

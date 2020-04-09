@@ -93,6 +93,8 @@ public class VideoDownloadInfo implements Serializable {
     public String getFileHash() { return mFileHash; }
 
     public String toString() {
-        return "VideoDownloadInfo[VideoUrl="+mVideoUrl+",VideoType="+mVideoType+",TotalTs="+mTotalTs+",MimeType="+mMimeType+"]";
+        return "VideoDownloadInfo[VideoUrl="+mVideoUrl+",VideoType="+mVideoType
+                +",TotalTs="+mTotalTs+",MimeType="+mMimeType+",IsCompleted="+mIsCompleted
+                +",DownloadSize="+mCachedLength+",TotalSize="+mTotalLength+"]";
     }
 }

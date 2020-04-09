@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginTop="20dp"
+    android:layout_marginLeft="20dp"
+    android:orientation="vertical">
     
+    <Button
+        android:text="下载配置"
+        android:id="@+id/download_setting_btn"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content" />
     <Button
         android:text="基础下载"
         android:id="@+id/download_list_btn"
-        android:layout_width="100dp"
+        android:layout_width="120dp"
         android:layout_height="wrap_content" />
 
 </LinearLayout>

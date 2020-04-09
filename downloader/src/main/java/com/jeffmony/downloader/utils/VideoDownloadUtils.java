@@ -20,6 +20,7 @@ public class VideoDownloadUtils {
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     public static final int UPDATE_INTERVAL = 1000;
     public static final String INFO_FILE = "video.info";
+    public static final String VIDEO_SUFFIX = ".video";
     private static Object sFileLock = new Object();
 
     public static File getVideoCacheDir(Context context) {

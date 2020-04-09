@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.offline.Download;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
+    private Button mDownloadSettingBtn;
     private Button mDownloadListBtn;
 
     @Override
@@ -34,8 +37,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initViews() {
+        mDownloadSettingBtn = (Button) findViewById(R.id.download_setting_btn);
         mDownloadListBtn = (Button) findViewById(R.id.download_list_btn);
 
+        mDownloadSettingBtn.setOnClickListener(this);
         mDownloadListBtn.setOnClickListener(this);
     }
 
@@ -78,7 +83,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v == mDownloadListBtn) {
+        if (v == mDownloadSettingBtn) {
+            Intent intent = new Intent(this, DownloadSettingsActivity.class);
+            startActivity(intent);
+        } else if (v == mDownloadListBtn) {
             Intent intent = new Intent(this, VideoDownloadListActivity.class);
             startActivity(intent);
         }
