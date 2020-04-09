@@ -26,6 +26,8 @@ public class VideoDownloadConfig {
         mConcurrentCount = concurrentCount;
     }
 
+    public Context getContext() { return mContext; }
+
     public File getCacheRoot() {
         return mCacheRoot;
     }

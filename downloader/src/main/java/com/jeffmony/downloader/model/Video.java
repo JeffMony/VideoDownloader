@@ -3,12 +3,13 @@ package com.jeffmony.downloader.model;
 public class Video {
 
     public static class Type {
-        public static final int HLS_TYPE = 0x1;
-        public static final int HLS_LIVE_TYPE = 0x2;
-        public static final int MP4_TYPE = 0x3;
-        public static final int WEBM_TYPE = 0x4;
-        public static final int QUICKTIME_TYPE = 0x5;
-        public static final int GP3_TYPE = 0x6;
+        public static final int DEFAULT = 0;
+        public static final int HLS_TYPE = 1;
+        public static final int HLS_LIVE_TYPE = 2;
+        public static final int MP4_TYPE = 3;
+        public static final int WEBM_TYPE = 4;
+        public static final int QUICKTIME_TYPE = 5;
+        public static final int GP3_TYPE = 6;
     }
 
     public static class Mime {

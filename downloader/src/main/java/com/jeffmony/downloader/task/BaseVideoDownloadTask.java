@@ -46,7 +46,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     private void startDownload(long curLength) {
         if (mDownloadInfo.getIsCompleted()) {
             LogUtils.i(TAG, "BaseVideoDownloadTask local file.");
-            notifyDownloadProgress();
+            notifyDownloadFinish();
             return;
         }
         mCurrentCachedSize = curLength;

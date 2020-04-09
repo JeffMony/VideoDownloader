@@ -84,7 +84,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         startTimerTask();
         mCurTs = curDownloadTs;
-        LogUtils.i(TAG,"seekToDownload curDownloadTs = " + curDownloadTs);
+        LogUtils.i(TAG,"startDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(
                 THREAD_COUNT, THREAD_COUNT, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),

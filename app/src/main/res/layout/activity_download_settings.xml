@@ -12,10 +12,8 @@
         <TextView
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
-            android:textColor="@color/white"
-            android:textSize="18sp"
+            android:textColor="@color/black"
             android:padding="5dp"
-            android:background="@color/colorPrimaryDark"
             android:text="存储位置"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -24,7 +22,7 @@
             android:id="@+id/store_loc_txt"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
-            android:textColor="@color/black"
+            android:textColor="@color/red"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -34,23 +32,19 @@
             android:layout_height="wrap_content" >
 
             <TextView
+                android:id="@+id/video_size_txt"
                 android:layout_marginTop="5dp"
                 android:layout_marginLeft="10dp"
-                android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textColor="@color/black"
                 android:padding="5dp"
-                android:background="@color/colorPrimaryDark"
                 android:text="缓存文件大小"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <TextView
+            <Button
                 android:id="@+id/clear_download_cache"
                 android:layout_marginTop="5dp"
                 android:padding="5dp"
-                android:textSize="18sp"
                 android:text="清理缓存"
-                android:textColor="@color/white"
-                android:background="@color/colorPrimaryDark"
                 android:layout_marginLeft="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

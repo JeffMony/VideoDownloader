@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.jeffmony.downloader.database.VideoDownloadDatabaseHelper;
 import com.jeffmony.downloader.listener.DownloadListener;
 import com.jeffmony.downloader.listener.IDownloadListener;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
@@ -24,9 +25,11 @@ import com.jeffmony.downloader.task.VideoDownloadTask;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,9 +49,11 @@ public class VideoDownloadManager {
     private static final int MSG_DOWNLOAD_ERROR = 0x8;
 
     private static VideoDownloadManager sInstance = null;
-    private VideoDownloadConfig mConfig;
     private DownloadListener mGlobalDownloadListener = null;
+    private VideoDownloadDatabaseHelper mDataHelper = null;
     private VideoDownloadQueue mVideoDownloadQueue;
+    private VideoDownloadConfig mConfig;
+
     private VideoDownloadHandler mVideoDownloadHandler = new VideoDownloadHandler();
     private Map<String, VideoDownloadTask> mVideoDownloadTaskMap = new ConcurrentHashMap<>();
     private Map<String, VideoTaskItem> mVideoItemTaskMap = new ConcurrentHashMap<>();
@@ -70,6 +75,7 @@ public class VideoDownloadManager {
 
     public void initConfig(VideoDownloadConfig config) {
         mConfig = config;
+        mDataHelper = new VideoDownloadDatabaseHelper(mConfig.getContext());
     }
 
     public void setGlobalDownloadListener(DownloadListener downloadListener) {
@@ -124,6 +130,52 @@ public class VideoDownloadManager {
         }
     }
 
+    //Delete one task
+    public void deleteVideoTask(VideoTaskItem taskItem, boolean shouldDeleteSourceFile) {
+        String cacheFilePath = getDownloadPath();
+        if (!TextUtils.isEmpty(cacheFilePath)) {
+            if (taskItem.isRunningTask()) {
+                pauseDownloadTask(taskItem);
+            }
+            String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
+            File file = new File(cacheFilePath + File.separator + saveName);
+            try {
+                if (shouldDeleteSourceFile) {
+                    VideoDownloadUtils.delete(file);
+                }
+                if (mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
+                    mVideoDownloadTaskMap.remove(taskItem.getUrl());
+                }
+                taskItem.reset();
+                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
+            } catch (Exception e) {
+                LogUtils.w(TAG, "Delete file: " + file +" failed, exception="+e.getMessage());
+            }
+        }
+    }
+
+    public void deleteVideoTask(String videoUrl, boolean shouldDeleteSourceFile) {
+        if (mVideoItemTaskMap.containsKey(videoUrl)) {
+            VideoTaskItem taskItem = mVideoItemTaskMap.get(videoUrl);
+            deleteVideoTask(taskItem, shouldDeleteSourceFile);
+            mVideoItemTaskMap.remove(videoUrl);
+        }
+    }
+
+    public void deleteVideoTasks(List<String> urlList, boolean shouldDeleteSourceFile) {
+        for (String url : urlList) {
+            deleteVideoTask(url, shouldDeleteSourceFile);
+        }
+    }
+
+    public void deleteVideoTasks(VideoTaskItem[] taskItems, boolean shouldDeleteSourceFile) {
+        String cacheFilePath = getDownloadPath();
+        if (!TextUtils.isEmpty(cacheFilePath)) {
+            for (VideoTaskItem item : taskItems) {
+                deleteVideoTask(item, shouldDeleteSourceFile);
+            }
+        }
+    }
 
     private void parseVideoInfo(VideoTaskItem taskItem, HashMap<String, String> headers) {
         String videoUrl = taskItem.getUrl();
@@ -399,6 +451,21 @@ public class VideoDownloadManager {
                         break;
                 }
             }
+        }
+    }
+
+    public String getDownloadPath() {
+        if (mConfig != null) {
+            return mConfig.getCacheRoot().getAbsolutePath();
+        }
+        return null;
+    }
+
+    public void deleteAllVideoFiles(Context context) {
+        try {
+            VideoDownloadUtils.clearVideoCacheDir(context);
+        } catch (Exception e) {
+            LogUtils.w(TAG , "clearVideoCacheDir failed, exception = " + e.getMessage());
         }
     }
 

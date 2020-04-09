@@ -3,6 +3,8 @@ package com.jeffmony.downloader.model;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.utils.Utility;
 
+import java.util.HashMap;
+
 public class VideoTaskItem {
 
     private String mUrl;            //下载视频的url
@@ -109,6 +111,19 @@ public class VideoTaskItem {
 
     public boolean isInitialTask() {
         return mTaskState == VideoTaskState.DEFAULT;
+    }
+
+    public void reset() {
+        mTaskState = VideoTaskState.DEFAULT;
+        mMimeType = null;
+        mErrorCode = 0;
+        mVideoType = Video.Type.DEFAULT;
+        mM3U8 = null;
+        mSpeed = 0.0f;
+        mPercent = 0.0f;
+        mDownloadSize = 0;
+        mTotalSize = 0;
+        mLocalUrl = null;
     }
 
     public String toString() {
