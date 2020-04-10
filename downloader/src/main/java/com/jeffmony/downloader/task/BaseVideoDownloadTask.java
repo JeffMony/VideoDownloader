@@ -1,6 +1,7 @@
 package com.jeffmony.downloader.task;
 
 import android.os.Build;
+import android.text.TextUtils;
 
 import androidx.annotation.RequiresApi;
 
@@ -212,15 +213,16 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         return connection.getInputStream();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private long getContentLength(String videoUrl) {
         long length = 0;
         HttpURLConnection connection = null;
         try {
             connection = openConnection(videoUrl);
-            length = connection.getContentLength();
-            if (length == -1) {
-                length = connection.getContentLengthLong();
+            String contentLength = connection.getHeaderField("content-length");
+            if (TextUtils.isEmpty(contentLength)) {
+                return -1;
+            } else {
+                length = Long.parseLong(contentLength);
             }
         } catch (Exception e) {
             LogUtils.w(TAG, "BaseDownloadTask failed, exception=" + e.getMessage());
