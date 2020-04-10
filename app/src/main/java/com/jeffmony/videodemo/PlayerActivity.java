@@ -18,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.playersdk.CommonPlayer;
 import com.jeffmony.playersdk.IPlayer;
 import com.jeffmony.playersdk.PlayerType;
@@ -111,7 +110,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     };
 
     private void initPlayer() {
-        mPlayer = new CommonPlayer(this, PlayerType.EXO_PLAYER);
+        mPlayer = new CommonPlayer(this, PlayerType.IJK_PLAYER);
 
         try {
             mPlayer.setDataSource(this, Uri.parse(mUrl));
@@ -172,30 +171,23 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         mVideoView.setLayoutParams(params);
     }
 
-    private void updateVideoState() {
-        if (mPlayer.isPlaying()) {
-            mVideoStateBtn.setImageResource(R.mipmap.video_pause);
-        } else {
-            mVideoStateBtn.setImageResource(R.mipmap.video_play);
-        }
-    }
-
     private void updatePlayerState() {
         if (mPlayer.isPlaying()) {
             mPlayer.pause();
             mHandler.removeMessages(MSG_UPDATE_PROGRESS);
+            mVideoStateBtn.setImageResource(R.mipmap.video_play);
         } else {
             mPlayer.start();
             mHandler.sendEmptyMessage(MSG_UPDATE_PROGRESS);
+            mVideoStateBtn.setImageResource(R.mipmap.video_pause);
         }
-        updateVideoState();
     }
 
     private void startPlayer() {
         if (!mPlayer.isPlaying()) {
             mPlayer.start();
             mHandler.sendEmptyMessage(MSG_UPDATE_PROGRESS);
-            updateVideoState();
+            mVideoStateBtn.setImageResource(R.mipmap.video_pause);
         }
     }
 
@@ -203,7 +195,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         if (mPlayer.isPlaying()) {
             mPlayer.pause();
             mHandler.removeMessages(MSG_UPDATE_PROGRESS);
-            updateVideoState();
+            mVideoStateBtn.setImageResource(R.mipmap.video_play);
         }
     }
 
