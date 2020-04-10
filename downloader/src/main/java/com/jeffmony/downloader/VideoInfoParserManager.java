@@ -108,7 +108,7 @@ public class VideoInfoParserManager {
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                     return;
                 } else if (fileName.endsWith(".mkv")) {
-                    downloadInfo.setMimeType(Video.Mime.MIME_TYPE_MKV);
+                    downloadInfo.setMimeType(Video.Mime.MKV);
                     downloadInfo.setVideoType(Video.Type.MKV_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
                 }

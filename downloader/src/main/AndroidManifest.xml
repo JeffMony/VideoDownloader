@@ -1,2 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jeffmony.downloader" />
+    package="com.jeffmony.downloader" >
+
+    <application
+        android:usesCleartextTraffic="true" />
+</manifest>
