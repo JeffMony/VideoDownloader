@@ -1,6 +1,11 @@
 package com.jeffmony.downloader.task;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.jeffmony.downloader.VideoDownloadConfig;
+import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoDownloadInfo;
 import com.jeffmony.downloader.utils.HttpUtils;
@@ -58,11 +63,13 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         mDownloadExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                LogUtils.i("litianpeng", "----, totalLength="+ mTotalLength);
                 if (mTotalLength == 0L) {
                     mTotalLength = getContentLength(mFinalUrl);
                     LogUtils.i(TAG, "file length = " + mTotalLength);
                     if (mTotalLength <= 0) {
                         LogUtils.w(TAG, "BaseVideoDownloadTask file length cannot be fetched.");
+                        notifyDownloadError(new VideoDownloadException("BaseVideoDownloadTask file length cannot be fetched"));
                         return;
                     }
                     mDownloadInfo.setTotalLength(mTotalLength);
@@ -205,12 +212,16 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         return connection.getInputStream();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private long getContentLength(String videoUrl) {
         long length = 0;
         HttpURLConnection connection = null;
         try {
             connection = openConnection(videoUrl);
             length = connection.getContentLength();
+            if (length == -1) {
+                length = connection.getContentLengthLong();
+            }
         } catch (Exception e) {
             LogUtils.w(TAG, "BaseDownloadTask failed, exception=" + e.getMessage());
         } finally {

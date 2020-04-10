@@ -111,6 +111,7 @@ public class VideoInfoParserManager {
                     downloadInfo.setMimeType(Video.Mime.MKV);
                     downloadInfo.setVideoType(Video.Type.MKV_TYPE);
                     mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    return;
                 }
             }
             // Add more video mimeType.
