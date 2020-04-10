@@ -9,6 +9,7 @@ import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoDownloadInfo;
+import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -64,13 +65,12 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         mDownloadExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                LogUtils.i("litianpeng", "----, totalLength="+ mTotalLength);
                 if (mTotalLength == 0L) {
                     mTotalLength = getContentLength(mFinalUrl);
                     LogUtils.i(TAG, "file length = " + mTotalLength);
                     if (mTotalLength <= 0) {
                         LogUtils.w(TAG, "BaseVideoDownloadTask file length cannot be fetched.");
-                        notifyDownloadError(new VideoDownloadException("BaseVideoDownloadTask file length cannot be fetched"));
+                        notifyDownloadError(new VideoDownloadException(DownloadExceptionUtils.FILE_LENGTH_FETCHED_ERROR_STRING));
                         return;
                     }
                     mDownloadInfo.setTotalLength(mTotalLength);
