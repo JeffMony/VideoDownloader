@@ -76,6 +76,10 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         });
     }
 
+
+    private long mLastProgressTimeStamp;
+    private long mLastSpeedTimeStamp;
+
     private DownloadListener mListener = new DownloadListener() {
 
         @Override
@@ -104,13 +108,21 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
 
         @Override
         public void onDownloadProgress(VideoTaskItem item) {
-            LogUtils.w(TAG,"onDownloadProgress: " + item.getPercentString());
-            notifyChanged(item);
+            long currentTimeStamp = System.currentTimeMillis();
+            if (currentTimeStamp - mLastProgressTimeStamp > 1000) {
+                LogUtils.e(TAG, "onDownloadProgress: " + item.getPercentString() + ", curTs=" + item.getCurTs() + ", totalTs=" + item.getTotalTs());
+                notifyChanged(item);
+                mLastProgressTimeStamp = currentTimeStamp;
+            }
         }
 
         @Override
         public void onDownloadSpeed(VideoTaskItem item) {
-            notifyChanged(item);
+            long currentTimeStamp = System.currentTimeMillis();
+            if (currentTimeStamp - mLastSpeedTimeStamp > 1000) {
+                notifyChanged(item);
+                mLastSpeedTimeStamp = currentTimeStamp;
+            }
         }
 
         @Override

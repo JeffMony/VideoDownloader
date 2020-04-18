@@ -58,9 +58,13 @@ public abstract class VideoDownloadTask {
                 public void run() {
                     if (mOldCachedSize <= mCurrentCachedSize) {
                         float speed = (mCurrentCachedSize - mOldCachedSize) * 1.0f;
-                        mDownloadTaskListener.onTaskSpeedChanged(speed);
-                        mOldCachedSize = mCurrentCachedSize;
-                        mSpeed = speed;
+                        if (speed == 0f) {
+                            mDownloadTaskListener.onTaskSpeedChanged(mSpeed / 2);
+                        } else {
+                            mDownloadTaskListener.onTaskSpeedChanged(speed);
+                            mOldCachedSize = mCurrentCachedSize;
+                            mSpeed = speed;
+                        }
                     }
                 }
             };
