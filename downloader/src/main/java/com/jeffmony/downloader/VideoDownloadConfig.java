@@ -48,7 +48,11 @@ public class VideoDownloadConfig {
         return mIgnoreAllCertErrors;
     }
 
+    public void setIgnoreAllCertErrors(boolean ignoreAllCertErrors) { mIgnoreAllCertErrors = ignoreAllCertErrors; }
+
     public int getConcurrentCount() {
         return mConcurrentCount;
     }
+
+    public void setConcurrentCount(int count) { mConcurrentCount = count; }
 }

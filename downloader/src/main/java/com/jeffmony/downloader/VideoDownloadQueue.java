@@ -4,17 +4,17 @@ import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.utils.LogUtils;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VideoDownloadQueue {
 
     private static final String TAG = "VideoDownloadQueue";
 
-    private List<VideoTaskItem> mQueue;
+    private CopyOnWriteArrayList<VideoTaskItem> mQueue;
 
     public VideoDownloadQueue() {
-        mQueue = new ArrayList<>();
+        mQueue = new CopyOnWriteArrayList<>();
     }
 
     public List<VideoTaskItem> getDownloadList() {

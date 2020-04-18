@@ -1,14 +1,11 @@
 package com.jeffmony.downloader.task;
 
-import android.os.Build;
 import android.text.TextUtils;
-
-import androidx.annotation.RequiresApi;
 
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
-import com.jeffmony.downloader.model.VideoDownloadInfo;
+import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -38,10 +35,10 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     private long mTotalLength;
 
     public BaseVideoDownloadTask(VideoDownloadConfig config,
-                                 VideoDownloadInfo downloadInfo,
+                                 VideoTaskItem taskItem,
                                  HashMap<String, String> headers) {
-        super(config, downloadInfo, headers);
-        this.mTotalLength = downloadInfo.getTotalLength();
+        super(config, taskItem, headers);
+        this.mTotalLength = taskItem.getTotalSize();
     }
 
     @Override
@@ -51,7 +48,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     }
 
     private void startDownload(long curLength) {
-        if (mDownloadInfo.getIsCompleted()) {
+        if (mTaskItem.isCompleted()) {
             LogUtils.i(TAG, "BaseVideoDownloadTask local file.");
             notifyDownloadFinish();
             return;
@@ -73,7 +70,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                         notifyDownloadError(new VideoDownloadException(DownloadExceptionUtils.FILE_LENGTH_FETCHED_ERROR_STRING));
                         return;
                     }
-                    mDownloadInfo.setTotalLength(mTotalLength);
+                    mTaskItem.setTotalSize(mTotalLength);
                 }
                 File videoFile;
                 try {
@@ -142,8 +139,6 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
             mDownloadExecutor.shutdownNow();
             notifyOnTaskPaused();
         }
-        updateDownloadInfo();
-        writeDownloadInfo();
     }
 
     @Override
@@ -154,15 +149,14 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     private void notifyDownloadProgress() {
         if (mDownloadTaskListener != null) {
             if (mCurrentCachedSize >= mTotalLength) {
-                mDownloadInfo.setCachedLength(mCurrentCachedSize);
-                mDownloadInfo.setIsCompleted(true);
-                writeDownloadInfo();
+                mTaskItem.setDownloadSize(mCurrentCachedSize);
+                mTaskItem.setIsCompleted(true);
                 mDownloadTaskListener.onTaskProgress(100,
                         mTotalLength, mTotalLength, null);
                 mPercent = 100.0f;
                 notifyDownloadFinish();
             } else {
-                mDownloadInfo.setCachedLength(mCurrentCachedSize);
+                mTaskItem.setDownloadSize(mCurrentCachedSize);
                 float percent = mCurrentCachedSize * 1.0f * 100 / mTotalLength;
                 if (!isFloatEqual(percent, mPercent)) {
                     mDownloadTaskListener.onTaskProgress(percent,
@@ -181,30 +175,9 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     private void notifyDownloadFinish() {
         if (mDownloadTaskListener != null) {
-            writeDownloadInfo();
             mDownloadTaskListener.onTaskFinished(mTotalLength);
         }
     }
-
-    private void updateDownloadInfo() {
-        if (mCurrentCachedSize >= mTotalLength) {
-            mDownloadInfo.setIsCompleted(true);
-        }
-        if (mDownloadInfo.getIsCompleted()) {
-            notifyDownloadFinish();
-        }
-    }
-
-    private void writeDownloadInfo() {
-        WorkerThreadHandler.submitRunnableTask(new Runnable() {
-            @Override
-            public void run() {
-                LogUtils.i(TAG, "writeDownloadInfo : " + mDownloadInfo);
-                VideoDownloadUtils.writeDownloadInfo(mDownloadInfo, mSaveDir);
-            }
-        });
-    }
-
 
     private InputStream getResponseBody(String url, long start, long end)
             throws IOException {

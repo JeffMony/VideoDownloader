@@ -2,6 +2,7 @@ package com.jeffmony.downloader;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
@@ -10,13 +11,12 @@ import androidx.annotation.NonNull;
 
 import com.jeffmony.downloader.database.VideoDownloadDatabaseHelper;
 import com.jeffmony.downloader.listener.DownloadListener;
+import com.jeffmony.downloader.listener.IDownloadInfosCallback;
 import com.jeffmony.downloader.listener.IDownloadListener;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.listener.IVideoInfoListener;
 import com.jeffmony.downloader.listener.IVideoInfoParseListener;
 import com.jeffmony.downloader.m3u8.M3U8;
-import com.jeffmony.downloader.model.Video;
-import com.jeffmony.downloader.model.VideoDownloadInfo;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.task.BaseVideoDownloadTask;
@@ -32,29 +32,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VideoDownloadManager {
     private static final String TAG = "VideoDownloadManager";
-    public static final int READ_TIMEOUT = 30 * 1000;
-    public static final int CONN_TIMEOUT = 30 * 1000;
-    public static final int CONCURRENT = 3;
-    private static final int MSG_DOWNLOAD_DEFAULT = 0x0;
-    private static final int MSG_DOWNLOAD_PENDING = 0x1;
-    private static final int MSG_DOWNLOAD_PREPARE = 0x2;
-    private static final int MSG_DOWNLOAD_START = 0x3;
-    private static final int MSG_DOWNLOAD_PROCESSING = 0x4;
-    private static final int MSG_DOWNLOAD_SPEED = 0x5;
-    private static final int MSG_DOWNLOAD_PAUSE = 0x6;
-    private static final int MSG_DOWNLOAD_SUCCESS =0x7;
-    private static final int MSG_DOWNLOAD_ERROR = 0x8;
+    private static final int MSG_DOWNLOAD_DEFAULT = 0;
+    private static final int MSG_DOWNLOAD_PENDING = 1;
+    private static final int MSG_DOWNLOAD_PREPARE = 2;
+    private static final int MSG_DOWNLOAD_START = 3;
+    private static final int MSG_DOWNLOAD_PROCESSING = 4;
+    private static final int MSG_DOWNLOAD_SPEED = 5;
+    private static final int MSG_DOWNLOAD_PAUSE = 6;
+    private static final int MSG_DOWNLOAD_SUCCESS = 7;
+    private static final int MSG_DOWNLOAD_ERROR = 8;
+
+    private static final int MSG_FETCH_DOWNLOAD_INFO = 100;
+    private static final int MSG_DELETE_ALL_FILES = 101;
 
     private static VideoDownloadManager sInstance = null;
     private DownloadListener mGlobalDownloadListener = null;
-    private VideoDownloadDatabaseHelper mDataHelper = null;
+    private VideoDownloadDatabaseHelper mVideoDatabaseHelper = null;
     private VideoDownloadQueue mVideoDownloadQueue;
     private VideoDownloadConfig mConfig;
 
-    private VideoDownloadHandler mVideoDownloadHandler = new VideoDownloadHandler();
+    private VideoDownloadHandler mVideoDownloadHandler;
+    private List<IDownloadInfosCallback> mDownloadInfoCallbacks = new CopyOnWriteArrayList<>();
     private Map<String, VideoDownloadTask> mVideoDownloadTaskMap = new ConcurrentHashMap<>();
     private Map<String, VideoTaskItem> mVideoItemTaskMap = new ConcurrentHashMap<>();
 
@@ -75,7 +77,24 @@ public class VideoDownloadManager {
 
     public void initConfig(VideoDownloadConfig config) {
         mConfig = config;
-        mDataHelper = new VideoDownloadDatabaseHelper(mConfig.getContext());
+        mVideoDatabaseHelper = new VideoDownloadDatabaseHelper(mConfig.getContext());
+        HandlerThread stateThread = new HandlerThread("Video_download_state_thread");
+        stateThread.start();
+        mVideoDownloadHandler = new VideoDownloadHandler(stateThread.getLooper());
+    }
+
+    public VideoDownloadConfig downloadConfig() {
+        return mConfig;
+    }
+
+    public void fetchDownloadItems(IDownloadInfosCallback callback) {
+        mDownloadInfoCallbacks.add(callback);
+        mVideoDownloadHandler.obtainMessage(MSG_FETCH_DOWNLOAD_INFO)
+                .sendToTarget();
+    }
+
+    public void removeDownloadInfosCallback(IDownloadInfosCallback callback) {
+        mDownloadInfoCallbacks.remove(callback);
     }
 
     public void setGlobalDownloadListener(DownloadListener downloadListener) {
@@ -91,19 +110,205 @@ public class VideoDownloadManager {
         } else {
             mVideoDownloadQueue.offer(taskItem);
         }
+        taskItem.setDownloadCreateTime(taskItem.getDownloadCreateTime());
         taskItem.setTaskState(VideoTaskState.PENDING);
-        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PENDING, taskItem).sendToTarget();
-        if (mVideoDownloadQueue.getDownloadingCount() < mConfig.getConcurrentCount()) {
-            startDownload(taskItem, null);
-        }
+        VideoTaskItem tempTaskItem = (VideoTaskItem) taskItem.clone();
+        mVideoDownloadHandler
+                .obtainMessage(MSG_DOWNLOAD_PENDING, tempTaskItem)
+                .sendToTarget();
+        startDownload(taskItem, null);
     }
 
     public void startDownload(VideoTaskItem taskItem, HashMap<String, String> headers) {
         if (taskItem == null || TextUtils.isEmpty(taskItem.getUrl()))
             return;
+        parseVideoDownloadInfo(taskItem, headers);
+    }
+
+    private void parseVideoDownloadInfo(VideoTaskItem taskItem, HashMap<String, String> headers) {
+        String videoUrl = taskItem.getUrl();
+        String saveName = VideoDownloadUtils.computeMD5(videoUrl);
+        taskItem.setFileHash(saveName);
+        boolean taskExisted = taskItem.getDownloadCreateTime() != 0;
+        if (taskExisted) {
+            parseExistVideoDownloadInfo(taskItem, headers);
+        } else {
+            parseNetworkVideoInfo(taskItem, headers);
+        }
+    }
+
+    private void parseExistVideoDownloadInfo(final VideoTaskItem taskItem, final HashMap<String, String> headers) {
+        if (taskItem.isNonHlsType()) {
+            startBaseVideoDownloadTask(taskItem, headers);
+        } else if (taskItem.isHlsType()) {
+            VideoInfoParserManager.getInstance()
+                    .parseM3U8File(taskItem, new IVideoInfoParseListener() {
+
+                        @Override
+                        public void onM3U8FileParseSuccess(VideoTaskItem info, M3U8 m3u8) {
+                            startM3U8VideoDownloadTask(taskItem, m3u8, headers);
+                        }
+
+                        @Override
+                        public void onM3U8FileParseFailed(VideoTaskItem info, Throwable error) {
+                            parseNetworkVideoInfo(taskItem, headers);
+                        }
+                    });
+        }
+    }
+
+    private void parseNetworkVideoInfo(final VideoTaskItem taskItem, final HashMap<String, String> headers) {
+        VideoInfoParserManager.getInstance().parseVideoInfo(taskItem, new IVideoInfoListener() {
+            @Override
+            public void onFinalUrl(String finalUrl) { }
+
+            @Override
+            public void onBaseVideoInfoSuccess(VideoTaskItem taskItem) {
+                taskItem.setMimeType(taskItem.getMimeType());
+                startBaseVideoDownloadTask(taskItem, headers);
+            }
+
+            @Override
+            public void onBaseVideoInfoFailed(Throwable error) {
+                LogUtils.w(TAG, "onInfoFailed error=" +error);
+                int errorCode = DownloadExceptionUtils.getErrorCode(error);
+                taskItem.setErrorCode(errorCode);
+                taskItem.setTaskState(VideoTaskState.ERROR);
+                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+            }
+
+            @Override
+            public void onM3U8InfoSuccess(VideoTaskItem info, M3U8 m3u8) {
+                taskItem.setMimeType(info.getMimeType());
+                startM3U8VideoDownloadTask(taskItem, m3u8, headers);
+            }
+
+            @Override
+            public void onLiveM3U8Callback(VideoTaskItem info) {
+                LogUtils.w(TAG, "onLiveM3U8Callback cannot be cached.");
+                taskItem.setErrorCode(DownloadExceptionUtils.LIVE_M3U8_ERROR);
+                taskItem.setTaskState(VideoTaskState.ERROR);
+                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+            }
+
+            @Override
+            public void onM3U8InfoFailed(Throwable error) {
+                LogUtils.w(TAG, "onM3U8InfoFailed : " + error);
+                int errorCode = DownloadExceptionUtils.getErrorCode(error);
+                taskItem.setErrorCode(errorCode);
+                taskItem.setTaskState(VideoTaskState.ERROR);
+                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+            }
+        }, mConfig, headers, mConfig.shouldRedirect());
+    }
+
+    private void startM3U8VideoDownloadTask(final VideoTaskItem taskItem, M3U8 m3u8, HashMap<String, String> headers) {
+        VideoDownloadTask downloadTask = null;
+        if (!mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
+            downloadTask = new M3U8VideoDownloadTask(mConfig, taskItem, m3u8, headers);
+            mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
+        } else {
+            downloadTask = mVideoDownloadTaskMap.get(taskItem.getUrl());
+        }
+
+        startDownloadTask(downloadTask, taskItem);
+    }
+
+    private void startBaseVideoDownloadTask(VideoTaskItem taskItem, HashMap<String, String> headers) {
         taskItem.setTaskState(VideoTaskState.PREPARE);
         mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PREPARE, taskItem).sendToTarget();
-        parseVideoInfo(taskItem, headers);
+        VideoDownloadTask downloadTask;
+        if (!mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
+            downloadTask = new BaseVideoDownloadTask(mConfig, taskItem, headers);
+            mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
+        } else {
+            downloadTask = mVideoDownloadTaskMap.get(taskItem.getUrl());
+        }
+        startDownloadTask(downloadTask, taskItem);
+    }
+
+    private void startDownloadTask(VideoDownloadTask downloadTask, VideoTaskItem taskItem) {
+        if (downloadTask != null) {
+            downloadTask.startDownload(new IDownloadTaskListener() {
+                @Override
+                public void onTaskStart(String url) {
+                    taskItem.setTaskState(VideoTaskState.START);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_START, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8) {
+                    if (taskItem.getTaskState() == VideoTaskState.PAUSE || taskItem.getTaskState() == VideoTaskState.SUCCESS) {
+                    } else {
+                        taskItem.setTaskState(VideoTaskState.DOWNLOADING);
+                        taskItem.setPercent(percent);
+                        taskItem.setDownloadSize(cachedSize);
+                        taskItem.setTotalSize(totalSize);
+                        taskItem.setM3U8(m3u8);
+                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PROCESSING, taskItem).sendToTarget();
+                    }
+                }
+
+                @Override
+                public void onTaskSpeedChanged(float speed) {
+                    taskItem.setSpeed(speed);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SPEED, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskPaused() {
+                    taskItem.setTaskState(VideoTaskState.PAUSE);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
+                }
+
+                @Override
+                public void onTaskFinished(long totalSize) {
+                    if (taskItem.getTaskState() != VideoTaskState.SUCCESS) {
+                        taskItem.setTaskState(VideoTaskState.SUCCESS);
+                        taskItem.setDownloadSize(totalSize);
+                        taskItem.setPercent(100f);
+//                        taskItem.setLocalUrl(downloadInfo.getSaveDir() + File.separator + downloadInfo.getFileHash() + VideoDownloadUtils.VIDEO_SUFFIX);
+                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
+                    }
+                }
+
+                @Override
+                public void onTaskFailed(Throwable e) {
+                    int errorCode = DownloadExceptionUtils.getErrorCode(e);
+                    taskItem.setErrorCode(errorCode);
+                    taskItem.setTaskState(VideoTaskState.ERROR);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+                }
+            });
+        }
+    }
+
+    public String getDownloadPath() {
+        if (mConfig != null) {
+            return mConfig.getCacheRoot().getAbsolutePath();
+        }
+        return null;
+    }
+
+    public void deleteAllVideoFiles(Context context) {
+        try {
+            VideoDownloadUtils.clearVideoCacheDir(context);
+            mVideoDownloadHandler.obtainMessage(MSG_DELETE_ALL_FILES).sendToTarget();
+        } catch (Exception e) {
+            LogUtils.w(TAG , "clearVideoCacheDir failed, exception = " + e.getMessage());
+        }
+    }
+
+    public void pauseAllDownloadTasks() {
+        List<VideoTaskItem> taskList = mVideoDownloadQueue.getDownloadList();
+        for (VideoTaskItem taskItem : taskList) {
+            if (taskItem.isPendingTask()) {
+                mVideoDownloadQueue.remove(taskItem);
+                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
+            } else if (taskItem.isRunningTask()) {
+                pauseDownloadTask(taskItem);
+            }
+        }
     }
 
     public void pauseDownloadTask(String videoUrl) {
@@ -177,224 +382,11 @@ public class VideoDownloadManager {
         }
     }
 
-    private void parseVideoInfo(VideoTaskItem taskItem, HashMap<String, String> headers) {
-        String videoUrl = taskItem.getUrl();
-        String saveName = VideoDownloadUtils.computeMD5(videoUrl);
-        VideoDownloadInfo downloadInfo = VideoDownloadUtils.readDownloadInfo(new File(mConfig.getCacheRoot(), saveName));
-        LogUtils.i(TAG,  "" + downloadInfo);
-        if (downloadInfo != null) {
-            downloadInfo.setFileHash(saveName);
-            taskItem.setMimeType(downloadInfo.getMimeType());
-            if (downloadInfo.getVideoType() == Video.Type.MP4_TYPE
-                    || downloadInfo.getVideoType() == Video.Type.WEBM_TYPE
-                    || downloadInfo.getVideoType() == Video.Type.QUICKTIME_TYPE
-                    || downloadInfo.getVideoType() == Video.Type.GP3_TYPE
-                    || downloadInfo.getVideoType() == Video.Type.MKV_TYPE) {
-                startBaseVideoDownloadTask(taskItem, downloadInfo, headers);
-            } else if (downloadInfo.getVideoType() == Video.Type.HLS_TYPE) {
-                VideoInfoParserManager.getInstance()
-                        .parseM3U8File(downloadInfo, new IVideoInfoParseListener() {
-
-                            @Override
-                            public void onM3U8FileParseSuccess(VideoDownloadInfo info, M3U8 m3u8) {
-                                startM3U8VideoDownloadTask(taskItem, info, headers, m3u8);
-                            }
-
-                            @Override
-                            public void onM3U8FileParseFailed(VideoDownloadInfo info, Throwable error) {
-                                parseNetworkVideoInfo(taskItem, info, headers);
-                            }
-                        });
-            }
-        } else {
-            downloadInfo = new VideoDownloadInfo(videoUrl);
-            downloadInfo.setFileHash(saveName);
-            parseNetworkVideoInfo(taskItem, downloadInfo, headers);
-        }
-
-    }
-
-    private void parseNetworkVideoInfo(final VideoTaskItem taskItem, final VideoDownloadInfo downloadInfo, final HashMap<String, String> headers) {
-        VideoInfoParserManager.getInstance().parseVideoInfo(downloadInfo, new IVideoInfoListener() {
-            @Override
-            public void onFinalUrl(String finalUrl) {
-
-            }
-
-            @Override
-            public void onBaseVideoInfoSuccess(VideoDownloadInfo info) {
-                taskItem.setMimeType(info.getMimeType());
-                startBaseVideoDownloadTask(taskItem, downloadInfo, headers);
-            }
-
-            @Override
-            public void onBaseVideoInfoFailed(Throwable error) {
-                LogUtils.w(TAG, "onInfoFailed error=" +error);
-                int errorCode = DownloadExceptionUtils.getErrorCode(error);
-                taskItem.setErrorCode(errorCode);
-                taskItem.setTaskState(VideoTaskState.ERROR);
-                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-            }
-
-            @Override
-            public void onM3U8InfoSuccess(VideoDownloadInfo info, M3U8 m3u8) {
-                taskItem.setMimeType(info.getMimeType());
-                startM3U8VideoDownloadTask(taskItem, downloadInfo, headers, m3u8);
-            }
-
-            @Override
-            public void onLiveM3U8Callback(VideoDownloadInfo info) {
-                LogUtils.w(TAG, "onLiveM3U8Callback cannot be cached.");
-                taskItem.setErrorCode(DownloadExceptionUtils.LIVE_M3U8_ERROR);
-                taskItem.setTaskState(VideoTaskState.ERROR);
-                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-            }
-
-            @Override
-            public void onM3U8InfoFailed(Throwable error) {
-                LogUtils.w(TAG, "onM3U8InfoFailed : " + error);
-                int errorCode = DownloadExceptionUtils.getErrorCode(error);
-                taskItem.setErrorCode(errorCode);
-                taskItem.setTaskState(VideoTaskState.ERROR);
-                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-            }
-        }, mConfig, headers, mConfig.shouldRedirect());
-    }
-
-    private void startM3U8VideoDownloadTask(final VideoTaskItem taskItem, VideoDownloadInfo downloadInfo, HashMap<String, String> headers, M3U8 m3u8) {
-        taskItem.setVideoType(downloadInfo.getVideoType());
-        VideoDownloadTask downloadTask = null;
-        if (!mVideoDownloadTaskMap.containsKey(downloadInfo.getVideoUrl())) {
-            downloadTask = new M3U8VideoDownloadTask(mConfig, downloadInfo, m3u8, headers);
-            mVideoDownloadTaskMap.put(downloadInfo.getVideoUrl(), downloadTask);
-        } else {
-            downloadTask = mVideoDownloadTaskMap.get(downloadInfo.getVideoUrl());
-        }
-
-        if (downloadTask != null) {
-            downloadTask.startDownload(new IDownloadTaskListener() {
-                @Override
-                public void onTaskStart(String url) {
-                    taskItem.setTaskState(VideoTaskState.START);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_START, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8) {
-                    if (taskItem.getTaskState() == VideoTaskState.PAUSE || taskItem.getTaskState() == VideoTaskState.SUCCESS) {
-
-                    } else {
-                        taskItem.setTaskState(VideoTaskState.DOWNLOADING);
-                        taskItem.setPercent(percent);
-                        taskItem.setDownloadSize(cachedSize);
-                        taskItem.setTotalSize(totalSize);
-                        taskItem.setM3U8(m3u8);
-                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PROCESSING, taskItem).sendToTarget();
-                    }
-                }
-
-                @Override
-                public void onTaskSpeedChanged(float speed) {
-                    taskItem.setSpeed(speed);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SPEED, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskPaused() {
-                    taskItem.setTaskState(VideoTaskState.PAUSE);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskFinished(long totalSize) {
-                    if (taskItem.getTaskState() != VideoTaskState.SUCCESS) {
-                        taskItem.setTaskState(VideoTaskState.SUCCESS);
-                        taskItem.setPercent(100f);
-                        taskItem.setDownloadSize(totalSize);
-                        taskItem.setLocalUrl(downloadInfo.getSaveDir() + File.separator + VideoDownloadUtils.LOCAL_M3U8);
-                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
-                    }
-                }
-
-                @Override
-                public void onTaskFailed(Throwable e) {
-                    int errorCode = DownloadExceptionUtils.getErrorCode(e);
-                    taskItem.setErrorCode(errorCode);
-                    taskItem.setTaskState(VideoTaskState.ERROR);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-                }
-            });
-        }
-    }
-
-    private void startBaseVideoDownloadTask(VideoTaskItem taskItem, VideoDownloadInfo downloadInfo, HashMap<String, String> headers) {
-        taskItem.setVideoType(downloadInfo.getVideoType());
-        VideoDownloadTask downloadTask = null;
-        if (!mVideoDownloadTaskMap.containsKey(downloadInfo.getVideoUrl())) {
-            downloadTask = new BaseVideoDownloadTask(mConfig, downloadInfo, headers);
-            mVideoDownloadTaskMap.put(downloadInfo.getVideoUrl(), downloadTask);
-        } else {
-            downloadTask = mVideoDownloadTaskMap.get(downloadInfo.getVideoUrl());
-        }
-
-        if (downloadTask != null) {
-            downloadTask.startDownload(new IDownloadTaskListener() {
-                @Override
-                public void onTaskStart(String url) {
-                    taskItem.setTaskState(VideoTaskState.START);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_START, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8) {
-                    if (taskItem.getTaskState() == VideoTaskState.PAUSE || taskItem.getTaskState() == VideoTaskState.SUCCESS) {
-                    } else {
-                        taskItem.setTaskState(VideoTaskState.DOWNLOADING);
-                        taskItem.setPercent(percent);
-                        taskItem.setDownloadSize(cachedSize);
-                        taskItem.setTotalSize(totalSize);
-                        taskItem.setM3U8(m3u8);
-                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PROCESSING, taskItem).sendToTarget();
-                    }
-                }
-
-                @Override
-                public void onTaskSpeedChanged(float speed) {
-                    taskItem.setSpeed(speed);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SPEED, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskPaused() {
-                    taskItem.setTaskState(VideoTaskState.PAUSE);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
-                }
-
-                @Override
-                public void onTaskFinished(long totalSize) {
-                    if (taskItem.getTaskState() != VideoTaskState.SUCCESS) {
-                        taskItem.setTaskState(VideoTaskState.SUCCESS);
-                        taskItem.setDownloadSize(totalSize);
-                        taskItem.setPercent(100f);
-                        taskItem.setLocalUrl(downloadInfo.getSaveDir() + File.separator + downloadInfo.getFileHash() + VideoDownloadUtils.VIDEO_SUFFIX);
-                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
-                    }
-                }
-
-                @Override
-                public void onTaskFailed(Throwable e) {
-                    int errorCode = DownloadExceptionUtils.getErrorCode(e);
-                    taskItem.setErrorCode(errorCode);
-                    taskItem.setTaskState(VideoTaskState.ERROR);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-                }
-            });
-        }
-    }
-
     private void removeDownloadQueue(VideoTaskItem item) {
         mVideoDownloadQueue.remove(item);
         while(mVideoDownloadQueue.getDownloadingCount() < mConfig.getConcurrentCount() ) {
+            if (mVideoDownloadQueue.size() == 0)
+                break;
             if (mVideoDownloadQueue.getDownloadingCount() == mVideoDownloadQueue.size())
                 break;
             VideoTaskItem item1 = mVideoDownloadQueue.peekPendingTask();
@@ -405,70 +397,151 @@ public class VideoDownloadManager {
 
     class VideoDownloadHandler extends Handler {
 
-        public VideoDownloadHandler() {
-            super(Looper.getMainLooper());
+        public VideoDownloadHandler(Looper looper) {
+            super(looper);
         }
 
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-
-            handleMessage(msg.what, (VideoTaskItem) msg.obj, mGlobalDownloadListener);
+            if (msg.what == MSG_FETCH_DOWNLOAD_INFO) {
+                dispatchDownloadInfos();
+            } else if (msg.what == MSG_DELETE_ALL_FILES ) {
+                //删除数据库中所有记录
+                WorkerThreadHandler.submitRunnableTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        mVideoDatabaseHelper.deleteAllDownloadInfos();
+                    }
+                });
+            } else {
+                dispatchDownloadMessage(msg.what, (VideoTaskItem) msg.obj, mGlobalDownloadListener);
+            }
         }
 
-        private void handleMessage(int msg, VideoTaskItem item, IDownloadListener listener) {
+        private void dispatchDownloadInfos() {
+            WorkerThreadHandler.submitRunnableTask(new Runnable() {
+                @Override
+                public void run() {
+                    List<VideoTaskItem> taskItems = mVideoDatabaseHelper.getDownloadInfos();
+                    for (VideoTaskItem taskItem : taskItems) {
+                        mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
+                    }
+                    for (IDownloadInfosCallback callback : mDownloadInfoCallbacks) {
+                        callback.onDownloadInfos(taskItems);
+                    }
+                }
+            });
+        }
+
+        private void dispatchDownloadMessage(int msg, VideoTaskItem taskItem, IDownloadListener listener) {
             if (listener != null) {
-                mVideoItemTaskMap.put(item.getUrl(), item);
+                mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
                 switch (msg) {
                     case MSG_DOWNLOAD_DEFAULT:
-                        listener.onDownloadDefault(item);
+                        handleOnDownloadDefault(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_PENDING:
-                        listener.onDownloadPending(item);
+                        handleOnDownloadPending(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_PREPARE:
-                        listener.onDownloadPrepare(item);
+                        handleOnDownloadPrepare(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_START:
-                        listener.onDownloadStart(item);
+                        handleOnDownloadStart(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_PROCESSING:
-                        listener.onDownloadProgress(item);
+                        handleOnDownloadProcessing(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_SPEED:
-                        listener.onDownloadSpeed(item);
+                        handleOnDownloadSpeed(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_PAUSE:
-                        removeDownloadQueue(item);
-                        listener.onDownloadPause(item);
+                        handleOnDownloadPause(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_ERROR:
-                        removeDownloadQueue(item);
-                        listener.onDownloadError(item);
+                        handleOnDownloadError(taskItem, mGlobalDownloadListener);
                         break;
                     case MSG_DOWNLOAD_SUCCESS:
-                        removeDownloadQueue(item);
-                        listener.onDownloadSuccess(item);
+                        handleOnDownloadSuccess(taskItem, mGlobalDownloadListener);
                         break;
                 }
             }
         }
     }
 
-    public String getDownloadPath() {
-        if (mConfig != null) {
-            return mConfig.getCacheRoot().getAbsolutePath();
-        }
-        return null;
+    private void handleOnDownloadDefault(VideoTaskItem taskItem, IDownloadListener listener) {
+        listener.onDownloadDefault(taskItem);
     }
 
-    public void deleteAllVideoFiles(Context context) {
-        try {
-            VideoDownloadUtils.clearVideoCacheDir(context);
-        } catch (Exception e) {
-            LogUtils.w(TAG , "clearVideoCacheDir failed, exception = " + e.getMessage());
+    private void handleOnDownloadPending(VideoTaskItem taskItem, IDownloadListener listener){
+        listener.onDownloadPending(taskItem);
+    }
+
+    private void handleOnDownloadPrepare(VideoTaskItem taskItem, IDownloadListener listener) {
+        listener.onDownloadPrepare(taskItem);
+        markDownloadInfoAddEvent(taskItem);
+    }
+
+    private void handleOnDownloadStart(VideoTaskItem taskItem, IDownloadListener listener) {
+        listener.onDownloadStart(taskItem);
+    }
+
+    private void handleOnDownloadProcessing(VideoTaskItem taskItem, IDownloadListener listener) {
+        listener.onDownloadProgress(taskItem);
+        markDownloadProgressInfoUpdateEvent(taskItem);
+    }
+
+    private void handleOnDownloadSpeed(VideoTaskItem taskItem, IDownloadListener listener) {
+        listener.onDownloadSpeed(taskItem);
+    }
+
+    private void handleOnDownloadPause(VideoTaskItem taskItem, IDownloadListener listener) {
+        removeDownloadQueue(taskItem);
+        listener.onDownloadPause(taskItem);
+    }
+
+    private void handleOnDownloadError(VideoTaskItem taskItem, IDownloadListener listener) {
+        removeDownloadQueue(taskItem);
+        listener.onDownloadError(taskItem);
+    }
+
+    private void handleOnDownloadSuccess(VideoTaskItem taskItem, IDownloadListener listener) {
+        removeDownloadQueue(taskItem);
+        listener.onDownloadSuccess(taskItem);
+        markDownloadFinishEvent(taskItem);
+    }
+
+    private void markDownloadInfoAddEvent(VideoTaskItem taskItem) {
+        WorkerThreadHandler.submitRunnableTask(new Runnable() {
+            @Override
+            public void run() {
+                mVideoDatabaseHelper.markDownloadInfoAddEvent(taskItem);
+            }
+        });
+    }
+    private void markDownloadProgressInfoUpdateEvent(VideoTaskItem taskItem) {
+        long currentTime = System.currentTimeMillis();
+        if (taskItem.getLastUpdateTime() + 1000 < currentTime) {
+            WorkerThreadHandler.submitRunnableTask(new Runnable() {
+                @Override
+                public void run() {
+                    mVideoDatabaseHelper.markDownloadProgressInfoUpdateEvent(taskItem);
+                }
+            });
+            taskItem.setLastUpdateTime(currentTime);
         }
     }
+
+    private void markDownloadFinishEvent(VideoTaskItem taskItem) {
+        WorkerThreadHandler.submitRunnableTask(new Runnable() {
+            @Override
+            public void run() {
+                mVideoDatabaseHelper.markDownloadProgressInfoUpdateEvent(taskItem);
+            }
+        });
+    }
+
 
     public static class Build {
         private Context mContext;
@@ -510,6 +583,18 @@ public class VideoDownloadManager {
         public VideoDownloadConfig buildConfig() {
             return new VideoDownloadConfig(mContext, mCacheRoot, mReadTimeOut,
                     mConnTimeOut, mRedirect, mIgnoreCertErrors, mConcurrentCount);
+        }
+    }
+
+    public void setConcurrentCount(int count) {
+        if (mConfig != null) {
+            mConfig.setConcurrentCount(count);
+        }
+    }
+
+    public void setIgnoreAllCertErrors(boolean enable) {
+        if (mConfig != null) {
+            mConfig.setIgnoreAllCertErrors(enable);
         }
     }
 }

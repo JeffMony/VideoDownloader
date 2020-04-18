@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white"
+    android:scrollbars="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scrollbars="vertical">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-
         <TextView
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
+            android:textSize="18sp"
             android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
             android:text="存储位置"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -22,7 +24,7 @@
             android:id="@+id/store_loc_txt"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
-            android:textColor="@color/red"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -32,23 +34,179 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/video_size_txt"
                 android:layout_marginTop="5dp"
                 android:layout_marginLeft="10dp"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
+                android:textSize="18sp"
                 android:padding="5dp"
+                android:background="@color/colorPrimaryDark"
                 android:text="缓存文件大小"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <Button
+            <TextView
                 android:id="@+id/clear_download_cache"
                 android:layout_marginTop="5dp"
                 android:padding="5dp"
+                android:textSize="18sp"
                 android:text="清理缓存"
+                android:textColor="@color/white"
+                android:background="@color/colorPrimaryDark"
                 android:layout_marginLeft="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
+
+        <TextView
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:id="@+id/store_size"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/open_file_txt"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:text="打开存储目录"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="2px" />
+
+        <TextView
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/white"
+            android:text="最大并发数"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <RadioGroup
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <RadioButton
+                android:id="@+id/btn1"
+                android:textColor="@color/black"
+                android:text="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn2"
+                android:textColor="@color/black"
+                android:text="2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn3"
+                android:checked="true"
+                android:textColor="@color/black"
+                android:text="3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn4"
+                android:textColor="@color/black"
+                android:text="4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn5"
+                android:textColor="@color/black"
+                android:text="5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="2px" />
+
+        <TextView
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/white"
+            android:text="是否忽略证书"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RadioGroup
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+            <RadioButton
+                android:id="@+id/btn11"
+                android:textColor="@color/black"
+                android:checked="true"
+                android:text="是"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn12"
+                android:textColor="@color/black"
+                android:text="否"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="2px" />
+
+        <TextView
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/white"
+            android:text="移动网络下是否暂停下载"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RadioGroup
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+            <RadioButton
+                android:id="@+id/btn13"
+                android:textColor="@color/black"
+                android:checked="true"
+                android:text="是"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn14"
+                android:textColor="@color/black"
+                android:text="否"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RadioGroup>
     </LinearLayout>
 
 </ScrollView>

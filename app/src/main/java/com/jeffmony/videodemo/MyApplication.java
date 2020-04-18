@@ -2,6 +2,7 @@ package com.jeffmony.videodemo;
 
 import android.app.Application;
 
+import com.jeffmony.downloader.DownloadConstants;
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadManager;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -20,8 +21,8 @@ public class MyApplication extends Application {
         VideoDownloadConfig config = new VideoDownloadManager.Build(this)
                 .setCacheRoot(file)
                 .setUrlRedirect(true)
-                .setTimeOut(VideoDownloadManager.READ_TIMEOUT, VideoDownloadManager.CONN_TIMEOUT)
-                .setConcurrentCount(VideoDownloadManager.CONCURRENT)
+                .setTimeOut(DownloadConstants.READ_TIMEOUT, DownloadConstants.CONN_TIMEOUT)
+                .setConcurrentCount(DownloadConstants.CONCURRENT)
                 .setIgnoreCertErrors(true)
                 .buildConfig();
         VideoDownloadManager.getInstance().initConfig(config);

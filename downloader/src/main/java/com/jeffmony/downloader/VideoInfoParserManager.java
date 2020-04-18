@@ -8,7 +8,7 @@ import com.jeffmony.downloader.listener.IVideoInfoParseListener;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Utils;
 import com.jeffmony.downloader.model.Video;
-import com.jeffmony.downloader.model.VideoDownloadInfo;
+import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -38,7 +38,7 @@ public class VideoInfoParserManager {
         return sInstance;
     }
 
-    public synchronized void parseVideoInfo(final VideoDownloadInfo downloadInfo, IVideoInfoListener listener,
+    public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener,
                                             VideoDownloadConfig config, final HashMap<String, String> headers,
                                             final boolean shouldRedirect) {
         mConfig = config;
@@ -47,36 +47,36 @@ public class VideoInfoParserManager {
         WorkerThreadHandler.submitRunnableTask(new Runnable() {
             @Override
             public void run() {
-                doParseVideoInfoTask(downloadInfo, headers, shouldRedirect);
+                doParseVideoInfoTask(taskItem, headers, shouldRedirect);
             }
         });
     }
 
-    private void doParseVideoInfoTask(VideoDownloadInfo downloadInfo, HashMap<String, String> headers, boolean shouldRedirect) {
+    private void doParseVideoInfoTask(VideoTaskItem taskItem, HashMap<String, String> headers, boolean shouldRedirect) {
         try {
-            if (downloadInfo == null) {
+            if (taskItem == null) {
                 mListener.onBaseVideoInfoFailed(new Throwable("Video info is null."));
                 return;
             }
-            if (!HttpUtils.matchHttpSchema(downloadInfo.getVideoUrl())) {
+            if (!HttpUtils.matchHttpSchema(taskItem.getUrl())) {
                 mListener.onBaseVideoInfoFailed(
                         new Throwable("Can parse the request resource's schema."));
                 return;
             }
 
-            String finalUrl = downloadInfo.getVideoUrl();
+            String finalUrl = taskItem.getUrl();
 
             // Redirect is enabled, send redirect request to get final location.
             if (mConfig.shouldRedirect() && shouldRedirect) {
                 finalUrl =
-                        HttpUtils.getFinalUrl(mConfig, downloadInfo.getVideoUrl(), null, headers);
+                        HttpUtils.getFinalUrl(mConfig, taskItem.getUrl(), null, headers);
                 if (TextUtils.isEmpty(finalUrl)) {
                     mListener.onBaseVideoInfoFailed(new Throwable("FinalUrl is null."));
                     return;
                 }
                 mListener.onFinalUrl(finalUrl);
             }
-            downloadInfo.setFinalUrl(finalUrl);
+            taskItem.setFinalUrl(finalUrl);
             Uri uri = Uri.parse(finalUrl);
             String fileName = uri.getLastPathSegment();
             LogUtils.i(TAG, "parseVideoInfo  fileName = " + fileName);
@@ -84,33 +84,33 @@ public class VideoInfoParserManager {
             if (fileName != null) {
                 fileName = fileName.toLowerCase();
                 if (fileName.endsWith(".m3u8")) {
-                    downloadInfo.setMimeType(Video.Mime.M3U8);
-                    parseM3U8Info(downloadInfo, null, headers);
+                    taskItem.setMimeType(Video.Mime.M3U8);
+                    parseM3U8Info(taskItem, null, headers);
                     return;
                 } else if (fileName.endsWith(".mp4")) {
-                    downloadInfo.setMimeType(Video.Mime.MP4);
-                    downloadInfo.setVideoType(Video.Type.MP4_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setMimeType(Video.Mime.MP4);
+                    taskItem.setVideoType(Video.Type.MP4_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".mov")) {
-                    downloadInfo.setMimeType(Video.Mime.MOV);
-                    downloadInfo.setVideoType(Video.Type.QUICKTIME_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setMimeType(Video.Mime.MOV);
+                    taskItem.setVideoType(Video.Type.QUICKTIME_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".webm")) {
-                    downloadInfo.setMimeType(Video.Mime.WEBM);
-                    downloadInfo.setVideoType(Video.Type.WEBM_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setMimeType(Video.Mime.WEBM);
+                    taskItem.setVideoType(Video.Type.WEBM_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".3gp")) {
-                    downloadInfo.setMimeType(Video.Mime.GP3);
-                    downloadInfo.setVideoType(Video.Type.GP3_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setMimeType(Video.Mime.GP3);
+                    taskItem.setVideoType(Video.Type.GP3_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".mkv")) {
-                    downloadInfo.setMimeType(Video.Mime.MKV);
-                    downloadInfo.setVideoType(Video.Type.MKV_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setMimeType(Video.Mime.MKV);
+                    taskItem.setVideoType(Video.Type.MKV_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 }
             }
@@ -119,24 +119,24 @@ public class VideoInfoParserManager {
             LogUtils.i(TAG,"parseVideoInfo mimeType=" + mimeType);
             if (mimeType != null) {
                 mimeType = mimeType.toLowerCase();
-                downloadInfo.setMimeType(mimeType);
+                taskItem.setMimeType(mimeType);
                 if (mimeType.contains(Video.Mime.MIME_TYPE_MP4)) {
-                    downloadInfo.setVideoType(Video.Type.MP4_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setVideoType(Video.Type.MP4_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                 } else if (isM3U8Mimetype(mimeType)) {
-                    parseM3U8Info(downloadInfo, null, headers);
+                    parseM3U8Info(taskItem, null, headers);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_WEBM)) {
-                    downloadInfo.setVideoType(Video.Type.WEBM_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setVideoType(Video.Type.WEBM_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_QUICKTIME)) {
-                    downloadInfo.setVideoType(Video.Type.QUICKTIME_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setVideoType(Video.Type.QUICKTIME_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_3GP)) {
-                    downloadInfo.setVideoType(Video.Type.GP3_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setVideoType(Video.Type.GP3_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_MKV)) {
-                    downloadInfo.setVideoType(Video.Type.MKV_TYPE);
-                    mListener.onBaseVideoInfoSuccess(downloadInfo);
+                    taskItem.setVideoType(Video.Type.MKV_TYPE);
+                    mListener.onBaseVideoInfoSuccess(taskItem);
                 } else {
                     mListener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NOT_FOUND_STRING));
                 }
@@ -149,46 +149,46 @@ public class VideoInfoParserManager {
         }
     }
 
-    private void parseM3U8Info(VideoDownloadInfo downloadInfo, Proxy proxy,
+    private void parseM3U8Info(VideoTaskItem taskItem, Proxy proxy,
                                HashMap<String, String> headers) {
         try {
             M3U8 m3u8 =
-                    M3U8Utils.parseM3U8Info(mConfig, downloadInfo.getVideoUrl(), false, null);
+                    M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null);
             // HLS LIVE video cannot be proxy cached.
             if (m3u8.hasEndList()) {
-                String saveName = VideoDownloadUtils.computeMD5(downloadInfo.getVideoUrl());
+                String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
                 File dir = new File(mConfig.getCacheRoot(), saveName);
                 if (!dir.exists()) {
                     dir.mkdir();
                 }
                 M3U8Utils.createRemoteM3U8(dir, m3u8);
 
-                downloadInfo.setSaveDir(dir.getAbsolutePath());
-                downloadInfo.setVideoType(Video.Type.HLS_TYPE);
-                mListener.onM3U8InfoSuccess(downloadInfo, m3u8);
+                taskItem.setSaveDir(dir.getAbsolutePath());
+                taskItem.setVideoType(Video.Type.HLS_TYPE);
+                mListener.onM3U8InfoSuccess(taskItem, m3u8);
             } else {
-                downloadInfo.setVideoType(Video.Type.HLS_LIVE_TYPE);
-                mListener.onLiveM3U8Callback(downloadInfo);
+                taskItem.setVideoType(Video.Type.HLS_LIVE_TYPE);
+                mListener.onLiveM3U8Callback(taskItem);
             }
         } catch (Exception e) {
             mListener.onM3U8InfoFailed(e);
         }
     }
 
-    public void parseM3U8File(VideoDownloadInfo info,
+    public void parseM3U8File(VideoTaskItem taskItem,
                               IVideoInfoParseListener callback) {
-        File remoteM3U8File = new File(info.getSaveDir(), "remote.m3u8");
+        File remoteM3U8File = new File(taskItem.getSaveDir(), "remote.m3u8");
         if (!remoteM3U8File.exists()) {
             callback.onM3U8FileParseFailed(
-                    info, new Throwable("Cannot find remote.m3u8 file."));
+                    taskItem, new Throwable("Cannot find remote.m3u8 file."));
             return;
         }
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, info.getVideoUrl(), true,
+            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), true,
                     remoteM3U8File);
-            callback.onM3U8FileParseSuccess(info, m3u8);
+            callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
-            callback.onM3U8FileParseFailed(info, e);
+            callback.onM3U8FileParseFailed(taskItem, e);
         }
     }
 

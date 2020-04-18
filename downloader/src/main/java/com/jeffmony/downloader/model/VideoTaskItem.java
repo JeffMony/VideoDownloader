@@ -1,31 +1,42 @@
 package com.jeffmony.downloader.model;
 
+import androidx.annotation.Nullable;
+
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.utils.Utility;
 
-import java.util.HashMap;
-
-public class VideoTaskItem {
+public class VideoTaskItem implements Cloneable {
 
     private String mUrl;            //下载视频的url
+    private long mDownloadCreateTime;   //下载创建的时间
     private int mTaskState;         //当前任务的状态
     private String mMimeType;       // 视频url的mime type
+    private String mFinalUrl;       //30x跳转之后的url
     private int mErrorCode;         //当前任务下载错误码
     private int mVideoType;         //当前文件类型
     private M3U8 mM3U8;             //M3U8结构,如果非M3U8,则为null
+    private int mTotalTs;
+    private int mCurTs;
     private float mSpeed;           //当前下载速度, getSpeedString 函数可以将速度格式化
     private float mPercent;         //当前下载百分比, 0 ~ 100,是浮点数
     private long mDownloadSize;     //已下载大小, getDownloadSizeString 函数可以将大小格式化
     private long mTotalSize;        //文件总大小, M3U8文件无法准确获知
     private String mLocalUrl;       //已下载的本地文件的file path
+    private String mFileHash;      //文件名的md5
+    private String mSaveDir;       //保存视频文件的文件目录名
+    private boolean mIsCompleted;
+    private boolean mIsInDatabase;
+    private long mLastUpdateTime;
 
-    public VideoTaskItem(String url) {
-        mUrl = url;
-    }
+    public VideoTaskItem(String url) { mUrl = url; }
 
     public String getUrl() {
         return mUrl;
     }
+
+    public void setDownloadCreateTime(long time) { mDownloadCreateTime = time; }
+
+    public long getDownloadCreateTime() { return mDownloadCreateTime; }
 
     public void setTaskState(int state) { mTaskState = state; }
 
@@ -36,6 +47,10 @@ public class VideoTaskItem {
     public String getMimeType() {
         return mMimeType;
     }
+
+    public void setFinalUrl(String finalUrl) { mFinalUrl = finalUrl; }
+
+    public String getFinalUrl() { return mFinalUrl; }
 
     public void setErrorCode(int errorCode) { mErrorCode = errorCode; }
 
@@ -54,6 +69,14 @@ public class VideoTaskItem {
     public M3U8 getM3U8() {
         return mM3U8;
     }
+
+    public void setTotalTs(int count) { mTotalTs = count; }
+
+    public int getTotalTs() { return mTotalTs; }
+
+    public void setCurTs(int count) { mCurTs = count; }
+
+    public int getCurTs() { return mCurTs; }
 
     public void setSpeed(float speed) {
         mSpeed = speed;
@@ -101,8 +124,32 @@ public class VideoTaskItem {
 
     public String getLocalUrl() { return mLocalUrl; }
 
+    public void setFileHash(String md5) { mFileHash = md5; }
+
+    public String getFileHash() { return mFileHash; }
+
+    public void setSaveDir(String path) { mSaveDir = path; }
+
+    public String getSaveDir() { return mSaveDir; }
+
+    public void setIsCompleted(boolean completed) { mIsCompleted = completed; }
+
+    public boolean isCompleted() { return mIsCompleted; }
+
+    public void setIsInDatabase(boolean in) { mIsInDatabase = in; }
+
+    public boolean isInDatabase() { return mIsInDatabase; }
+
+    public void setLastUpdateTime(long time) { mLastUpdateTime = time; }
+
+    public long getLastUpdateTime() { return mLastUpdateTime; }
+
     public boolean isRunningTask() {
         return mTaskState == VideoTaskState.DOWNLOADING || mTaskState == VideoTaskState.PROXYREADY;
+    }
+
+    public boolean isPendingTask() {
+        return mTaskState == VideoTaskState.PENDING;
     }
 
     public boolean isInterruptTask() {
@@ -111,6 +158,18 @@ public class VideoTaskItem {
 
     public boolean isInitialTask() {
         return mTaskState == VideoTaskState.DEFAULT;
+    }
+
+    public boolean isNonHlsType() {
+        return mVideoType == Video.Type.MKV_TYPE ||
+                mVideoType == Video.Type.QUICKTIME_TYPE ||
+                mVideoType == Video.Type.WEBM_TYPE ||
+                mVideoType == Video.Type.GP3_TYPE ||
+                mVideoType == Video.Type.MP4_TYPE;
+    }
+
+    public boolean isHlsType() {
+        return mVideoType == Video.Type.HLS_TYPE;
     }
 
     public void reset() {
@@ -126,7 +185,38 @@ public class VideoTaskItem {
         mLocalUrl = null;
     }
 
+    @Override
+    public Object clone() {
+        VideoTaskItem taskItem = new VideoTaskItem(mUrl);
+        taskItem.setDownloadCreateTime(mDownloadCreateTime);
+        taskItem.setTaskState(mTaskState);
+        taskItem.setMimeType(mMimeType);
+        taskItem.setErrorCode(mErrorCode);
+        taskItem.setVideoType(mVideoType);
+        taskItem.setPercent(mPercent);
+        taskItem.setDownloadSize(mDownloadSize);
+        taskItem.setTotalSize(mTotalSize);
+        taskItem.setLocalUrl(mLocalUrl);
+        taskItem.setFileHash(mFileHash);
+        return taskItem;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof VideoTaskItem) {
+            String objUrl = ((VideoTaskItem)obj).getUrl();
+            if (mUrl.equals(objUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String toString() {
-        return "VideoTaskItem[Url="+mUrl+",Type="+mVideoType+",Percent="+mPercent+",DownloadSize="+mDownloadSize+"]";
+        return "VideoTaskItem[Url="+mUrl+
+                ",Type="+mVideoType+
+                ",Percent="+mPercent+
+                ",DownloadSize="+mDownloadSize+
+                ",State="+mTaskState+"]";
     }
 }

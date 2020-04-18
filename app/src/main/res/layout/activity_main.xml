@@ -1,20 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
-    android:layout_marginLeft="20dp"
-    android:orientation="vertical">
-    
-    <Button
-        android:text="下载配置"
-        android:id="@+id/download_setting_btn"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content" />
-    <Button
-        android:text="基础下载"
-        android:id="@+id/download_list_btn"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content" />
+    android:layout_height="match_parent">
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/download_settings_btn"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:text="下载设置"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/download_orcode"
+            android:text="二维码扫描"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:layout_width="180dp"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/download_list_btn"
+            android:text="普通下载"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:layout_width="180dp"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/downloaded_list_btn"
+            android:text="查看已下载任务"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:layout_width="180dp"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</RelativeLayout>

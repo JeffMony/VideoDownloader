@@ -1,7 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/top_layout"
+        android:layout_below="@+id/file_path"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp">
+        <Button
+            android:layout_marginRight="10dp"
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/pause_task_btn"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:text="暂停所有下载任务"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <Button
+            android:layout_marginLeft="10dp"
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/start_task_btn"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:text="启动所有下载任务"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/download_listview"

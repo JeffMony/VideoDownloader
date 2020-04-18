@@ -13,8 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.offline.Download;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initViews() {
-        mDownloadSettingBtn = (Button) findViewById(R.id.download_setting_btn);
+        mDownloadSettingBtn = (Button) findViewById(R.id.download_settings_btn);
         mDownloadListBtn = (Button) findViewById(R.id.download_list_btn);
 
         mDownloadSettingBtn.setOnClickListener(this);

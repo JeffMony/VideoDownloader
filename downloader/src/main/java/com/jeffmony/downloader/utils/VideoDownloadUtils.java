@@ -2,8 +2,6 @@ package com.jeffmony.downloader.utils;
 
 import android.content.Context;
 
-import com.jeffmony.downloader.model.VideoDownloadInfo;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,55 +79,6 @@ public class VideoDownloadUtils {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
-    }
-
-    public static VideoDownloadInfo readDownloadInfo(File dir) {
-        File file = new File(dir, INFO_FILE);
-        if (!file.exists()) {
-            LogUtils.i(TAG,"readProxyCacheInfo failed, file not exist.");
-            return null;
-        }
-        ObjectInputStream fis = null;
-        try {
-            synchronized (sFileLock) {
-                fis = new ObjectInputStream(new FileInputStream(file));
-                VideoDownloadInfo info = (VideoDownloadInfo)fis.readObject();
-                return info;
-            }
-        } catch (Exception e) {
-            LogUtils.w(TAG,"readDownloadInfo failed, exception=" + e.getMessage());
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (Exception e) {
-                LogUtils.w(TAG,"readDownloadInfo failed, close fis failed.");
-            }
-        }
-        return null;
-    }
-
-    public static void writeDownloadInfo(VideoDownloadInfo info, File dir) {
-        File file = new File(dir, INFO_FILE);
-        ObjectOutputStream fos = null;
-        try {
-            synchronized (sFileLock) {
-                fos = new ObjectOutputStream(new FileOutputStream(file));
-                fos.writeObject(info);
-            }
-        } catch (Exception e) {
-            LogUtils.w(TAG,"writeDownloadInfo failed, exception=" +
-                    e.getMessage());
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (Exception e) {
-                LogUtils.w(TAG,"writeDownloadInfo failed, close fos failed.");
-            }
-        }
     }
 
     public static boolean isChinese(char c) {
