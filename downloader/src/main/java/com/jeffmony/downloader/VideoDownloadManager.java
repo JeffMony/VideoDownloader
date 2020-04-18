@@ -28,6 +28,7 @@ import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,7 @@ public class VideoDownloadManager {
                 mVideoDownloadQueue.offer(taskItem);
             }
         }
+        taskItem.setPaused(false);
         taskItem.setDownloadCreateTime(taskItem.getDownloadCreateTime());
         taskItem.setTaskState(VideoTaskState.PENDING);
         VideoTaskItem tempTaskItem = (VideoTaskItem) taskItem.clone();
@@ -206,7 +208,15 @@ public class VideoDownloadManager {
     }
 
     private void startM3U8VideoDownloadTask(final VideoTaskItem taskItem, M3U8 m3u8, HashMap<String, String> headers) {
-        VideoDownloadTask downloadTask = null;
+        taskItem.setTaskState(VideoTaskState.PREPARE);
+        VideoTaskItem tempTaskItem = (VideoTaskItem)taskItem.clone();
+        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PREPARE, tempTaskItem).sendToTarget();
+        synchronized (mQueueLock) {
+            if (mVideoDownloadQueue.getDownloadingCount() >= mConfig.getConcurrentCount()) {
+                return;
+            }
+        }
+        VideoDownloadTask downloadTask;
         if (!mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
             downloadTask = new M3U8VideoDownloadTask(mConfig, taskItem, m3u8, headers);
             mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
@@ -247,7 +257,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8) {
-                    if (taskItem.getTaskState() == VideoTaskState.PAUSE || taskItem.getTaskState() == VideoTaskState.SUCCESS) {
+                    if (taskItem.isPaused()) {
                     } else {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
@@ -266,8 +276,12 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskPaused() {
-                    taskItem.setTaskState(VideoTaskState.PAUSE);
-                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
+                    if (!taskItem.isErrorState() || !taskItem.isSuccessState()) {
+                        taskItem.setTaskState(VideoTaskState.PAUSE);
+                        taskItem.setPaused(true);
+                        mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
+                        mVideoDownloadHandler.removeMessages(MSG_DOWNLOAD_PROCESSING);
+                    }
                 }
 
                 @Override
@@ -400,17 +414,22 @@ public class VideoDownloadManager {
         }
     }
 
-    private void removeDownloadQueue(VideoTaskItem item) {
+    private void removeDownloadQueue(VideoTaskItem taskItem) {
         synchronized (mQueueLock) {
-            mVideoDownloadQueue.remove(item);
-            while (mVideoDownloadQueue.getDownloadingCount() < mConfig.getConcurrentCount()
-                    && mVideoDownloadQueue.getPendingCount() > 0) {
+            mVideoDownloadQueue.remove(taskItem);
+            LogUtils.w(TAG, "removeDownloadQueue size="+mVideoDownloadQueue.size() +","+mVideoDownloadQueue.getDownloadingCount()+","+mVideoDownloadQueue.getPendingCount());
+            int pendingCount = mVideoDownloadQueue.getPendingCount();
+            int downloadingCount = mVideoDownloadQueue.getDownloadingCount();
+            while (downloadingCount < mConfig.getConcurrentCount()
+                    && pendingCount > 0) {
                 if (mVideoDownloadQueue.size() == 0)
                     break;
-                if (mVideoDownloadQueue.getDownloadingCount() == mVideoDownloadQueue.size())
+                if (downloadingCount == mVideoDownloadQueue.size())
                     break;
                 VideoTaskItem item1 = mVideoDownloadQueue.peekPendingTask();
                 startDownload(item1, null);
+                pendingCount--;
+                downloadingCount++;
             }
         }
     }
@@ -460,31 +479,31 @@ public class VideoDownloadManager {
                 mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
                 switch (msg) {
                     case MSG_DOWNLOAD_DEFAULT:
-                        handleOnDownloadDefault(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadDefault(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_PENDING:
-                        handleOnDownloadPending(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadPending(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_PREPARE:
-                        handleOnDownloadPrepare(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadPrepare(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_START:
-                        handleOnDownloadStart(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadStart(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_PROCESSING:
-                        handleOnDownloadProcessing(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadProcessing(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_SPEED:
-                        handleOnDownloadSpeed(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadSpeed(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_PAUSE:
-                        handleOnDownloadPause(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadPause(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_ERROR:
-                        handleOnDownloadError(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadError(taskItem, listener);
                         break;
                     case MSG_DOWNLOAD_SUCCESS:
-                        handleOnDownloadSuccess(taskItem, mGlobalDownloadListener);
+                        handleOnDownloadSuccess(taskItem, listener);
                         break;
                 }
             }
@@ -518,18 +537,18 @@ public class VideoDownloadManager {
     }
 
     private void handleOnDownloadPause(VideoTaskItem taskItem, IDownloadListener listener) {
-        removeDownloadQueue(taskItem);
         listener.onDownloadPause(taskItem);
+        removeDownloadQueue(taskItem);
     }
 
     private void handleOnDownloadError(VideoTaskItem taskItem, IDownloadListener listener) {
-        removeDownloadQueue(taskItem);
         listener.onDownloadError(taskItem);
+        removeDownloadQueue(taskItem);
     }
 
     private void handleOnDownloadSuccess(VideoTaskItem taskItem, IDownloadListener listener) {
-        removeDownloadQueue(taskItem);
         listener.onDownloadSuccess(taskItem);
+        removeDownloadQueue(taskItem);
         markDownloadFinishEvent(taskItem);
     }
 

@@ -117,7 +117,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 @Override
                 public void run() {
                     try {
-                        LogUtils.w(TAG, "index="+ts.getIndexName() + ", totalTs="+mTotalTs);
                         downloadTsTask(ts, tsFile, tsName);
                     } catch (Exception e) {
                         LogUtils.w(TAG,"M3U8TsDownloadThread download failed, exception=" +
@@ -143,7 +142,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             ts.setName(tsName);
             ts.setTsSize(tsFile.length());
             mCurTs++;
-            LogUtils.w(TAG, "## CurTs = " + mCurTs);
             notifyDownloadProgress();
         }
     }
@@ -228,29 +226,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadError(Exception e) {
-        if (e instanceof InterruptedIOException) {
-            if (e instanceof SocketTimeoutException) {
-                LogUtils.w(TAG,"M3U8VideoDownloadTask notifyFailed: " + e);
-                if (mDownloadExecutor != null && !mDownloadExecutor.isShutdown()) {
-                    mDownloadExecutor.shutdownNow();
-                }
-                resumeDownload();
-                return;
-            }
-            pauseDownload();
-            return;
-        } else if (e instanceof MalformedURLException) {
-            String parsedString = "no protocol: ";
-            if (e.toString().contains(parsedString)) {
-                String fileName = e.toString().substring(
-                        e.toString().indexOf(parsedString) + parsedString.length());
-                LogUtils.w(TAG,fileName + " not existed.");
-            }
-            return;
-        }
-        if (mDownloadTaskListener != null) {
-            mDownloadTaskListener.onTaskFailed(e);
-        }
+        notifyOnTaskFailed(e);
     }
 
     public boolean downloadFile(String url, File file) throws Exception {

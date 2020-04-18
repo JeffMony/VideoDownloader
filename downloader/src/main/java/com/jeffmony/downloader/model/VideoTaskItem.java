@@ -1,7 +1,5 @@
 package com.jeffmony.downloader.model;
 
-import androidx.annotation.Nullable;
-
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.utils.Utility;
 
@@ -28,6 +26,7 @@ public class VideoTaskItem implements Cloneable {
     private long mLastUpdateTime;        //上一次更新数据库的时间
     private String mFileName;            //文件名
     private String mFilePath;            //文件完整路径(包括文件名)
+    private boolean mPaused;
 
     public VideoTaskItem(String url) { mUrl = url; }
 
@@ -149,12 +148,22 @@ public class VideoTaskItem implements Cloneable {
 
     public String getFilePath() { return mFilePath;}
 
+    public void setPaused(boolean paused) { mPaused = paused; }
+
+    public boolean isPaused() { return mPaused; }
+
     public boolean isRunningTask() {
         return mTaskState == VideoTaskState.DOWNLOADING;
     }
 
     public boolean isPendingTask() {
         return mTaskState == VideoTaskState.PENDING;
+    }
+
+    public boolean isErrorState() { return mTaskState == VideoTaskState.ERROR; }
+
+    public boolean isSuccessState() {
+        return mTaskState == VideoTaskState.SUCCESS;
     }
 
     public boolean isInterruptTask() {

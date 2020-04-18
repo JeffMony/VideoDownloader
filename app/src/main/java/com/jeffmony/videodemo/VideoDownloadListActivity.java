@@ -110,7 +110,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         public void onDownloadProgress(VideoTaskItem item) {
             long currentTimeStamp = System.currentTimeMillis();
             if (currentTimeStamp - mLastProgressTimeStamp > 1000) {
-                LogUtils.e(TAG, "onDownloadProgress: " + item.getPercentString() + ", curTs=" + item.getCurTs() + ", totalTs=" + item.getTotalTs());
+                LogUtils.w(TAG, "onDownloadProgress: " + item.getPercentString() + ", curTs=" + item.getCurTs() + ", totalTs=" + item.getTotalTs());
                 notifyChanged(item);
                 mLastProgressTimeStamp = currentTimeStamp;
             }

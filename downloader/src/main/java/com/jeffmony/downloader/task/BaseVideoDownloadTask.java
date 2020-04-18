@@ -106,16 +106,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                         notifyDownloadProgress();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    LogUtils.w(TAG,"BaseVideo Download file failed, exception: " + e.getStackTrace());
-
-                    // InterruptedIOException is just interrupted by external operation.
-                    if (e instanceof InterruptedIOException) {
-                        return;
-                    }
-
                     notifyDownloadError(e);
-                    return;
                 } finally {
                     try {
                         if (inputStream != null) {
@@ -168,9 +159,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadError(Exception e) {
-        if (mDownloadTaskListener != null) {
-            mDownloadTaskListener.onTaskFailed(e);
-        }
+        notifyOnTaskFailed(e);
     }
 
     private void notifyDownloadFinish() {

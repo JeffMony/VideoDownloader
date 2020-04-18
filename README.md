@@ -4,6 +4,8 @@
 > * 下载HLS，即M3U8视频
 > * M3U8 视频下载完成，会生成一个本地的local.m3u8文件
 > * 视频下载完成，可以点击播放视频文件
+> * 视频下载数据库记录视频下载信息
+> * 增加视频下载队列
 
 #### 版本更新
 ##### 1.0.0
@@ -29,8 +31,8 @@ if (!file.exists()) {
 VideoDownloadConfig config = new VideoDownloadManager.Build(this)
     .setCacheRoot(file)
     .setUrlRedirect(true)
-    .setTimeOut(VideoDownloadManager.READ_TIMEOUT, VideoDownloadManager.CONN_TIMEOUT)
-    .setConcurrentCount(VideoDownloadManager.CONCURRENT)
+    .setTimeOut(DownloadConstants.READ_TIMEOUT, DownloadConstants.CONN_TIMEOUT)
+    .setConcurrentCount(DownloadConstants.CONCURRENT)
     .setIgnoreCertErrors(true)
     .buildConfig();
 VideoDownloadManager.getInstance().initConfig(config);
@@ -71,16 +73,32 @@ private DownloadListener mListener = new DownloadListener() {
 ```
 VideoTaskItem中信息介绍
 ```
-private String mUrl;            //下载视频的url
-private int mTaskState;         //当前任务的状态
-private String mMimeType;       // 视频url的mime type
-private int mErrorCode;         //当前任务下载错误码
-private int mVideoType;         //当前文件类型
-private M3U8 mM3U8;             //M3U8结构,如果非M3U8,则为null
-private float mSpeed;           //当前下载速度, getSpeedString 函数可以将速度格式化
-private float mPercent;         //当前下载百分比, 0 ~ 100,是浮点数
-private long mDownloadSize;     //已下载大小, getDownloadSizeString 函数可以将大小格式化
-private long mTotalSize;        //文件总大小, M3U8文件无法准确获知
+public class VideoTaskItem implements Cloneable {
+
+    private String mUrl;                 //下载视频的url
+    private long mDownloadCreateTime;    //下载创建的时间
+    private int mTaskState;              //当前任务的状态
+    private String mMimeType;            // 视频url的mime type
+    private String mFinalUrl;            //30x跳转之后的url
+    private int mErrorCode;              //当前任务下载错误码
+    private int mVideoType;              //当前文件类型
+    private M3U8 mM3U8;                  //M3U8结构,如果非M3U8,则为null
+    private int mTotalTs;                //当前M3U8的总分片
+    private int mCurTs;                  //当前M3U8已缓存的分片
+    private float mSpeed;                //当前下载速度, getSpeedString 函数可以将速度格式化
+    private float mPercent;              //当前下载百分比, 0 ~ 100,是浮点数
+    private long mDownloadSize;          //已下载大小, getDownloadSizeString 函数可以将大小格式化
+    private long mTotalSize;             //文件总大小, M3U8文件无法准确获知
+    private String mFileHash;            //文件名的md5
+    private String mSaveDir;             //保存视频文件的文件目录名
+    private boolean mIsCompleted;        //是否下载完成
+    private boolean mIsInDatabase;       //是否存到数据库中
+    private long mLastUpdateTime;        //上一次更新数据库的时间
+    private String mFileName;            //文件名
+    private String mFilePath;            //文件完整路径(包括文件名)
+    private boolean mPaused;
+
+}
 ```
 
 VideoTaskState下载状态信息介绍
@@ -116,7 +134,7 @@ VideoDownloadManager.getInstance().deleteVideoTask(String videoUrl, boolean shou
 ```
 
 ##### 功能示意
-![](./files/test1.jpg)![](./files/test2.jpg)
+![](./files/test1.jpg)![](./files/test2.jpg)![](./files/test3.jpg)
 
 欢迎关注我的公众号JeffMony，我会持续为你带来音视频---算法---Android---python 方面的知识分享<br>
 ![](./files/JeffMony.jpg)
