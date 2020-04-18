@@ -93,6 +93,7 @@ public abstract class VideoDownloadTask {
         }
         if (mDownloadTaskListener != null) {
             mDownloadTaskListener.onTaskFailed(e);
+            cancelTimer();
         }
     }
 

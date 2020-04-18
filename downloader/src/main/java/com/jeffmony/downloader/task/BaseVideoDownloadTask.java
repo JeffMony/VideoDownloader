@@ -164,6 +164,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     private void notifyDownloadFinish() {
         if (mDownloadTaskListener != null) {
             mDownloadTaskListener.onTaskFinished(mTotalLength);
+            cancelTimer();
         }
     }
 

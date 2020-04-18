@@ -173,6 +173,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 mPercent = 100.0f;
                 mTotalSize = mCurrentCachedSize;
                 mDownloadTaskListener.onTaskFinished(mTotalSize);
+                cancelTimer();
                 return;
             }
             if (mCurTs >= mTotalTs - 1) {
@@ -203,6 +204,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 mDownloadTaskListener.onTaskProgress(100.0f,
                         mCurrentCachedSize, mCurrentCachedSize, mM3U8);
                 mDownloadTaskListener.onTaskFinished(mTotalSize);
+                cancelTimer();
                 try {
                     createLocalM3U8File();
                 } catch (Exception e) {
@@ -221,6 +223,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         if (mDownloadTaskListener != null) {
             if (mTaskItem.isCompleted()) {
                 mDownloadTaskListener.onTaskFinished(size);
+                cancelTimer();
             }
         }
     }
