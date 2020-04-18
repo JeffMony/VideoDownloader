@@ -10,12 +10,10 @@ import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
-import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -38,7 +36,8 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                                  VideoTaskItem taskItem,
                                  HashMap<String, String> headers) {
         super(config, taskItem, headers);
-        this.mTotalLength = taskItem.getTotalSize();
+        mCurrentCachedSize = taskItem.getDownloadSize();
+        mTotalLength = taskItem.getTotalSize();
     }
 
     @Override

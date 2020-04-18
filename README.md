@@ -8,7 +8,7 @@
 > * 增加视频下载队列
 
 #### 版本更新
-##### 1.0.0
+##### 2.0.0
 ```
 allprojects {
     repositories {
@@ -17,7 +17,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.JeffMony:VideoDownloader:1.0.0'
+    implementation 'com.github.JeffMony:VideoDownloader:2.0.0'
 }
 ```
 
