@@ -7,6 +7,9 @@ import com.jeffmony.downloader.utils.LogUtils;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Custom Download Queue.
+ */
 public class VideoDownloadQueue {
 
     private static final String TAG = "VideoDownloadQueue";
@@ -22,9 +25,7 @@ public class VideoDownloadQueue {
     }
 
     //put it into queue
-    public void offer(VideoTaskItem item) {
-        mQueue.add(item);
-    }
+    public void offer(VideoTaskItem taskItem) { mQueue.add(taskItem); }
 
     //Remove Queue head item,
     //Return Next Queue head.
@@ -53,22 +54,24 @@ public class VideoDownloadQueue {
         return null;
     }
 
-    public boolean remove(VideoTaskItem item) {
-        if (contains(item)) {
-            return mQueue.remove(item);
+    public boolean remove(VideoTaskItem taskItem) {
+        if (contains(taskItem)) {
+            return mQueue.remove(taskItem);
         }
         return false;
     }
 
-    public boolean contains(VideoTaskItem item) {
-        return mQueue.contains(item);
+    public boolean contains(VideoTaskItem taskItem) {
+        return mQueue.contains(taskItem);
     }
 
     public VideoTaskItem getTaskItem(String url) {
         try {
             for (int index = 0; index < mQueue.size(); index++) {
-                if (mQueue.get(index).getUrl().equals(url)) {
-                    return mQueue.get(index);
+                VideoTaskItem taskItem = mQueue.get(index);
+                if (taskItem != null && taskItem.getUrl() != null &&
+                        taskItem.getUrl().equals(url)) {
+                    return taskItem;
                 }
             }
         } catch (Exception e) {
@@ -85,8 +88,10 @@ public class VideoDownloadQueue {
         return mQueue.size();
     }
 
-    public boolean isHead(VideoTaskItem item) {
-        return item.equals(peek());
+    public boolean isHead(VideoTaskItem taskItem) {
+        if (taskItem == null)
+            return false;
+        return taskItem.equals(peek());
     }
 
     public int getDownloadingCount() {
@@ -103,25 +108,26 @@ public class VideoDownloadQueue {
         return count;
     }
 
-    public boolean isTaskPending(VideoTaskItem item) {
-        int taskState = item.getTaskState();
-        return taskState == VideoTaskState.PENDING;
-    }
-
-    public boolean isTaskRunnig(VideoTaskItem item) {
-        int taskState = item.getTaskState();
-        return taskState == VideoTaskState.PREPARE
-                || taskState == VideoTaskState.START
-                || taskState == VideoTaskState.DOWNLOADING
-                || taskState == VideoTaskState.PROXYREADY;
+    public int getPendingCount() {
+        int count = 0;
+        try {
+            for (int index = 0; index < mQueue.size(); index++) {
+                if (isTaskPending(mQueue.get(index))) {
+                    count++;
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.w(TAG,"DownloadQueue getDownloadingCount failed.");
+        }
+        return count;
     }
 
     public VideoTaskItem peekPendingTask() {
         try {
             for (int index = 0; index < mQueue.size(); index++) {
-                VideoTaskItem item = mQueue.get(index);
-                if (isTaskPending(item)) {
-                    return item;
+                VideoTaskItem taskItem = mQueue.get(index);
+                if (isTaskPending(taskItem)) {
+                    return taskItem;
                 }
             }
         } catch (Exception e) {
@@ -130,4 +136,19 @@ public class VideoDownloadQueue {
         return null;
     }
 
+    public boolean isTaskPending(VideoTaskItem taskItem) {
+        if (taskItem == null)
+            return false;
+        int taskState = taskItem.getTaskState();
+        return taskState == VideoTaskState.PENDING ||
+                taskState == VideoTaskState.PREPARE;
+    }
+
+    public boolean isTaskRunnig(VideoTaskItem taskItem) {
+        if (taskItem == null)
+            return false;
+        int taskState = taskItem.getTaskState();
+        return taskState == VideoTaskState.START ||
+                taskState == VideoTaskState.DOWNLOADING;
+    }
 }

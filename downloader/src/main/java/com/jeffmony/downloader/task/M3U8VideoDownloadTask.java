@@ -10,7 +10,6 @@ import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
-import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -67,12 +66,30 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         taskItem.setCurTs(mCurTs);
     }
 
+    private void initM3U8Ts() {
+        long tempCurrentCachedSize = 0;
+        int tempCurTs = 0;
+        for (M3U8Ts ts : mTsList) {
+            File tempTsFile = new File(mSaveDir, ts.getIndexName());
+            if (tempTsFile.exists() && tempTsFile.length() > 0) {
+                ts.setTsSize(tempTsFile.length());
+                tempCurTs++;
+            } else {
+                break;
+            }
+        }
+        mCurTs = tempCurTs;
+        mCurrentCachedSize = tempCurrentCachedSize;
+    }
+
+
     @Override
     public void startDownload(IDownloadTaskListener listener) {
         mDownloadTaskListener = listener;
         if (listener != null) {
             listener.onTaskStart(mTaskItem.getUrl());
         }
+        initM3U8Ts();
         startDownload(mCurTs);
     }
 
@@ -133,6 +150,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     @Override
     public void resumeDownload() {
+        initM3U8Ts();
         startDownload(mCurTs);
     }
 
@@ -146,10 +164,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private void notifyDownloadProgress() {
         if (mDownloadTaskListener != null) {
-            mCurrentCachedSize = 0;
-            for (M3U8Ts ts : mTsList) {
-                mCurrentCachedSize += ts.getTsSize();
-            }
+            initM3U8Ts();
             if (mCurrentCachedSize == 0) {
                 mCurrentCachedSize = VideoDownloadUtils.countTotalSize(mSaveDir);
             }

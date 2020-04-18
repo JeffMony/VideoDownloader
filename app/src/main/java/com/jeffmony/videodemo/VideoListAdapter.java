@@ -35,7 +35,7 @@ public class VideoListAdapter extends ArrayAdapter<VideoTaskItem> {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, PlayerActivity.class);
-                intent.putExtra("videoUrl", item.getLocalUrl());
+                intent.putExtra("videoUrl", item.getFilePath());
                 mContext.startActivity(intent);
             }
         });

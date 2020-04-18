@@ -10,6 +10,8 @@
         android:textColor="@color/black"
         android:layout_margin="5dp"
         android:id="@+id/url_text"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

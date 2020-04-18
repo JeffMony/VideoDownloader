@@ -86,6 +86,8 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_LENGTH, item.getTotalSize());
             values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getCurTs());
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getTotalTs());
+            values.put(VideoDownloadSQLiteHelper.Columns.FILE_NAME, item.getFileName());
+            values.put(VideoDownloadSQLiteHelper.Columns.FILE_PATH, item.getFilePath());
             String whereClause = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] whereArgs = {item.getUrl()};
             db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values,
@@ -192,6 +194,10 @@ public class VideoDownloadDatabaseHelper {
                             VideoDownloadSQLiteHelper.Columns.CACHED_TS)));
                     item.setTotalTs(cursor.getInt(cursor.getColumnIndex(
                             VideoDownloadSQLiteHelper.Columns.TOTAL_TS)));
+                    item.setFileName(cursor.getString(cursor.getColumnIndex(
+                            VideoDownloadSQLiteHelper.Columns.FILE_NAME)));
+                    item.setFilePath(cursor.getString(cursor.getColumnIndex(
+                            VideoDownloadSQLiteHelper.Columns.FILE_PATH)));
                     if (item.isRunningTask() && Math.abs(item.getSpeed()) < 0.0001f) {
                         item.setTaskState(VideoTaskState.PAUSE);
                     }

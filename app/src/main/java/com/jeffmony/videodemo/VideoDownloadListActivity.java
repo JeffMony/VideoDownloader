@@ -26,7 +26,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     private ListView mDownloadListView;
 
     private VideoListAdapter mAdapter;
-    private VideoTaskItem[] items = new VideoTaskItem[5];
+    private VideoTaskItem[] items = new VideoTaskItem[6];
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,12 +47,14 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         VideoTaskItem item3 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/MbqulRmS8sjQGJG9/playlist.m3u8");
         VideoTaskItem item4 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/Pejd7TL3wdLZVbxO/playlist.m3u8");
         VideoTaskItem item5 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/13/AWlDA5ORHHzLX81U/playlist.m3u8");
+        VideoTaskItem item6 = new VideoTaskItem("https://hls.aoxtv.com/v3.szjal.cn/20200114/dtOHlPFE/index.m3u8");
 
         items[0] = item1;
         items[1] = item2;
         items[2] = item3;
         items[3] = item4;
         items[4] = item5;
+        items[5] = item6;
 
         mAdapter = new VideoListAdapter(this, R.layout.download_item, items);
         mDownloadListView.setAdapter(mAdapter);

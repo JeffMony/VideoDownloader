@@ -4,11 +4,7 @@ import android.content.Context;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,10 +14,8 @@ public class VideoDownloadUtils {
     private static final String TAG = "VideoDownloadUtils";
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     public static final int UPDATE_INTERVAL = 1000;
-    public static final String INFO_FILE = "video.info";
     public static final String VIDEO_SUFFIX = ".video";
     public static final String LOCAL_M3U8 = "local.m3u8";
-    private static Object sFileLock = new Object();
 
     public static File getVideoCacheDir(Context context) {
         return new File(context.getExternalCacheDir(), ".video-cache");
