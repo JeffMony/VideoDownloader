@@ -132,6 +132,10 @@ VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
 ```
 VideoDownloadManager.getInstance().deleteVideoTask(String videoUrl, boolean shouldDeleteSourceFile)
 ```
+##### 7.全部暂停
+```
+VideoDownloadManager.getInstance().pauseDownloadTask(List<String> urlList)
+```
 
 ##### 功能示意
 ![](./files/test1.jpg)![](./files/test2.jpg)![](./files/test3.jpg)

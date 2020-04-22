@@ -236,6 +236,7 @@ public class VideoTaskItem implements Cloneable {
                 ",Percent="+mPercent+
                 ",DownloadSize="+mDownloadSize+
                 ",State="+mTaskState+
+                ",FilePath="+mFileName+
                 ",LocalFile="+mFilePath+"]";
     }
 }

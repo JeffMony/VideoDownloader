@@ -340,6 +340,12 @@ public class VideoDownloadManager {
         }
     }
 
+    public void pauseDownloadTask(List<String> urlList) {
+        for (String url : urlList) {
+            pauseDownloadTask(url);
+        }
+    }
+
     public void pauseDownloadTask(String videoUrl) {
         if (mVideoItemTaskMap.containsKey(videoUrl)) {
             VideoTaskItem taskItem = mVideoItemTaskMap.get(videoUrl);

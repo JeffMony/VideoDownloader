@@ -139,7 +139,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
 
         @Override
         public void onDownloadSuccess(VideoTaskItem item) {
-            LogUtils.w(TAG,"onDownloadSuccess: " + item.getUrl());
+            LogUtils.w(TAG,"onDownloadSuccess: " + item);
             notifyChanged(item);
         }
     };
