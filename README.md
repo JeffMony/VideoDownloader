@@ -116,23 +116,33 @@ public class VideoTaskState {
     public static final int ENOSPC = 8;//空间不足
 }
 ```
-##### 3.启动下载
+##### 3.获取当前的下载任务
+```
+VideoDownloadManager.getInstance().fetchDownloadItems(IDownloadInfosCallback callback)
+
+public interface IDownloadInfosCallback {
+    void onDownloadInfos(List<VideoTaskItem> items);
+}
+```
+接口返回的List<VideoTaskItem>就是当前正在下载的任务
+
+##### 4.启动下载
 ```
 VideoDownloadManager.getInstance().startDownload(item);
 ```
-##### 4.暂停下载
+##### 5.暂停下载
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
 ```
-##### 5.恢复下载
+##### 6.恢复下载
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
 ```
-##### 6.删除下载任务
+##### 7.删除下载任务
 ```
 VideoDownloadManager.getInstance().deleteVideoTask(String videoUrl, boolean shouldDeleteSourceFile)
 ```
-##### 7.全部暂停
+##### 8.全部暂停
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(List<String> urlList)
 ```
