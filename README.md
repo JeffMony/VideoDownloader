@@ -8,7 +8,11 @@
 > * 增加视频下载队列
 
 #### 版本更新
-##### 2.0.0
+##### 3.0.0
+> * 解决部分M3U8视频下载失败的问题
+> * 更新playersdk版本
+> * 优化fileName和filePath问题
+
 ```
 allprojects {
     repositories {
@@ -17,7 +21,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.JeffMony:VideoDownloader:2.0.0'
+    implementation 'com.github.JeffMony:VideoDownloader:3.0.0'
 }
 ```
 
