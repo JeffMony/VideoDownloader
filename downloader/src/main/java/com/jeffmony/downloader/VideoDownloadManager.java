@@ -80,6 +80,7 @@ public class VideoDownloadManager {
     public void initConfig(VideoDownloadConfig config) {
         mConfig = config;
         mVideoDatabaseHelper = new VideoDownloadDatabaseHelper(mConfig.getContext());
+        VideoInfoParserManager.getInstance().initConfig(config);
         HandlerThread stateThread = new HandlerThread("Video_download_state_thread");
         stateThread.start();
         mVideoDownloadHandler = new VideoDownloadHandler(stateThread.getLooper());
@@ -204,7 +205,7 @@ public class VideoDownloadManager {
                 taskItem.setTaskState(VideoTaskState.ERROR);
                 mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
             }
-        }, mConfig, headers, mConfig.shouldRedirect());
+        }, headers, mConfig.shouldRedirect());
     }
 
     private void startM3U8VideoDownloadTask(final VideoTaskItem taskItem, M3U8 m3u8, HashMap<String, String> headers) {

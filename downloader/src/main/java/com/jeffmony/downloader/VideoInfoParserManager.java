@@ -25,7 +25,6 @@ public class VideoInfoParserManager {
 
     private static VideoInfoParserManager sInstance;
     private VideoDownloadConfig mConfig;
-    private IVideoInfoListener mListener;
 
     public static VideoInfoParserManager getInstance() {
         if (sInstance == null) {
@@ -38,28 +37,29 @@ public class VideoInfoParserManager {
         return sInstance;
     }
 
-    public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener,
-                                            VideoDownloadConfig config, final HashMap<String, String> headers,
-                                            final boolean shouldRedirect) {
+    public void initConfig(VideoDownloadConfig config) {
         mConfig = config;
-        mListener = listener;
+    }
 
+    public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener,
+                                            final HashMap<String, String> headers,
+                                            final boolean shouldRedirect) {
         WorkerThreadHandler.submitRunnableTask(new Runnable() {
             @Override
             public void run() {
-                doParseVideoInfoTask(taskItem, headers, shouldRedirect);
+                doParseVideoInfoTask(taskItem, listener, headers, shouldRedirect);
             }
         });
     }
 
-    private void doParseVideoInfoTask(VideoTaskItem taskItem, HashMap<String, String> headers, boolean shouldRedirect) {
+    private void doParseVideoInfoTask(VideoTaskItem taskItem, IVideoInfoListener listener, HashMap<String, String> headers, boolean shouldRedirect) {
         try {
             if (taskItem == null) {
-                mListener.onBaseVideoInfoFailed(new Throwable("Video info is null."));
+                listener.onBaseVideoInfoFailed(new Throwable("Video info is null."));
                 return;
             }
             if (!HttpUtils.matchHttpSchema(taskItem.getUrl())) {
-                mListener.onBaseVideoInfoFailed(
+                listener.onBaseVideoInfoFailed(
                         new Throwable("Can parse the request resource's schema."));
                 return;
             }
@@ -71,10 +71,10 @@ public class VideoInfoParserManager {
                 finalUrl =
                         HttpUtils.getFinalUrl(mConfig, taskItem.getUrl(), null, headers);
                 if (TextUtils.isEmpty(finalUrl)) {
-                    mListener.onBaseVideoInfoFailed(new Throwable("FinalUrl is null."));
+                    listener.onBaseVideoInfoFailed(new Throwable("FinalUrl is null."));
                     return;
                 }
-                mListener.onFinalUrl(finalUrl);
+                listener.onFinalUrl(finalUrl);
             }
             taskItem.setFinalUrl(finalUrl);
             Uri uri = Uri.parse(finalUrl);
@@ -85,32 +85,32 @@ public class VideoInfoParserManager {
                 fileName = fileName.toLowerCase();
                 if (fileName.endsWith(".m3u8")) {
                     taskItem.setMimeType(Video.Mime.M3U8);
-                    parseM3U8Info(taskItem, null, headers);
+                    parseM3U8Info(taskItem, listener, null, headers);
                     return;
                 } else if (fileName.endsWith(".mp4")) {
                     taskItem.setMimeType(Video.Mime.MP4);
                     taskItem.setVideoType(Video.Type.MP4_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".mov")) {
                     taskItem.setMimeType(Video.Mime.MOV);
                     taskItem.setVideoType(Video.Type.QUICKTIME_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".webm")) {
                     taskItem.setMimeType(Video.Mime.WEBM);
                     taskItem.setVideoType(Video.Type.WEBM_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".3gp")) {
                     taskItem.setMimeType(Video.Mime.GP3);
                     taskItem.setVideoType(Video.Type.GP3_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 } else if (fileName.endsWith(".mkv")) {
                     taskItem.setMimeType(Video.Mime.MKV);
                     taskItem.setVideoType(Video.Type.MKV_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                     return;
                 }
             }
@@ -122,34 +122,34 @@ public class VideoInfoParserManager {
                 taskItem.setMimeType(mimeType);
                 if (mimeType.contains(Video.Mime.MIME_TYPE_MP4)) {
                     taskItem.setVideoType(Video.Type.MP4_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                 } else if (isM3U8Mimetype(mimeType)) {
-                    parseM3U8Info(taskItem, null, headers);
+                    parseM3U8Info(taskItem, listener, null, headers);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_WEBM)) {
                     taskItem.setVideoType(Video.Type.WEBM_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_QUICKTIME)) {
                     taskItem.setVideoType(Video.Type.QUICKTIME_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_3GP)) {
                     taskItem.setVideoType(Video.Type.GP3_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_MKV)) {
                     taskItem.setVideoType(Video.Type.MKV_TYPE);
-                    mListener.onBaseVideoInfoSuccess(taskItem);
+                    listener.onBaseVideoInfoSuccess(taskItem);
                 } else {
-                    mListener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NOT_FOUND_STRING));
+                    listener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NOT_FOUND_STRING));
                 }
             } else {
-                mListener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NULL_ERROR_STRING));
+                listener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.MIMETYPE_NULL_ERROR_STRING));
             }
 
         } catch (Exception e) {
-            mListener.onBaseVideoInfoFailed(e);
+            listener.onBaseVideoInfoFailed(e);
         }
     }
 
-    private void parseM3U8Info(VideoTaskItem taskItem, Proxy proxy,
+    private void parseM3U8Info(VideoTaskItem taskItem, IVideoInfoListener listener, Proxy proxy,
                                HashMap<String, String> headers) {
         try {
             M3U8 m3u8 =
@@ -165,13 +165,13 @@ public class VideoInfoParserManager {
 
                 taskItem.setSaveDir(dir.getAbsolutePath());
                 taskItem.setVideoType(Video.Type.HLS_TYPE);
-                mListener.onM3U8InfoSuccess(taskItem, m3u8);
+                listener.onM3U8InfoSuccess(taskItem, m3u8);
             } else {
                 taskItem.setVideoType(Video.Type.HLS_LIVE_TYPE);
-                mListener.onLiveM3U8Callback(taskItem);
+                listener.onLiveM3U8Callback(taskItem);
             }
         } catch (Exception e) {
-            mListener.onM3U8InfoFailed(e);
+            listener.onM3U8InfoFailed(e);
         }
     }
 
