@@ -205,9 +205,14 @@ public class M3U8Utils {
             } else {
                 if (line.startsWith("/")) {
                     int tempIndex = line.indexOf('/', 1);
-                    String tempUrl = line.substring(0, tempIndex);
-                    tempIndex = videoUrl.indexOf(tempUrl);
-                    tempUrl = videoUrl.substring(0, tempIndex) + line;
+                    String tempUrl;
+                    if (tempIndex == -1) {
+                        tempUrl = baseUriPath + line.substring(1);
+                    } else {
+                        tempUrl = line.substring(0, tempIndex);
+                        tempIndex = videoUrl.indexOf(tempUrl);
+                        tempUrl = videoUrl.substring(0, tempIndex) + line;
+                    }
                     ts.initTsAttributes(tempUrl, tsDuration, tsIndex,
                             hasDiscontinuity, hasKey);
                 } else {
