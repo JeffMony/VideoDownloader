@@ -171,6 +171,7 @@ public class VideoInfoParserManager {
                 listener.onLiveM3U8Callback(taskItem);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             listener.onM3U8InfoFailed(e);
         }
     }
@@ -188,6 +189,7 @@ public class VideoInfoParserManager {
                     remoteM3U8File);
             callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onM3U8FileParseFailed(taskItem, e);
         }
     }

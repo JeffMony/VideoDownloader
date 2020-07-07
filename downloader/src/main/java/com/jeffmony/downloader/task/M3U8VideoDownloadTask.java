@@ -232,7 +232,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         notifyOnTaskFailed(e);
     }
 
-    public boolean downloadFile(String url, File file) throws Exception {
+    public void downloadFile(String url, File file) throws Exception {
         HttpURLConnection connection = null;
         InputStream inputStream = null;
         try {
@@ -240,9 +240,8 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpUtils.RESPONSE_OK) {
                 inputStream = connection.getInputStream();
-                return saveFile(inputStream, file);
+                saveFile(inputStream, file);
             }
-            return false;
         } catch (Exception e) {
             throw e;
         } finally {
@@ -285,7 +284,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         return connection;
     }
 
-    private boolean saveFile(InputStream inputStream, File file) {
+    private void saveFile(InputStream inputStream, File file) throws IOException {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
@@ -294,14 +293,13 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             while ((len = inputStream.read(buf)) != -1) {
                 fos.write(buf, 0, len);
             }
-            return true;
         } catch (IOException e) {
             LogUtils.w(TAG,file.getAbsolutePath() +
                     " saveFile failed, exception=" + e);
             if (file.exists()) {
                 file.delete();
             }
-            return false;
+            throw e;
         } finally {
             VideoDownloadUtils.close(inputStream);
             VideoDownloadUtils.close(fos);

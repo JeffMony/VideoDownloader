@@ -3,7 +3,6 @@ package com.jeffmony.downloader.task;
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
-import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 
 import java.io.File;
@@ -92,6 +91,7 @@ public abstract class VideoDownloadTask {
             return;
         }
         if (mDownloadTaskListener != null) {
+            mDownloadExecutor.shutdownNow();
             mDownloadTaskListener.onTaskFailed(e);
             cancelTimer();
         }

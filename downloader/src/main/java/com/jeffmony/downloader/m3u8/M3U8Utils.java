@@ -24,6 +24,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class M3U8Utils {
 
+    private static final String TAG = "M3U8Utils";
+
     // base hls tag:
 
     public static final String PLAYLIST_HEADER = "#EXTM3U";    // must
@@ -120,6 +122,7 @@ public class M3U8Utils {
         String encryptionKeyUri = null;
         String line = null;
         while ((line = bufferedReader.readLine()) != null) {
+            LogUtils.i(TAG, "line = " + line);
             if (line.startsWith(TAG_PREFIX)) {
                 if (line.startsWith(TAG_MEDIA_DURATION)) {
                     String ret = parseStringAttr(line, REGEX_MEDIA_DURATION);
@@ -185,9 +188,18 @@ public class M3U8Utils {
             if (line.endsWith(".m3u8")) {
                 if (line.startsWith("/")) {
                     int tempIndex = line.indexOf('/', 1);
-                    String tempUrl = line.substring(0, tempIndex);
-                    tempIndex = videoUrl.indexOf(tempUrl);
-                    tempUrl = videoUrl.substring(0, tempIndex) + line;
+                    String tempUrl;
+                    if (tempIndex == -1) {
+                        tempUrl = baseUriPath + line.substring(1);
+                    } else {
+                        tempUrl = line.substring(0, tempIndex);
+                        tempIndex = videoUrl.indexOf(tempUrl);
+                        if (tempIndex == -1) {
+                            tempUrl = hostUrl + line.substring(1);
+                        } else {
+                            tempUrl = videoUrl.substring(0, tempIndex) + line;
+                        }
+                    }
                     return parseM3U8Info(config, tempUrl, isLocalFile, m3u8File);
                 }
                 if (line.startsWith("http") || line.startsWith("https")) {
@@ -211,7 +223,11 @@ public class M3U8Utils {
                     } else {
                         tempUrl = line.substring(0, tempIndex);
                         tempIndex = videoUrl.indexOf(tempUrl);
-                        tempUrl = videoUrl.substring(0, tempIndex) + line;
+                        if (tempIndex == -1) {
+                            tempUrl = hostUrl + line.substring(1);
+                        } else {
+                            tempUrl = videoUrl.substring(0, tempIndex) + line;
+                        }
                     }
                     ts.initTsAttributes(tempUrl, tsDuration, tsIndex,
                             hasDiscontinuity, hasKey);

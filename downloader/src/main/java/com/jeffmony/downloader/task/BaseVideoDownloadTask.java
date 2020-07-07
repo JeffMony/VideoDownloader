@@ -102,9 +102,12 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                             randomAccessFile.write(buf, 0, readLength);
                             mCurrentCachedSize += readLength;
                         }
+                        LogUtils.i(TAG, "mCurrentCachedSize="+mCurrentCachedSize);
                         notifyDownloadProgress();
                     }
                 } catch (Exception e) {
+                    LogUtils.w(TAG, "FAILED, exception="+e.getMessage());
+                    e.printStackTrace();
                     notifyDownloadError(e);
                 } finally {
                     try {
@@ -171,7 +174,11 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     private InputStream getResponseBody(String url, long start, long end)
             throws IOException {
         HttpURLConnection connection = openConnection(url);
-        connection.setRequestProperty("Range", "bytes=" + start + "-" + end);
+        if (end == mTotalLength) {
+            connection.setRequestProperty("Range", "bytes=" + start + "-");
+        } else {
+            connection.setRequestProperty("Range", "bytes=" + start + "-" + end);
+        }
         return connection.getInputStream();
     }
 
