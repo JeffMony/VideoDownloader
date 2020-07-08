@@ -185,7 +185,7 @@ public class M3U8Utils {
                 continue;
             }
             // It has '#EXT-X-STREAM-INF' tag;
-            if (line.endsWith(".m3u8")) {
+            if (line.endsWith(".m3u8") || line.contains(".m3u8")) {
                 if (line.startsWith("/")) {
                     int tempIndex = line.indexOf('/', 1);
                     String tempUrl;
