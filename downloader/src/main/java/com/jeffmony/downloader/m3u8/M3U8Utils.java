@@ -161,9 +161,19 @@ public class M3U8Utils {
                                 if (tempKeyUri != null) {
                                     if (tempKeyUri.startsWith("/")) {
                                         int tempIndex = tempKeyUri.indexOf('/', 1);
-                                        String tempUrl = tempKeyUri.substring(0, tempIndex);
-                                        tempIndex = videoUrl.indexOf(tempUrl);
-                                        tempUrl = videoUrl.substring(0, tempIndex) + tempKeyUri;
+                                        String tempUrl;
+                                        if (tempIndex == -1) {
+                                            tempUrl = baseUriPath + tempKeyUri.substring(1);
+                                        } else {
+                                            tempUrl = tempKeyUri.substring(0, tempIndex);
+                                            tempIndex = videoUrl.indexOf(tempUrl);
+                                            if (tempIndex == -1) {
+                                                tempUrl = hostUrl + tempKeyUri.substring(1);
+                                            } else {
+                                                tempUrl = videoUrl.substring(0, tempIndex) + tempKeyUri;
+                                            }
+                                        }
+
                                         encryptionKeyUri = tempUrl;
                                     } else if (tempKeyUri.startsWith("http") ||
                                             tempKeyUri.startsWith("https")) {
