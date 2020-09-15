@@ -120,7 +120,7 @@ public class M3U8Utils {
         String method = null;
         String encryptionIV = null;
         String encryptionKeyUri = null;
-        String line = null;
+        String line;
         while ((line = bufferedReader.readLine()) != null) {
             LogUtils.i(TAG, "line = " + line);
             if (line.startsWith(TAG_PREFIX)) {

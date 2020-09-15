@@ -18,7 +18,7 @@ public class VideoDownloadUtils {
     public static final String LOCAL_M3U8 = "local.m3u8";
 
     public static File getVideoCacheDir(Context context) {
-        return new File(context.getExternalCacheDir(), ".video-cache");
+        return new File(context.getExternalFilesDir("Video"), "Download");
     }
 
     public static void clearVideoCacheDir(Context context) throws IOException {
