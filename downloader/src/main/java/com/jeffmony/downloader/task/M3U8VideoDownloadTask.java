@@ -4,6 +4,7 @@ import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.m3u8.M3U8;
+import com.jeffmony.downloader.m3u8.M3U8Constants;
 import com.jeffmony.downloader.m3u8.M3U8Ts;
 import com.jeffmony.downloader.m3u8.M3U8Utils;
 import com.jeffmony.downloader.model.VideoTaskItem;
@@ -315,12 +316,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
             BufferedWriter bfw =
                     new BufferedWriter(new FileWriter(tempM3U8File, false));
-            bfw.write(M3U8Utils.PLAYLIST_HEADER + "\n");
-            bfw.write(M3U8Utils.TAG_VERSION + ":" + mM3U8.getVersion() + "\n");
-            bfw.write(M3U8Utils.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() +
+            bfw.write(M3U8Constants.PLAYLIST_HEADER + "\n");
+            bfw.write(M3U8Constants.TAG_VERSION + ":" + mM3U8.getVersion() + "\n");
+            bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() +
                     "\n");
 
-            bfw.write(M3U8Utils.TAG_TARGET_DURATION + ":" +
+            bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" +
                     mM3U8.getTargetDuration() + "\n");
 
             for (M3U8Ts m3u8Ts : mTsList) {
@@ -338,18 +339,18 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                         if (m3u8Ts.getKeyIV() != null) {
                             key += ",IV=" + m3u8Ts.getKeyIV();
                         }
-                        bfw.write(M3U8Utils.TAG_KEY + ":" + key + "\n");
+                        bfw.write(M3U8Constants.TAG_KEY + ":" + key + "\n");
                     }
                 }
                 if (m3u8Ts.hasDiscontinuity()) {
-                    bfw.write(M3U8Utils.TAG_DISCONTINUITY + "\n");
+                    bfw.write(M3U8Constants.TAG_DISCONTINUITY + "\n");
                 }
-                bfw.write(M3U8Utils.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() +
+                bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() +
                         ",\n");
                 bfw.write(mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getIndexName());
                 bfw.newLine();
             }
-            bfw.write(M3U8Utils.TAG_ENDLIST);
+            bfw.write(M3U8Constants.TAG_ENDLIST);
             bfw.flush();
             bfw.close();
 
