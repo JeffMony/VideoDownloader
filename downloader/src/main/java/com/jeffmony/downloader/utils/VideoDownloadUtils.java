@@ -16,6 +16,7 @@ public class VideoDownloadUtils {
     public static final int UPDATE_INTERVAL = 1000;
     public static final String VIDEO_SUFFIX = ".video";
     public static final String LOCAL_M3U8 = "local.m3u8";
+    public static final String MERGE_VIDEO = "merge_video.mp4";
 
     public static File getVideoCacheDir(Context context) {
         return new File(context.getExternalFilesDir("Video"), "Download");

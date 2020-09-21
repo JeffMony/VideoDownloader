@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.merge;
 
 import android.os.Bundle;
 import android.widget.ListView;
@@ -10,6 +10,8 @@ import com.jeffmony.downloader.VideoDownloadManager;
 import com.jeffmony.downloader.listener.IDownloadInfosCallback;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.LogUtils;
+import com.jeffmony.videodemo.R;
+import com.jeffmony.videodemo.merge.MergeVideoListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

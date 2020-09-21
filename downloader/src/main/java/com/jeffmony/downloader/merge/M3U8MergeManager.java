@@ -31,7 +31,6 @@ public class M3U8MergeManager {
   private static final int MSG_MERGE_PROCESSING = 2;
   private static final int MSG_MERGE_ERROR = 3;
   private static final int MSG_DELETE_FILE = 4;
-  private static final String MERGE_VIDEO = "merge_video.mp4";
   private MergeHandler mHandler;
   private Map<String, IM3U8MergeListener> mMergeListenerMap = new ConcurrentHashMap<>();
 
@@ -104,7 +103,7 @@ public class M3U8MergeManager {
   private void doMergeM3U8(VideoTaskItem taskItem) {
     String filePath = taskItem.getFilePath();
     String parentPath = filePath.substring(0, filePath.lastIndexOf("/"));
-    File outputFile = new File(parentPath, MERGE_VIDEO);
+    File outputFile = new File(parentPath, VideoDownloadUtils.MERGE_VIDEO);
     M3U8MergeInfo info = new M3U8MergeInfo(taskItem.getUrl(), taskItem.getFilePath());
     if (outputFile.exists() && outputFile.length() != 0) {
       info.setCurTs(taskItem.getTotalTs());
@@ -207,7 +206,7 @@ public class M3U8MergeManager {
     File parentFile = new File(parentPath);
     if (parentFile.exists()) {
       for (File subFile : parentFile.listFiles()) {
-        if (!subFile.getAbsolutePath().endsWith(MERGE_VIDEO)) {
+        if (!subFile.getAbsolutePath().endsWith(VideoDownloadUtils.MERGE_VIDEO)) {
           try {
             VideoDownloadUtils.delete(subFile);
           } catch (Exception e) {

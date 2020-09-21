@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.merge;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -16,6 +16,7 @@ import com.jeffmony.downloader.merge.IM3U8MergeListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.Utility;
+import com.jeffmony.videodemo.R;
 
 import java.util.List;
 
