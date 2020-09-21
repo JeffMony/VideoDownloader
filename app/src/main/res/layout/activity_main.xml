@@ -42,8 +42,8 @@
 
         <Button
             android:background="@color/colorPrimaryDark"
-            android:id="@+id/downloaded_list_btn"
-            android:text="查看已下载任务"
+            android:id="@+id/merge_download_file_btn"
+            android:text="合并M3U8文件"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:layout_width="180dp"

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/m3u8_url_txt"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:layout_weight="0.5"
+            android:textColor="@color/black"
+            android:text="大小:300MB  分片:290"
+            android:id="@+id/m3u8_info_txt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        
+        <TextView
+            android:layout_weight="1"
+            android:visibility="invisible"
+            android:textColor="@color/black"
+            android:text="0"
+            android:id="@+id/m3u8_merge_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:textSize="25sp"
+            android:textColor="@color/black"
+            android:text="合并"
+            android:id="@+id/m3u8_merge_btn"
+            android:layout_width="match_parent"
+            android:layout_height="40dp" />
+    </LinearLayout>
+
+</LinearLayout>

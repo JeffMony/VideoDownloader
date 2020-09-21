@@ -15,7 +15,6 @@ import com.jeffmony.downloader.listener.IDownloadInfosCallback;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.LogUtils;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class VideoDownloadListActivity extends AppCompatActivity implements View.OnClickListener {
