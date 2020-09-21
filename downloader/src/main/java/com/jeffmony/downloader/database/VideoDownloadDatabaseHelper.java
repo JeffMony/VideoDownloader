@@ -86,6 +86,7 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_LENGTH, item.getTotalSize());
             values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getCurTs());
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getTotalTs());
+            values.put(VideoDownloadSQLiteHelper.Columns.COMPLETED, item.isCompleted());
             values.put(VideoDownloadSQLiteHelper.Columns.FILE_NAME, item.getFileName());
             values.put(VideoDownloadSQLiteHelper.Columns.FILE_PATH, item.getFilePath());
             String whereClause = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
@@ -120,6 +121,7 @@ public class VideoDownloadDatabaseHelper {
                 values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getM3U8().getCurTsIndex());
                 values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getM3U8().getTsList().size());
             }
+            values.put(VideoDownloadSQLiteHelper.Columns.COMPLETED, item.isCompleted());
             db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null,
                     values);
             db.setTransactionSuccessful();
@@ -140,10 +142,9 @@ public class VideoDownloadDatabaseHelper {
         try {
             String selection = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] selectionArgs = {item.getUrl() + ""};
-            String limit = "10";
             cursor =
                     db.query(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null,
-                            selection, selectionArgs, null, null, null, limit);
+                            selection, selectionArgs, null, null, null, null);
             if (cursor != null && cursor.moveToFirst() && cursor.getLong(0) > 0) {
                 return true;
             } else {
@@ -168,9 +169,8 @@ public class VideoDownloadDatabaseHelper {
         List<VideoTaskItem> items = new ArrayList<>();
         Cursor cursor = null;
         try {
-            String limit = "100";
             cursor = db.query(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO,
-                    null, null, null, null, null, null, limit);
+                    null, null, null, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     String url = cursor.getString(cursor.getColumnIndex(
@@ -194,6 +194,8 @@ public class VideoDownloadDatabaseHelper {
                             VideoDownloadSQLiteHelper.Columns.CACHED_TS)));
                     item.setTotalTs(cursor.getInt(cursor.getColumnIndex(
                             VideoDownloadSQLiteHelper.Columns.TOTAL_TS)));
+                    item.setIsCompleted(cursor.getInt(cursor.getColumnIndex(
+                            VideoDownloadSQLiteHelper.Columns.COMPLETED)) == 1 ? true : false);
                     item.setFileName(cursor.getString(cursor.getColumnIndex(
                             VideoDownloadSQLiteHelper.Columns.FILE_NAME)));
                     item.setFilePath(cursor.getString(cursor.getColumnIndex(

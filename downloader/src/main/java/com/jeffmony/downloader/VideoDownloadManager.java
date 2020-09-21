@@ -290,6 +290,7 @@ public class VideoDownloadManager {
                     if (taskItem.getTaskState() != VideoTaskState.SUCCESS) {
                         taskItem.setTaskState(VideoTaskState.SUCCESS);
                         taskItem.setDownloadSize(totalSize);
+                        taskItem.setIsCompleted(true);
                         taskItem.setPercent(100f);
                         if (taskItem.isHlsType()) {
                             taskItem.setFilePath(taskItem.getSaveDir() + File.separator + VideoDownloadUtils.LOCAL_M3U8);

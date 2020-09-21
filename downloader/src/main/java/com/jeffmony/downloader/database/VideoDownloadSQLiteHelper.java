@@ -22,6 +22,7 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
         public static final String TOTAL_LENGTH = "total_length";
         public static final String CACHED_TS = "cached_ts";
         public static final String TOTAL_TS = "total_ts";
+        public static final String COMPLETED = "completed";
         public static final String FILE_NAME = "file_name";
         public static final String FILE_PATH = "file_path";
     }
@@ -55,7 +56,8 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
                 + Columns.TOTAL_LENGTH + " BIGINT, "
                 + Columns.CACHED_TS + " INTEGER, "
                 + Columns.TOTAL_TS + " INTEGER , "
-                + Columns.FILE_NAME + " TEXT, "
+                + Columns.COMPLETED + " TINYINT, "
+                + Columns.FILE_NAME + " TEXT Default 0, "
                 + Columns.FILE_PATH + " TEXT);");
     }
 }

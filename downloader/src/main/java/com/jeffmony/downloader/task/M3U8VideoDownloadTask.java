@@ -346,7 +346,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 }
                 bfw.write(M3U8Utils.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() +
                         ",\n");
-                bfw.write(m3u8Ts.getIndexName());
+                bfw.write(mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getIndexName());
                 bfw.newLine();
             }
             bfw.write(M3U8Utils.TAG_ENDLIST);
