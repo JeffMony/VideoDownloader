@@ -236,7 +236,7 @@ public class M3U8Utils {
     }
 
     public static void createRemoteM3U8(File dir, M3U8 m3u8) throws IOException {
-        File m3u8File = new File(dir, "remote.m3u8");
+        File m3u8File = new File(dir, VideoDownloadUtils.REMOTE_M3U8);
         if (m3u8File.exists()) {
             return;
         }
