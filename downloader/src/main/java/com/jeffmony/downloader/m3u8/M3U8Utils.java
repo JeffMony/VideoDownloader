@@ -37,7 +37,7 @@ public class M3U8Utils {
                                      File m3u8File) throws IOException {
         URL url = new URL(videoUrl);
         InputStreamReader inputStreamReader = null;
-        BufferedReader bufferedReader = null;
+        BufferedReader bufferedReader;
         if (isLocalFile) {
             inputStreamReader = new InputStreamReader(new FileInputStream(m3u8File));
             bufferedReader = new BufferedReader(inputStreamReader);
@@ -63,6 +63,7 @@ public class M3U8Utils {
         int sequence = 0;
         boolean hasDiscontinuity = false;
         boolean hasEndList = false;
+        boolean hasStreamInfo = false;
         boolean hasKey = false;
         String method = null;
         String encryptionIV = null;
@@ -91,6 +92,8 @@ public class M3U8Utils {
                     if (!TextUtils.isEmpty(ret)) {
                         sequence = Integer.parseInt(ret);
                     }
+                } else if (line.startsWith(M3U8Constants.TAG_STREAM_INF)) {
+                    hasStreamInfo = true;
                 } else if (line.startsWith(M3U8Constants.TAG_DISCONTINUITY)) {
                     hasDiscontinuity = true;
                 } else if (line.startsWith(M3U8Constants.TAG_ENDLIST)) {
@@ -106,28 +109,7 @@ public class M3U8Utils {
                                 // The segment is fully encrypted using an identity key.
                                 String tempKeyUri = parseStringAttr(line, M3U8Constants.REGEX_URI);
                                 if (tempKeyUri != null) {
-                                    if (tempKeyUri.startsWith("/")) {
-                                        int tempIndex = tempKeyUri.indexOf('/', 1);
-                                        String tempUrl;
-                                        if (tempIndex == -1) {
-                                            tempUrl = baseUriPath + tempKeyUri.substring(1);
-                                        } else {
-                                            tempUrl = tempKeyUri.substring(0, tempIndex);
-                                            tempIndex = videoUrl.indexOf(tempUrl);
-                                            if (tempIndex == -1) {
-                                                tempUrl = hostUrl + tempKeyUri.substring(1);
-                                            } else {
-                                                tempUrl = videoUrl.substring(0, tempIndex) + tempKeyUri;
-                                            }
-                                        }
-
-                                        encryptionKeyUri = tempUrl;
-                                    } else if (tempKeyUri.startsWith("http") ||
-                                            tempKeyUri.startsWith("https")) {
-                                        encryptionKeyUri = tempKeyUri;
-                                    } else {
-                                        encryptionKeyUri = baseUriPath + tempKeyUri;
-                                    }
+                                    encryptionKeyUri = getFinalUrl(videoUrl, tempKeyUri);
                                 }
                             } else {
                                 // Do nothing. Samples are encrypted using an identity key,
@@ -142,56 +124,16 @@ public class M3U8Utils {
                 continue;
             }
             // It has '#EXT-X-STREAM-INF' tag;
-            if (line.endsWith(".m3u8") || line.contains(".m3u8")) {
-                if (line.startsWith("/")) {
-                    int tempIndex = line.indexOf('/', 1);
-                    String tempUrl;
-                    if (tempIndex == -1) {
-                        tempUrl = baseUriPath + line.substring(1);
-                    } else {
-                        tempUrl = line.substring(0, tempIndex);
-                        tempIndex = videoUrl.indexOf(tempUrl);
-                        if (tempIndex == -1) {
-                            tempUrl = hostUrl + line.substring(1);
-                        } else {
-                            tempUrl = videoUrl.substring(0, tempIndex) + line;
-                        }
-                    }
-                    return parseM3U8Info(config, tempUrl, isLocalFile, m3u8File);
-                }
-                if (line.startsWith("http") || line.startsWith("https")) {
-                    return parseM3U8Info(config, line, isLocalFile, m3u8File);
-                }
-                return parseM3U8Info(config, baseUriPath + line, isLocalFile, m3u8File);
+            if (hasStreamInfo) {
+                return parseM3U8Info(config, getFinalUrl(videoUrl, line), isLocalFile, m3u8File);
             }
             M3U8Ts ts = new M3U8Ts();
             if (isLocalFile) {
                 ts.initTsAttributes(line, tsDuration, tsIndex, hasDiscontinuity,
                         hasKey);
-            } else if (line.startsWith("https") || line.startsWith("http")) {
-                ts.initTsAttributes(line, tsDuration, tsIndex, hasDiscontinuity,
-                        hasKey);
             } else {
-                if (line.startsWith("/")) {
-                    int tempIndex = line.indexOf('/', 1);
-                    String tempUrl;
-                    if (tempIndex == -1) {
-                        tempUrl = baseUriPath + line.substring(1);
-                    } else {
-                        tempUrl = line.substring(0, tempIndex);
-                        tempIndex = videoUrl.indexOf(tempUrl);
-                        if (tempIndex == -1) {
-                            tempUrl = hostUrl + line.substring(1);
-                        } else {
-                            tempUrl = videoUrl.substring(0, tempIndex) + line;
-                        }
-                    }
-                    ts.initTsAttributes(tempUrl, tsDuration, tsIndex,
-                            hasDiscontinuity, hasKey);
-                } else {
-                    ts.initTsAttributes(baseUriPath + line, tsDuration, tsIndex,
-                            hasDiscontinuity, hasKey);
-                }
+                ts.initTsAttributes(getFinalUrl(videoUrl, line), tsDuration, tsIndex, hasDiscontinuity,
+                        hasKey);
             }
             if (hasKey) {
                 ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
@@ -199,6 +141,7 @@ public class M3U8Utils {
             m3u8.addTs(ts);
             tsIndex++;
             tsDuration = 0;
+            hasStreamInfo = false;
             hasDiscontinuity = false;
             hasKey = false;
             method = null;
@@ -216,6 +159,32 @@ public class M3U8Utils {
         m3u8.setSequence(sequence);
         m3u8.setHasEndList(hasEndList);
         return m3u8;
+    }
+
+    private static String getFinalUrl(String videoUrl, String line) throws IOException {
+        URL url = new URL(videoUrl);
+        String baseUriPath = videoUrl.substring(0, videoUrl.lastIndexOf("/") + 1);
+        String hostUrl = videoUrl.substring(0, videoUrl.indexOf(url.getPath()) + 1);
+        if (line.startsWith("/")) {
+            int tempIndex = line.indexOf('/', 1);
+            String tempUrl;
+            if (tempIndex == -1) {
+                tempUrl = baseUriPath + line.substring(1);
+            } else {
+                tempUrl = line.substring(0, tempIndex);
+                tempIndex = videoUrl.indexOf(tempUrl);
+                if (tempIndex == -1) {
+                    tempUrl = hostUrl + line.substring(1);
+                } else {
+                    tempUrl = videoUrl.substring(0, tempIndex) + line;
+                }
+            }
+            return tempUrl;
+        }
+        if (line.startsWith("https://") || line.startsWith("http://")) {
+            return line;
+        }
+        return baseUriPath + line;
     }
 
     private static String parseStringAttr(String line, Pattern pattern) {

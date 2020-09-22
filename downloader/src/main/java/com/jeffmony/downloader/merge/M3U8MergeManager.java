@@ -207,8 +207,7 @@ public class M3U8MergeManager {
     if (parentFile.exists()) {
       for (File subFile : parentFile.listFiles()) {
         String name = subFile.getName();
-        if (!VideoDownloadUtils.MERGE_VIDEO.equals(name) ||
-                !VideoDownloadUtils.LOCAL_M3U8.equals(name) ||
+        if (!VideoDownloadUtils.MERGE_VIDEO.equals(name) &&
                 !VideoDownloadUtils.REMOTE_M3U8.equals(name)) {
           try {
             VideoDownloadUtils.delete(subFile);
