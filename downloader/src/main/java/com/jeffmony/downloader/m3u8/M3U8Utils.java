@@ -187,7 +187,7 @@ public class M3U8Utils {
         return baseUriPath + line;
     }
 
-    private static String parseStringAttr(String line, Pattern pattern) {
+    public static String parseStringAttr(String line, Pattern pattern) {
         if (pattern == null)
             return null;
         Matcher matcher = pattern.matcher(line);
@@ -197,7 +197,7 @@ public class M3U8Utils {
         return null;
     }
 
-    private static String parseOptionalStringAttr(String line, Pattern pattern) {
+    public static String parseOptionalStringAttr(String line, Pattern pattern) {
         if (pattern == null)
             return null;
         Matcher matcher = pattern.matcher(line);

@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.jeffmony.downloader.m3u8.M3U8Constants;
+import com.jeffmony.downloader.m3u8.M3U8Utils;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -19,10 +20,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class M3U8MergeManager {
 
@@ -77,7 +85,7 @@ public class M3U8MergeManager {
           }
           break;
         case MSG_DELETE_FILE:
-          deleteM3U8File(info);
+//          deleteM3U8File(info);
           break;
         default:
           break;
@@ -130,14 +138,34 @@ public class M3U8MergeManager {
       return;
     }
     info.setTotalTs(taskItem.getTotalTs());
-    List<String> tsFileList = new ArrayList<>();
+    List<TsInfo> tsFileList = new ArrayList<>();
     String line;
+    String key = null;
+    String method = null;
     try {
       while ((line = bufferedReader.readLine()) != null){
-        LogUtils.i(TAG, line);
-        if (!line.startsWith(M3U8Constants.TAG_PREFIX) && !TextUtils.isEmpty(line)) {
-          tsFileList.add(line);
+        if (line.startsWith(M3U8Constants.TAG_PREFIX)) {
+          if (line.startsWith(M3U8Constants.TAG_KEY)) {
+            method = M3U8Utils.parseOptionalStringAttr(line, M3U8Constants.REGEX_METHOD);
+            String keyFormat = M3U8Utils.parseOptionalStringAttr(line, M3U8Constants.REGEX_KEYFORMAT);
+            if (!M3U8Constants.METHOD_NONE.equals(method)) {
+              if (M3U8Constants.KEYFORMAT_IDENTITY.equals(keyFormat) || keyFormat == null) {
+                if (M3U8Constants.METHOD_AES_128.equals(method)) {
+                  key = fetchKey(M3U8Utils.parseStringAttr(line, M3U8Constants.REGEX_URI));
+                }
+              }
+              LogUtils.i(TAG, "Key = " + key);
+            }
+          }
+          continue;
         }
+        if (TextUtils.isEmpty(line)) {
+          continue;
+        }
+        TsInfo tsInfo = new TsInfo(line);
+        tsInfo.setKey(key);
+        tsInfo.setMethod(method);
+        tsFileList.add(tsInfo);
       }
     } catch (Exception e) {
       info.setErrorCode(MergeError.ERROR_READ_STREAM);
@@ -148,8 +176,8 @@ public class M3U8MergeManager {
       VideoDownloadUtils.close(bufferedReader);
     }
 
-    for (String itemStr : tsFileList) {
-      File tsFile = new File(itemStr);
+    for (TsInfo tsInfo : tsFileList) {
+      File tsFile = new File(tsInfo.getFilePath());
       if (!tsFile.exists()) {
         info.setErrorCode(MergeError.ERROR_NO_TS_FILE);
         mHandler.obtainMessage(MSG_MERGE_ERROR, info).sendToTarget();
@@ -170,14 +198,14 @@ public class M3U8MergeManager {
 
     byte[] buffer = new byte[VideoDownloadUtils.DEFAULT_BUFFER_SIZE];
     int progress = 0;
-    for (String itemStr : tsFileList) {
-      File tsFile = new File(itemStr);
+    for (TsInfo tsInfo : tsFileList) {
+      File tsFile = new File(tsInfo.getFilePath());
       int len;
       FileInputStream fis = null;
       try {
         fis = new FileInputStream(tsFile);
         while((len = fis.read(buffer)) != -1) {
-          fos.write(buffer, 0, len);
+          fos.write(decryptM3U8Ts(buffer, tsInfo.getKey(), tsInfo.getMethod()), 0, len);
         }
         VideoDownloadUtils.close(fis);
         fos.flush();
@@ -198,6 +226,77 @@ public class M3U8MergeManager {
     VideoDownloadUtils.close(fos);
     info.setCurTs(taskItem.getTotalTs());
     mHandler.obtainMessage(MSG_MERGE_FINISHED, info).sendToTarget();
+  }
+
+  private String fetchKey(String keyPath) {
+    if (TextUtils.isEmpty(keyPath))
+      return keyPath;
+
+    InputStreamReader inputStreamReader = null;
+    BufferedReader bufferedReader = null;
+    if (keyPath.startsWith("http://") || keyPath.startsWith("https://")) {
+      try {
+        URL keyURL = new URL(keyPath);
+        HttpURLConnection connection = (HttpURLConnection) keyURL.openConnection();
+        bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String line;
+        String result = "";
+        while((line = bufferedReader.readLine()) != null) {
+          result += line;
+        }
+        return result;
+      } catch (Exception e) {
+        LogUtils.w(TAG, "Request online key failed, exception = " + e);
+        VideoDownloadUtils.close(inputStreamReader);
+        VideoDownloadUtils.close(bufferedReader);
+      } finally {
+        VideoDownloadUtils.close(inputStreamReader);
+        VideoDownloadUtils.close(bufferedReader);
+      }
+    } else {
+      File keyFile = new File(keyPath);
+      try {
+        inputStreamReader = new InputStreamReader(new FileInputStream(keyFile));
+        bufferedReader = new BufferedReader(inputStreamReader);
+        String line;
+        String result = "";
+        while((line = bufferedReader.readLine()) != null) {
+          result += line;
+        }
+        return result;
+      } catch (Exception e) {
+        LogUtils.w(TAG, "Read local key file failed, exception = " + e);
+        VideoDownloadUtils.close(inputStreamReader);
+        VideoDownloadUtils.close(bufferedReader);
+      } finally {
+        VideoDownloadUtils.close(inputStreamReader);
+        VideoDownloadUtils.close(bufferedReader);
+      }
+    }
+    return null;
+  }
+
+  private byte[] decryptM3U8Ts(byte[] src, String key, String method) {
+    if (TextUtils.isEmpty(key) || TextUtils.isEmpty(method) || M3U8Constants.METHOD_NONE.equals(method)) {
+      return src;
+    }
+    try {
+      if (M3U8Constants.METHOD_AES_128.equals(method) ||
+              M3U8Constants.METHOD_SAMPLE_AES.equals(method) ||
+              M3U8Constants.METHOD_SAMPLE_AES_CENC.equals(method) ||
+              M3U8Constants.METHOD_SAMPLE_AES_CTR.equals(method)) {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("utf-8"), "AES");
+        // 如果m3u8有IV标签，那么IvParameterSpec构造函数就把IV标签后的内容转成字节数组传进去
+        AlgorithmParameterSpec paramSpec = new IvParameterSpec(new byte[16]);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, paramSpec);
+        return cipher.doFinal(src);
+      }
+    } catch (Exception e) {
+      LogUtils.w(TAG, "decrypt file failed, exception = " + e);
+      return src;
+    }
+    return src;
   }
 
   private void deleteM3U8File(M3U8MergeInfo info) {
