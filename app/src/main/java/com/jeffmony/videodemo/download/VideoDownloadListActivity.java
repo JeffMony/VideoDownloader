@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.download;
 
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +14,7 @@ import com.jeffmony.downloader.listener.DownloadListener;
 import com.jeffmony.downloader.listener.IDownloadInfosCallback;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.LogUtils;
+import com.jeffmony.videodemo.R;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     private Button mStartAllBtn;
     private ListView mDownloadListView;
 
-    private VideoListAdapter mAdapter;
+    private VideoDownloadListAdapter mAdapter;
     private VideoTaskItem[] items = new VideoTaskItem[6];
 
     @Override
@@ -56,7 +57,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         items[4] = item5;
         items[5] = item6;
 
-        mAdapter = new VideoListAdapter(this, R.layout.download_item, items);
+        mAdapter = new VideoDownloadListAdapter(this, R.layout.download_item, items);
         mDownloadListView.setAdapter(mAdapter);
 
         VideoDownloadManager.getInstance().fetchDownloadItems(mInfosCallback);

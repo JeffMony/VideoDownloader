@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.play;
 
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
@@ -24,6 +24,7 @@ import com.jeffmony.playersdk.PlayerType;
 import com.jeffmony.playersdk.WeakHandler;
 import com.jeffmony.playersdk.utils.ScreenUtils;
 import com.jeffmony.playersdk.utils.Utility;
+import com.jeffmony.videodemo.R;
 
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -110,7 +111,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     };
 
     private void initPlayer() {
-        mPlayer = new CommonPlayer(this, PlayerType.EXO_PLAYER);
+        mPlayer = new CommonPlayer(this, PlayerType.IJK_PLAYER);
 
         try {
             mPlayer.setDataSource(this, Uri.parse(mUrl));

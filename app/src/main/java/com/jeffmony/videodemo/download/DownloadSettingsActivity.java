@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.download;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.jeffmony.downloader.VideoDownloadManager;
 import com.jeffmony.downloader.utils.Utility;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.videodemo.R;
 
 import java.io.File;
 

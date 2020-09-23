@@ -85,7 +85,7 @@ public class M3U8MergeManager {
           }
           break;
         case MSG_DELETE_FILE:
-//          deleteM3U8File(info);
+          deleteM3U8File(info);
           break;
         default:
           break;

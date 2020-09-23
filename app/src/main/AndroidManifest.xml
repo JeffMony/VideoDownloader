@@ -22,13 +22,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".VideoDownloadListActivity" />
+        <activity android:name=".download.VideoDownloadListActivity" />
 
-        <activity android:name=".DownloadSettingsActivity" />
+        <activity android:name=".download.DownloadSettingsActivity" />
         
         <activity android:name=".merge.MergeDownloadFileActivity" />
 
-        <activity android:name=".PlayerActivity" />
+        <activity android:name=".transcode.VideoTranscodeActivity" />
+
+        <activity android:name=".play.PlayerActivity" />
     </application>
 
 </manifest>

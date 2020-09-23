@@ -1,4 +1,4 @@
-package com.jeffmony.videodemo;
+package com.jeffmony.videodemo.download;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,16 +15,18 @@ import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.videodemo.play.PlayerActivity;
+import com.jeffmony.videodemo.R;
 
 import java.io.File;
 
-public class VideoListAdapter extends ArrayAdapter<VideoTaskItem> {
+public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
 
     private static final String TAG = "VideoListAdapter";
 
     private Context mContext;
 
-    public VideoListAdapter(Context context, int resource, VideoTaskItem[] items) {
+    public VideoDownloadListAdapter(Context context, int resource, VideoTaskItem[] items) {
         super(context, resource, items);
         mContext = context;
     }
