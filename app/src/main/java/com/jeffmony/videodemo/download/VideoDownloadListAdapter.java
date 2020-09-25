@@ -49,7 +49,7 @@ public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
                     intent.putExtra("videoUrl", item.getFilePath());
                     mContext.startActivity(intent);
                 } else {
-                    File mp4File = new File(filePath.substring(0, filePath.lastIndexOf("/")), VideoDownloadUtils.MERGE_VIDEO);
+                    File mp4File = new File(filePath.substring(0, filePath.lastIndexOf("/")), VideoDownloadUtils.OUPUT_VIDEO);
                     if (item.isHlsType() && mp4File.exists()) {
                         intent.putExtra("videoUrl", mp4File.getAbsolutePath());
                         mContext.startActivity(intent);

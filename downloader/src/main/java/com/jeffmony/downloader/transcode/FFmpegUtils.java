@@ -12,5 +12,5 @@ public class FFmpegUtils {
         System.loadLibrary("swscale");
     }
 
-    public static native int remux(String inputPath, String outputPath);
+    public static native int remux(String inputPath, String outputPath, int width, int height);
 }

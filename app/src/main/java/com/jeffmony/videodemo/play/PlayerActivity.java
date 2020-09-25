@@ -111,7 +111,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     };
 
     private void initPlayer() {
-        mPlayer = new CommonPlayer(this, PlayerType.IJK_PLAYER);
+        mPlayer = new CommonPlayer(this, PlayerType.EXO_PLAYER);
 
         try {
             mPlayer.setDataSource(this, Uri.parse(mUrl));

@@ -1,11 +1,17 @@
 package com.jeffmony.downloader.transcode;
 
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
+
+import com.jeffmony.downloader.utils.LogUtils;
+
+import java.io.File;
 
 public class VideoTranscodeManager {
 
@@ -45,6 +51,35 @@ public class VideoTranscodeManager {
     }
 
     public void transcode(String inputPath, String outputPath) {
-        FFmpegUtils.remux(inputPath, outputPath);
+        File inputFile = new File(inputPath);
+        if (!inputFile.exists()) {
+            LogUtils.w(TAG, "Input File is empty.");
+            return;
+        }
+        MediaExtractor extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(inputPath);
+        } catch (Exception e) {
+            LogUtils.w(TAG, "MediaExtractor setDataSource failed, exception="+e);
+            return;
+        }
+        int width = 0;
+        int height = 0;
+        for(int index = 0; index < extractor.getTrackCount(); index++) {
+            MediaFormat format = extractor.getTrackFormat(index);
+            LogUtils.i(TAG, ": " +format);
+            if (format.getString(MediaFormat.KEY_MIME).startsWith("video/")) {
+                width = format.getInteger(MediaFormat.KEY_WIDTH);
+                height = format.getInteger(MediaFormat.KEY_HEIGHT);
+                break;
+
+            }
+        }
+        LogUtils.i(TAG, "Width="+width+", Height="+height);
+        if (extractor != null) {
+            extractor.release();
+            extractor = null;
+        }
+        FFmpegUtils.remux(inputPath, outputPath, width, height);
     }
 }
