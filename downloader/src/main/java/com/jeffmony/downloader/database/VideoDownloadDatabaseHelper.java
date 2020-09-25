@@ -18,7 +18,9 @@ public class VideoDownloadDatabaseHelper {
     private VideoDownloadSQLiteHelper mSQLiteHelper;
 
     public VideoDownloadDatabaseHelper(Context context) {
-        if (context == null) { return; }
+        if (context == null) {
+            return;
+        }
         mSQLiteHelper = new VideoDownloadSQLiteHelper(context);
     }
 

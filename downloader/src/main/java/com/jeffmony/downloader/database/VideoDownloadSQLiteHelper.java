@@ -10,6 +10,7 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     public static final String TABLE_VIDEO_DOWNLOAD_INFO = "video_download_info";
+
     public static class Columns {
         public static final String _ID = "_id";
         public static final String VIDEO_URL = "video_url";
@@ -37,10 +38,12 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
 
     @Override
-    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
 
     private void createVideoDownloadInfoTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_DOWNLOAD_INFO);

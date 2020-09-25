@@ -23,7 +23,9 @@ public class WorkerThreadHandler {
     private static final int QUEUE_SIZE = 2 ^ CPU_COUNT;
 
     private static class MediaWorkerThreadFactory implements ThreadFactory {
-        public Thread newThread(Runnable r) { return new MediaWorkerThread(r); }
+        public Thread newThread(Runnable r) {
+            return new MediaWorkerThread(r);
+        }
     }
 
     private static class MediaWorkerThread extends Thread {

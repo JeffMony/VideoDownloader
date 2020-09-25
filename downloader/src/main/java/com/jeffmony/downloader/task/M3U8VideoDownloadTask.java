@@ -102,7 +102,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         startTimerTask();
         mCurTs = curDownloadTs;
-        LogUtils.i(TAG,"startDownload curDownloadTs = " + curDownloadTs);
+        LogUtils.i(TAG, "startDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(
                 THREAD_COUNT, THREAD_COUNT, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),
@@ -120,7 +120,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                     try {
                         downloadTsTask(ts, tsFile, tsName);
                     } catch (Exception e) {
-                        LogUtils.w(TAG,"M3U8TsDownloadThread download failed, exception=" +
+                        LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" +
                                 e);
                         notifyDownloadError(e);
                     }
@@ -259,10 +259,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         int redirectedCount = 0;
         do {
             URL url = new URL(videoUrl);
-            connection = (HttpURLConnection)url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             if (mConfig.shouldIgnoreCertErrors() && connection instanceof
                     HttpsURLConnection) {
-                HttpUtils.trustAllCert((HttpsURLConnection)(connection));
+                HttpUtils.trustAllCert((HttpsURLConnection) (connection));
             }
             connection.setConnectTimeout(mConfig.getConnTimeOut());
             connection.setReadTimeout(mConfig.getReadTimeOut());
@@ -295,7 +295,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 fos.write(buf, 0, len);
             }
         } catch (IOException e) {
-            LogUtils.w(TAG,file.getAbsolutePath() +
+            LogUtils.w(TAG, file.getAbsolutePath() +
                     " saveFile failed, exception=" + e);
             if (file.exists()) {
                 file.delete();

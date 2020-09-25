@@ -26,7 +26,9 @@ public class VideoDownloadConfig {
         mConcurrentCount = concurrentCount;
     }
 
-    public Context getContext() { return mContext; }
+    public Context getContext() {
+        return mContext;
+    }
 
     public File getCacheRoot() {
         return mCacheRoot;
@@ -48,11 +50,15 @@ public class VideoDownloadConfig {
         return mIgnoreAllCertErrors;
     }
 
-    public void setIgnoreAllCertErrors(boolean ignoreAllCertErrors) { mIgnoreAllCertErrors = ignoreAllCertErrors; }
+    public void setIgnoreAllCertErrors(boolean ignoreAllCertErrors) {
+        mIgnoreAllCertErrors = ignoreAllCertErrors;
+    }
 
     public int getConcurrentCount() {
         return mConcurrentCount;
     }
 
-    public void setConcurrentCount(int count) { mConcurrentCount = count; }
+    public void setConcurrentCount(int count) {
+        mConcurrentCount = count;
+    }
 }

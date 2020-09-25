@@ -49,7 +49,7 @@ public class DownloadExceptionUtils {
                 return M3U8_FILE_CONTENT_ERROR;
             } else if (((VideoDownloadException) e).getMsg().equals(MIMETYPE_NULL_ERROR_STRING)) {
                 return MIMETYPE_NULL_ERROR;
-            } else if(((VideoDownloadException) e).getMsg().equals(MIMETYPE_NOT_FOUND_STRING)) {
+            } else if (((VideoDownloadException) e).getMsg().equals(MIMETYPE_NOT_FOUND_STRING)) {
                 return MIMETYPE_NOT_FOUND;
             }
         } else if (e instanceof UnknownHostException) {

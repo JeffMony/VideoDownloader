@@ -14,7 +14,9 @@ public class VideoDownloadException extends Exception {
         mMsg = message;
     }
 
-    public VideoDownloadException(Throwable cause) { super(cause); }
+    public VideoDownloadException(Throwable cause) {
+        super(cause);
+    }
 
     public String getMsg() {
         return mMsg;

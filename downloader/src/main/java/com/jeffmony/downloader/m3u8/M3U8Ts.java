@@ -13,7 +13,8 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     private String mKeyIV;
     private boolean mIsMessyKey;
 
-    public M3U8Ts() {}
+    public M3U8Ts() {
+    }
 
     public void initTsAttributes(String url, float duration, int index,
                                  boolean hasDiscontinuity, boolean hasKey) {
@@ -32,42 +33,71 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
         this.mKeyIV = keyIV;
     }
 
-    public boolean hasKey() { return mHasKey; }
+    public boolean hasKey() {
+        return mHasKey;
+    }
 
-    public String getMethod() { return mMethod; }
+    public String getMethod() {
+        return mMethod;
+    }
 
-    public String getKeyUri() { return mKeyUri; }
+    public String getKeyUri() {
+        return mKeyUri;
+    }
 
-    public String getLocalKeyUri() { return "local.key"; }
+    public String getLocalKeyUri() {
+        return "local.key";
+    }
 
-    public String getKeyIV() { return mKeyIV; }
+    public String getKeyIV() {
+        return mKeyIV;
+    }
 
-    public float getDuration() { return mDuration; }
+    public float getDuration() {
+        return mDuration;
+    }
 
-    public String getUrl() { return mUrl; }
+    public String getUrl() {
+        return mUrl;
+    }
 
-    public String getName() { return mName; }
+    public String getName() {
+        return mName;
+    }
 
     /**
      * if ts is local file, name is video_{index}.ts
      * if ts is network resource , name is starting with http or https.
+     *
      * @param name
      */
-    public void setName(String name) { this.mName = name; }
+    public void setName(String name) {
+        this.mName = name;
+    }
 
-    public String getIndexName() { return "video_" + mIndex + ".ts"; }
+    public String getIndexName() {
+        return "video_" + mIndex + ".ts";
+    }
 
-    public void setTsSize(long tsSize) { this.mTsSize = tsSize; }
+    public void setTsSize(long tsSize) {
+        this.mTsSize = tsSize;
+    }
 
-    public long getTsSize() { return mTsSize; }
+    public long getTsSize() {
+        return mTsSize;
+    }
 
-    public boolean hasDiscontinuity() { return mHasDiscontinuity; }
+    public boolean hasDiscontinuity() {
+        return mHasDiscontinuity;
+    }
 
     public void setIsMessyKey(boolean isMessyKey) {
         this.mIsMessyKey = isMessyKey;
     }
 
-    public boolean isMessyKey() { return mIsMessyKey; }
+    public boolean isMessyKey() {
+        return mIsMessyKey;
+    }
 
     public String toString() {
         return "duration=" + mDuration + ", index=" + mIndex + ", name=" + mName;

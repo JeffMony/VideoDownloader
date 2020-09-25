@@ -26,29 +26,45 @@ public class M3U8 {
         this.mTsList = new ArrayList<>();
     }
 
-    public void addTs(M3U8Ts ts) { this.mTsList.add(ts); }
+    public void addTs(M3U8Ts ts) {
+        this.mTsList.add(ts);
+    }
 
     public void setTargetDuration(float targetDuration) {
         this.mTargetDuration = targetDuration;
     }
 
-    public void setVersion(int version) { this.mVersion = version; }
+    public void setVersion(int version) {
+        this.mVersion = version;
+    }
 
-    public void setSequence(int sequence) { this.mSequence = sequence; }
+    public void setSequence(int sequence) {
+        this.mSequence = sequence;
+    }
 
     public void setHasEndList(boolean hasEndList) {
         this.mHasEndList = hasEndList;
     }
 
-    public List<M3U8Ts> getTsList() { return mTsList; }
+    public List<M3U8Ts> getTsList() {
+        return mTsList;
+    }
 
-    public int getVersion() { return mVersion; }
+    public int getVersion() {
+        return mVersion;
+    }
 
-    public float getTargetDuration() { return mTargetDuration; }
+    public float getTargetDuration() {
+        return mTargetDuration;
+    }
 
-    public int getSequence() { return mSequence; }
+    public int getSequence() {
+        return mSequence;
+    }
 
-    public boolean hasEndList() { return mHasEndList; }
+    public boolean hasEndList() {
+        return mHasEndList;
+    }
 
     public long getDuration() {
         long duration = 0L;
@@ -105,27 +121,31 @@ public class M3U8 {
         return cachedSize;
     }
 
-    public void setCurTsIndex(int curTsIndex) { this.mCurTsIndex = curTsIndex; }
+    public void setCurTsIndex(int curTsIndex) {
+        this.mCurTsIndex = curTsIndex;
+    }
 
-    public int getCurTsIndex() { return mCurTsIndex; }
+    public int getCurTsIndex() {
+        return mCurTsIndex;
+    }
 
     public void printM3U8Info() {
         LogUtils.i(TAG, "M3U8 Url=" + mUrl);
-        LogUtils.i(TAG,"M3U8 BaseUrl=" + mBaseUrl);
-        LogUtils.i(TAG,"M3U8 HostUrl=" + mHostUrl);
+        LogUtils.i(TAG, "M3U8 BaseUrl=" + mBaseUrl);
+        LogUtils.i(TAG, "M3U8 HostUrl=" + mHostUrl);
         printTsInfo();
     }
 
     public void printTsInfo() {
         for (int index = 0; index < mTsList.size(); index++) {
-            LogUtils.i(TAG,"" + mTsList.get(index));
+            LogUtils.i(TAG, "" + mTsList.get(index));
         }
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof M3U8) {
-            M3U8 m3u8 = (M3U8)obj;
+            M3U8 m3u8 = (M3U8) obj;
             if (mUrl != null && mUrl.equals(m3u8.mUrl))
                 return true;
         }

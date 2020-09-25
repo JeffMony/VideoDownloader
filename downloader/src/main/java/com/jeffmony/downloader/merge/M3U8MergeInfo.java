@@ -2,43 +2,58 @@ package com.jeffmony.downloader.merge;
 
 public class M3U8MergeInfo {
 
-  private String mUrl;
-  private String mFilePath;
-  private int mTotalTs;
-  private int mCurTs;
-  private int mErrorCode;
+    private String mUrl;
+    private String mM3U8Path;
+    private String mMergedPath;
+    private String mOutputPath;
+    private int mTotalTs;
+    private int mCurTs;
+    private int mErrorCode;
 
-  public M3U8MergeInfo(String url, String filePath) {
-    mUrl = url;
-    mFilePath = filePath;
-  }
+    public M3U8MergeInfo(String url, String m3u8Path, String mergedPath) {
+        mUrl = url;
+        mM3U8Path = m3u8Path;
+        mMergedPath = mergedPath;
+    }
 
-  public String getUrl() {
-    return mUrl;
-  }
+    public String getUrl() {
+        return mUrl;
+    }
 
-  public String getFilePath() {
-    return mFilePath;
-  }
+    public String getM3U8Path() {
+        return mM3U8Path;
+    }
 
-  public void setTotalTs(int totalTs) {
-    mTotalTs = totalTs;
-  }
+    public String getMergedPath() {
+        return mMergedPath;
+    }
 
-  public void setCurTs(int curTs) {
-    mCurTs = curTs;
-  }
+    public void setOutputPath(String outputPath) {
+        mOutputPath = outputPath;
+    }
 
-  public int getCurTs() {
-    return mCurTs;
-  }
+    public String getOutputPath() {
+        return mOutputPath;
+    }
 
-  public void setErrorCode(int code) {
-    mErrorCode = code;
-  }
+    public void setTotalTs(int totalTs) {
+        mTotalTs = totalTs;
+    }
 
-  public int getErrorCode() {
-    return mErrorCode;
-  }
+    public void setCurTs(int curTs) {
+        mCurTs = curTs;
+    }
+
+    public int getCurTs() {
+        return mCurTs;
+    }
+
+    public void setErrorCode(int code) {
+        mErrorCode = code;
+    }
+
+    public int getErrorCode() {
+        return mErrorCode;
+    }
 
 }

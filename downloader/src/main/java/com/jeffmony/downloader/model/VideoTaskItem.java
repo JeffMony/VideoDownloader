@@ -28,55 +28,85 @@ public class VideoTaskItem implements Cloneable {
     private String mFilePath;            //文件完整路径(包括文件名)
     private boolean mPaused;
 
-    public VideoTaskItem(String url) { mUrl = url; }
+    public VideoTaskItem(String url) {
+        mUrl = url;
+    }
 
     public String getUrl() {
         return mUrl;
     }
 
-    public void setDownloadCreateTime(long time) { mDownloadCreateTime = time; }
+    public void setDownloadCreateTime(long time) {
+        mDownloadCreateTime = time;
+    }
 
-    public long getDownloadCreateTime() { return mDownloadCreateTime; }
+    public long getDownloadCreateTime() {
+        return mDownloadCreateTime;
+    }
 
-    public void setTaskState(int state) { mTaskState = state; }
+    public void setTaskState(int state) {
+        mTaskState = state;
+    }
 
-    public int getTaskState() { return mTaskState; }
+    public int getTaskState() {
+        return mTaskState;
+    }
 
-    public void setMimeType(String mimeType) { mMimeType = mimeType; }
+    public void setMimeType(String mimeType) {
+        mMimeType = mimeType;
+    }
 
     public String getMimeType() {
         return mMimeType;
     }
 
-    public void setFinalUrl(String finalUrl) { mFinalUrl = finalUrl; }
+    public void setFinalUrl(String finalUrl) {
+        mFinalUrl = finalUrl;
+    }
 
-    public String getFinalUrl() { return mFinalUrl; }
+    public String getFinalUrl() {
+        return mFinalUrl;
+    }
 
-    public void setErrorCode(int errorCode) { mErrorCode = errorCode; }
+    public void setErrorCode(int errorCode) {
+        mErrorCode = errorCode;
+    }
 
     public int getErrorCode() {
         return mErrorCode;
     }
 
-    public void setVideoType(int type) { mVideoType = type; }
+    public void setVideoType(int type) {
+        mVideoType = type;
+    }
 
     public int getVideoType() {
         return mVideoType;
     }
 
-    public void setM3U8(M3U8 m3u8) { mM3U8 = m3u8; }
+    public void setM3U8(M3U8 m3u8) {
+        mM3U8 = m3u8;
+    }
 
     public M3U8 getM3U8() {
         return mM3U8;
     }
 
-    public void setTotalTs(int count) { mTotalTs = count; }
+    public void setTotalTs(int count) {
+        mTotalTs = count;
+    }
 
-    public int getTotalTs() { return mTotalTs; }
+    public int getTotalTs() {
+        return mTotalTs;
+    }
 
-    public void setCurTs(int count) { mCurTs = count; }
+    public void setCurTs(int count) {
+        mCurTs = count;
+    }
 
-    public int getCurTs() { return mCurTs; }
+    public int getCurTs() {
+        return mCurTs;
+    }
 
     public void setSpeed(float speed) {
         mSpeed = speed;
@@ -87,7 +117,7 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public String getSpeedString() {
-        return Utility.getSize((long)mSpeed) + "/s";
+        return Utility.getSize((long) mSpeed) + "/s";
     }
 
     public void setPercent(float percent) {
@@ -118,39 +148,73 @@ public class VideoTaskItem implements Cloneable {
         mTotalSize = size;
     }
 
-    public long getTotalSize() { return mTotalSize; }
+    public long getTotalSize() {
+        return mTotalSize;
+    }
 
-    public void setFileHash(String md5) { mFileHash = md5; }
+    public void setFileHash(String md5) {
+        mFileHash = md5;
+    }
 
-    public String getFileHash() { return mFileHash; }
+    public String getFileHash() {
+        return mFileHash;
+    }
 
-    public void setSaveDir(String path) { mSaveDir = path; }
+    public void setSaveDir(String path) {
+        mSaveDir = path;
+    }
 
-    public String getSaveDir() { return mSaveDir; }
+    public String getSaveDir() {
+        return mSaveDir;
+    }
 
-    public void setIsCompleted(boolean completed) { mIsCompleted = completed; }
+    public void setIsCompleted(boolean completed) {
+        mIsCompleted = completed;
+    }
 
-    public boolean isCompleted() { return mIsCompleted; }
+    public boolean isCompleted() {
+        return mIsCompleted;
+    }
 
-    public void setIsInDatabase(boolean in) { mIsInDatabase = in; }
+    public void setIsInDatabase(boolean in) {
+        mIsInDatabase = in;
+    }
 
-    public boolean isInDatabase() { return mIsInDatabase; }
+    public boolean isInDatabase() {
+        return mIsInDatabase;
+    }
 
-    public void setLastUpdateTime(long time) { mLastUpdateTime = time; }
+    public void setLastUpdateTime(long time) {
+        mLastUpdateTime = time;
+    }
 
-    public long getLastUpdateTime() { return mLastUpdateTime; }
+    public long getLastUpdateTime() {
+        return mLastUpdateTime;
+    }
 
-    public void setFileName(String name) { mFileName = name; }
+    public void setFileName(String name) {
+        mFileName = name;
+    }
 
-    public String getFileName() { return mFileName; }
+    public String getFileName() {
+        return mFileName;
+    }
 
-    public void setFilePath(String path) { mFilePath = path; }
+    public void setFilePath(String path) {
+        mFilePath = path;
+    }
 
-    public String getFilePath() { return mFilePath;}
+    public String getFilePath() {
+        return mFilePath;
+    }
 
-    public void setPaused(boolean paused) { mPaused = paused; }
+    public void setPaused(boolean paused) {
+        mPaused = paused;
+    }
 
-    public boolean isPaused() { return mPaused; }
+    public boolean isPaused() {
+        return mPaused;
+    }
 
     public boolean isRunningTask() {
         return mTaskState == VideoTaskState.DOWNLOADING;
@@ -160,7 +224,9 @@ public class VideoTaskItem implements Cloneable {
         return mTaskState == VideoTaskState.PENDING;
     }
 
-    public boolean isErrorState() { return mTaskState == VideoTaskState.ERROR; }
+    public boolean isErrorState() {
+        return mTaskState == VideoTaskState.ERROR;
+    }
 
     public boolean isSuccessState() {
         return mTaskState == VideoTaskState.SUCCESS;
@@ -222,7 +288,7 @@ public class VideoTaskItem implements Cloneable {
     @Override
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof VideoTaskItem) {
-            String objUrl = ((VideoTaskItem)obj).getUrl();
+            String objUrl = ((VideoTaskItem) obj).getUrl();
             if (mUrl.equals(objUrl)) {
                 return true;
             }
@@ -231,12 +297,12 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public String toString() {
-        return "VideoTaskItem[Url="+mUrl+
-                ",Type="+mVideoType+
-                ",Percent="+mPercent+
-                ",DownloadSize="+mDownloadSize+
-                ",State="+mTaskState+
-                ",FilePath="+mFileName+
-                ",LocalFile="+mFilePath+"]";
+        return "VideoTaskItem[Url=" + mUrl +
+                ",Type=" + mVideoType +
+                ",Percent=" + mPercent +
+                ",DownloadSize=" + mDownloadSize +
+                ",State=" + mTaskState +
+                ",FilePath=" + mFileName +
+                ",LocalFile=" + mFilePath + "]";
     }
 }

@@ -28,6 +28,7 @@ public class M3U8Utils {
 
     /**
      * parse M3U8 file.
+     *
      * @param videoUrl
      * @return
      * @throws IOException
@@ -42,10 +43,10 @@ public class M3U8Utils {
             inputStreamReader = new InputStreamReader(new FileInputStream(m3u8File));
             bufferedReader = new BufferedReader(inputStreamReader);
         } else {
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             if (config.shouldIgnoreCertErrors() && connection instanceof
                     HttpsURLConnection) {
-                HttpUtils.trustAllCert((HttpsURLConnection)connection);
+                HttpUtils.trustAllCert((HttpsURLConnection) connection);
                 bufferedReader = new BufferedReader(
                         new InputStreamReader(connection.getInputStream()));
             } else {

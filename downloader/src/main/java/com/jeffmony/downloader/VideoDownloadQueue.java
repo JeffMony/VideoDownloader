@@ -25,7 +25,9 @@ public class VideoDownloadQueue {
     }
 
     //put it into queue
-    public void offer(VideoTaskItem taskItem) { mQueue.add(taskItem); }
+    public void offer(VideoTaskItem taskItem) {
+        mQueue.add(taskItem);
+    }
 
     //Remove Queue head item,
     //Return Next Queue head.
@@ -49,7 +51,7 @@ public class VideoDownloadQueue {
                 return mQueue.get(0);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"DownloadQueue get failed.");
+            LogUtils.w(TAG, "DownloadQueue get failed.");
         }
         return null;
     }
@@ -75,7 +77,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"DownloadQueue getTaskItem failed.");
+            LogUtils.w(TAG, "DownloadQueue getTaskItem failed.");
         }
         return null;
     }
@@ -103,7 +105,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return count;
     }
@@ -117,7 +119,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return count;
     }
@@ -131,7 +133,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return null;
     }

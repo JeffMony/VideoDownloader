@@ -116,7 +116,7 @@ public class VideoInfoParserManager {
             }
             // Add more video mimeType.
             String mimeType = HttpUtils.getMimeType(mConfig, finalUrl, null, headers);
-            LogUtils.i(TAG,"parseVideoInfo mimeType=" + mimeType);
+            LogUtils.i(TAG, "parseVideoInfo mimeType=" + mimeType);
             if (mimeType != null) {
                 mimeType = mimeType.toLowerCase();
                 taskItem.setMimeType(mimeType);

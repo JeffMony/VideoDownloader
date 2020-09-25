@@ -17,7 +17,8 @@ public class VideoDownloadUtils {
     public static final String VIDEO_SUFFIX = ".video";
     public static final String LOCAL_M3U8 = "local.m3u8";
     public static final String REMOTE_M3U8 = "remote.m3u8";
-    public static final String MERGE_VIDEO = "merge_video.mp4";
+    public static final String MERGE_VIDEO = "merge_video.ts";
+    public static final String OUPUT_VIDEO = "output.mp4";
 
     public static File getVideoCacheDir(Context context) {
         return new File(context.getExternalFilesDir("Video"), "Download");
@@ -121,7 +122,7 @@ public class VideoDownloadUtils {
             try {
                 closeable.close();
             } catch (Exception e) {
-                LogUtils.w(TAG,"VideoProxyCacheUtils close " + closeable +
+                LogUtils.w(TAG, "VideoProxyCacheUtils close " + closeable +
                         " failed, exception = " + e);
             }
         }

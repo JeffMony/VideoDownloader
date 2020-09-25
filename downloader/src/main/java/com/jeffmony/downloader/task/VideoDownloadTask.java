@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public abstract class VideoDownloadTask {
 
     protected static final int THREAD_COUNT = 3;
-    protected static final int BUFFER_SIZE =  VideoDownloadUtils.DEFAULT_BUFFER_SIZE;
+    protected static final int BUFFER_SIZE = VideoDownloadUtils.DEFAULT_BUFFER_SIZE;
     protected final VideoDownloadConfig mConfig;
     protected final VideoTaskItem mTaskItem;
     protected final String mFinalUrl;
@@ -99,7 +99,7 @@ public abstract class VideoDownloadTask {
 
 
     protected boolean isFloatEqual(float f1, float f2) {
-        if (Math.abs(f1-f2) < 0.0001f) {
+        if (Math.abs(f1 - f2) < 0.0001f) {
             return true;
         }
         return false;

@@ -56,7 +56,7 @@ public class HttpUtils {
             try {
                 connection = makeConnection(config, url, proxy, headers);
             } catch (IOException e) {
-                LogUtils.w(TAG,"Unable to connect videoUrl(" + videoUrl +
+                LogUtils.w(TAG, "Unable to connect videoUrl(" + videoUrl +
                         "), exception = " + e.getMessage());
                 closeConnection(connection);
                 throw new IOException("getMimeType connect failed.");
@@ -66,14 +66,14 @@ public class HttpUtils {
                 try {
                     responseCode = connection.getResponseCode();
                 } catch (IOException e) {
-                    LogUtils.w(TAG,"Unable to Get reponseCode videoUrl(" + videoUrl +
+                    LogUtils.w(TAG, "Unable to Get reponseCode videoUrl(" + videoUrl +
                             "), exception = " + e.getMessage());
                     closeConnection(connection);
                     throw new IOException("getMimeType get responseCode failed.");
                 }
                 if (responseCode == RESPONSE_OK) {
                     String contentType = connection.getContentType();
-                    LogUtils.i(TAG,"contentType = " + contentType);
+                    LogUtils.i(TAG, "contentType = " + contentType);
                     return contentType;
                 }
             }
@@ -89,7 +89,7 @@ public class HttpUtils {
         try {
             url = new URL(videoUrl);
         } catch (MalformedURLException e) {
-            LogUtils.w(TAG,"VideoUrl(" + videoUrl +
+            LogUtils.w(TAG, "VideoUrl(" + videoUrl +
                     ") packages error, exception = " + e.getMessage());
             throw new MalformedURLException("URL parse error.");
         }
@@ -129,13 +129,13 @@ public class HttpUtils {
         HttpURLConnection connection = null;
         if (proxy != null) {
             // V-Card
-            connection = (HttpURLConnection)url.openConnection(proxy);
+            connection = (HttpURLConnection) url.openConnection(proxy);
         } else {
-            connection = (HttpURLConnection)url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
         }
         if (config.shouldIgnoreCertErrors() && connection instanceof
                 HttpsURLConnection) {
-            trustAllCert((HttpsURLConnection)(connection));
+            trustAllCert((HttpsURLConnection) (connection));
         }
         connection.setConnectTimeout(config.getConnTimeOut());
         connection.setReadTimeout(config.getReadTimeOut());
@@ -174,22 +174,24 @@ public class HttpUtils {
             sslContext = SSLContext.getInstance("TLS");
             if (sslContext != null) {
                 TrustManager tm = new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return null; }
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
 
                     public void checkClientTrusted(X509Certificate[] chain,
                                                    String authType) {
-                        LogUtils.d(TAG,"checkClientTrusted.");
+                        LogUtils.d(TAG, "checkClientTrusted.");
                     }
 
                     public void checkServerTrusted(X509Certificate[] chain,
                                                    String authType) {
-                        LogUtils.d(TAG,"checkServerTrusted.");
+                        LogUtils.d(TAG, "checkServerTrusted.");
                     }
                 };
-                sslContext.init(null, new TrustManager[] {tm}, null);
+                sslContext.init(null, new TrustManager[]{tm}, null);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"SSLContext init failed");
+            LogUtils.w(TAG, "SSLContext init failed");
         }
         // Cannot do ssl checkl.
         if (sslContext != null) {

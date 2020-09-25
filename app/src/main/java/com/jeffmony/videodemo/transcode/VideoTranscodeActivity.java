@@ -6,11 +6,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.jeffmony.downloader.transcode.VideoTranscodeManager;
+import com.jeffmony.downloader.utils.VideoDownloadUtils;
 
 public class VideoTranscodeActivity extends AppCompatActivity {
 
-  private static String INPUT_PATH = "/sdcard/Android/data/com.jeffmony.videodemo/files/merge_video.ts";
-  private static String OUTPUT_PATH = "/sdcard/Android/data/com.jeffmony.videodemo/files/output.mp4";
+  private static String INPUT_PATH = "/sdcard/Android/data/com.jeffmony.videodemo/files/" + VideoDownloadUtils.MERGE_VIDEO;
+  private static String OUTPUT_PATH = "/sdcard/Android/data/com.jeffmony.videodemo/files/" + VideoDownloadUtils.OUPUT_VIDEO;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
