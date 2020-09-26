@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,5 +139,9 @@ public class VideoDownloadUtils {
         } else {
             return file.length();
         }
+    }
+
+    public static String toLowerInvariant(String text) {
+        return text == null ? null : text.toLowerCase(Locale.US);
     }
 }

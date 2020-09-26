@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +93,7 @@ public class M3U8MergeManager {
                     deleteM3U8File(info);
                     break;
                 case MSG_CONVERT_TO_MP4:
-                    convertTsToMp4(info.getMergedPath(), info.getOutputPath());
+//                    convertTsToMp4(info.getMergedPath(), info.getOutputPath());
                     break;
                 default:
                     break;
@@ -150,10 +152,13 @@ public class M3U8MergeManager {
         String line;
         String key = null;
         String method = null;
+        String iv = null;
+        int count = 0;
         try {
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.startsWith(M3U8Constants.TAG_PREFIX)) {
                     if (line.startsWith(M3U8Constants.TAG_KEY)) {
+                        iv = M3U8Utils.parseStringAttr(line, M3U8Constants.REGEX_IV);
                         method = M3U8Utils.parseOptionalStringAttr(line, M3U8Constants.REGEX_METHOD);
                         String keyFormat = M3U8Utils.parseOptionalStringAttr(line, M3U8Constants.REGEX_KEYFORMAT);
                         if (!M3U8Constants.METHOD_NONE.equals(method)) {
@@ -162,7 +167,7 @@ public class M3U8MergeManager {
                                     key = fetchKey(M3U8Utils.parseStringAttr(line, M3U8Constants.REGEX_URI));
                                 }
                             }
-                            LogUtils.i(TAG, "Key = " + key);
+                            LogUtils.i(TAG, "M3U8 Key = " + key);
                         }
                     }
                     continue;
@@ -173,6 +178,12 @@ public class M3U8MergeManager {
                 TsInfo tsInfo = new TsInfo(line);
                 tsInfo.setKey(key);
                 tsInfo.setMethod(method);
+                if (TextUtils.isEmpty(iv)) {
+                    tsInfo.setIv(count+"");
+                    count++;
+                } else {
+                    tsInfo.setIv(iv);
+                }
                 tsFileList.add(tsInfo);
             }
         } catch (Exception e) {
@@ -213,7 +224,7 @@ public class M3U8MergeManager {
             try {
                 fis = new FileInputStream(tsFile);
                 while ((len = fis.read(buffer)) != -1) {
-                    fos.write(decryptM3U8Ts(buffer, tsInfo.getKey(), tsInfo.getMethod()), 0, len);
+                    fos.write(decryptM3U8Ts(buffer, tsInfo.getKey(), tsInfo.getMethod(), tsInfo.getIv()), 0, len);
                 }
                 VideoDownloadUtils.close(fis);
                 fos.flush();
@@ -284,19 +295,42 @@ public class M3U8MergeManager {
         return null;
     }
 
-    private byte[] decryptM3U8Ts(byte[] src, String key, String method) {
+    private byte[] decryptM3U8Ts(byte[] src, String key, String method, String iv) {
         if (TextUtils.isEmpty(key) || TextUtils.isEmpty(method) || M3U8Constants.METHOD_NONE.equals(method)) {
             return src;
         }
+        String trimmedIv;
+        if (VideoDownloadUtils.toLowerInvariant(iv).startsWith("0x")) {
+            trimmedIv = iv.substring(2);
+        } else {
+            trimmedIv = iv;
+        }
+
+        byte[] ivData = new BigInteger(trimmedIv, 16).toByteArray();
+        byte[] ivDataWithPadding = new byte[16];
+        int offset = ivData.length > 16 ? ivData.length - 16 : 0;
+        System.arraycopy(ivData, offset, ivDataWithPadding,
+                ivDataWithPadding.length - ivData.length + offset,
+                ivData.length - offset);
+
+        byte[] keyBytes = null;
+        try {
+            keyBytes = key.getBytes("UTF-8");
+        } catch (Exception e) {
+            LogUtils.w(TAG, "String to bytes failed, exception = " + e);
+        }
+
+        android.util.Log.e("litianpeng", "key="+key +", " + String.valueOf(keyBytes) +", iv="+String.valueOf(ivData));
+
         try {
             if (M3U8Constants.METHOD_AES_128.equals(method) ||
                     M3U8Constants.METHOD_SAMPLE_AES.equals(method) ||
                     M3U8Constants.METHOD_SAMPLE_AES_CENC.equals(method) ||
                     M3U8Constants.METHOD_SAMPLE_AES_CTR.equals(method)) {
                 Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-                SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("utf-8"), "AES");
+                SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
                 // 如果m3u8有IV标签，那么IvParameterSpec构造函数就把IV标签后的内容转成字节数组传进去
-                AlgorithmParameterSpec paramSpec = new IvParameterSpec(new byte[16]);
+                AlgorithmParameterSpec paramSpec = new IvParameterSpec(ivData);
                 cipher.init(Cipher.DECRYPT_MODE, keySpec, paramSpec);
                 return cipher.doFinal(src);
             }
