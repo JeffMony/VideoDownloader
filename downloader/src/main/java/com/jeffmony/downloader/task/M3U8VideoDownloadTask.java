@@ -1,12 +1,13 @@
 package com.jeffmony.downloader.task;
 
+import android.text.TextUtils;
+
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Constants;
 import com.jeffmony.downloader.m3u8.M3U8Ts;
-import com.jeffmony.downloader.m3u8.M3U8Utils;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -18,11 +19,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
@@ -135,7 +137,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             throws Exception {
         if (!tsFile.exists()) {
             // ts is network resource, download ts file then rename it to local file.
-            downloadFile(ts.getUrl(), tsFile);
+            downloadFile(ts.getUrl(), tsFile, ts.getKeyUri(), ts.getMethod());
         }
 
         if (tsFile.exists()) {
@@ -233,7 +235,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         notifyOnTaskFailed(e);
     }
 
-    public void downloadFile(String url, File file) throws Exception {
+    public void downloadFile(String url, File file, String keyPath, String method) throws Exception {
         HttpURLConnection connection = null;
         InputStream inputStream = null;
         try {
@@ -241,7 +243,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpUtils.RESPONSE_OK) {
                 inputStream = connection.getInputStream();
-                saveFile(inputStream, file);
+                saveFile(inputStream, file, keyPath, method);
             }
         } catch (Exception e) {
             throw e;
@@ -285,14 +287,15 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         return connection;
     }
 
-    private void saveFile(InputStream inputStream, File file) throws IOException {
+    private void saveFile(InputStream inputStream, File file, String keyPath, String method) throws IOException {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             int len = 0;
             byte[] buf = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buf)) != -1) {
-                fos.write(buf, 0, len);
+                byte[] result = getDecryptBytes(buf, keyPath, method);
+                fos.write(result, 0, len);
             }
         } catch (IOException e) {
             LogUtils.w(TAG, file.getAbsolutePath() +
@@ -305,6 +308,30 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             VideoDownloadUtils.close(inputStream);
             VideoDownloadUtils.close(fos);
         }
+    }
+
+    private byte[] getDecryptBytes(byte[] src, String keyPath, String method) {
+        if (TextUtils.isEmpty((keyPath))) {
+            return src;
+        }
+        try {
+            if (M3U8Constants.METHOD_AES_128.equals(method) ||
+                    M3U8Constants.METHOD_SAMPLE_AES.equals(method) ||
+                    M3U8Constants.METHOD_SAMPLE_AES_CENC.equals(method) ||
+                    M3U8Constants.METHOD_SAMPLE_AES_CTR.equals(method)) {
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+                SecretKeySpec keySpec = new SecretKeySpec(VideoDownloadUtils.str2Hex(VideoDownloadUtils.fetchKey(keyPath)), "AES");
+                // 如果m3u8有IV标签，那么IvParameterSpec构造函数就把IV标签后的内容转成字节数组传进去
+                AlgorithmParameterSpec paramSpec = new IvParameterSpec(new byte[16]);
+                cipher.init(Cipher.DECRYPT_MODE, keySpec, paramSpec);
+                return cipher.doFinal(src);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.w(TAG, "decrypt file failed, exception = " + e);
+            return src;
+        }
+        return src;
     }
 
     private void createLocalM3U8File() throws IOException {
