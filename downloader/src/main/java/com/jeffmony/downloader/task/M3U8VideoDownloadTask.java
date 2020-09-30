@@ -1,7 +1,5 @@
 package com.jeffmony.downloader.task;
 
-import android.text.TextUtils;
-
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +27,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
@@ -294,8 +288,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             int len = 0;
             byte[] buf = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buf)) != -1) {
-                byte[] result = getDecryptBytes(buf, keyPath, method);
-                fos.write(result, 0, len);
+                fos.write(buf, 0, len);
             }
         } catch (IOException e) {
             LogUtils.w(TAG, file.getAbsolutePath() +
@@ -308,30 +301,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             VideoDownloadUtils.close(inputStream);
             VideoDownloadUtils.close(fos);
         }
-    }
-
-    private byte[] getDecryptBytes(byte[] src, String keyPath, String method) {
-        if (TextUtils.isEmpty((keyPath))) {
-            return src;
-        }
-        try {
-            if (M3U8Constants.METHOD_AES_128.equals(method) ||
-                    M3U8Constants.METHOD_SAMPLE_AES.equals(method) ||
-                    M3U8Constants.METHOD_SAMPLE_AES_CENC.equals(method) ||
-                    M3U8Constants.METHOD_SAMPLE_AES_CTR.equals(method)) {
-                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-                SecretKeySpec keySpec = new SecretKeySpec(VideoDownloadUtils.str2Hex(VideoDownloadUtils.fetchKey(keyPath)), "AES");
-                // 如果m3u8有IV标签，那么IvParameterSpec构造函数就把IV标签后的内容转成字节数组传进去
-                AlgorithmParameterSpec paramSpec = new IvParameterSpec(new byte[16]);
-                cipher.init(Cipher.DECRYPT_MODE, keySpec, paramSpec);
-                return cipher.doFinal(src);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtils.w(TAG, "decrypt file failed, exception = " + e);
-            return src;
-        }
-        return src;
     }
 
     private void createLocalM3U8File() throws IOException {

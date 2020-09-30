@@ -147,7 +147,7 @@
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
             android:textColor="@color/white"
-            android:text="是否忽略证书"
+            android:text="下载完成是否合并ts分片"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
@@ -159,13 +159,49 @@
             <RadioButton
                 android:id="@+id/btn11"
                 android:textColor="@color/black"
-                android:checked="true"
                 android:text="是"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/btn12"
+                android:textColor="@color/black"
+                android:checked="true"
+                android:text="否"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="2px" />
+
+        <TextView
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/white"
+            android:text="是否忽略证书"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RadioGroup
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+            <RadioButton
+                android:id="@+id/btn13"
+                android:textColor="@color/black"
+                android:checked="true"
+                android:text="是"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/btn14"
                 android:textColor="@color/black"
                 android:text="否"
                 android:layout_width="wrap_content"
@@ -193,7 +229,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
             <RadioButton
-                android:id="@+id/btn13"
+                android:id="@+id/btn15"
                 android:textColor="@color/black"
                 android:checked="true"
                 android:text="是"
@@ -201,7 +237,7 @@
                 android:layout_height="wrap_content" />
 
             <RadioButton
-                android:id="@+id/btn14"
+                android:id="@+id/btn16"
                 android:textColor="@color/black"
                 android:text="否"
                 android:layout_width="wrap_content"

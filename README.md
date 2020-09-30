@@ -39,6 +39,7 @@ VideoDownloadConfig config = new VideoDownloadManager.Build(this)
     .setTimeOut(DownloadConstants.READ_TIMEOUT, DownloadConstants.CONN_TIMEOUT)
     .setConcurrentCount(DownloadConstants.CONCURRENT)
     .setIgnoreCertErrors(true)
+    .setShouldM3U8Merged(true)
     .buildConfig();
 VideoDownloadManager.getInstance().initConfig(config);
 ```

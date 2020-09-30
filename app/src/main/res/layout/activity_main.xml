@@ -39,26 +39,6 @@
             android:layout_width="180dp"
             android:layout_marginTop="20dp"
             android:layout_height="wrap_content" />
-
-        <Button
-            android:background="@color/colorPrimaryDark"
-            android:id="@+id/merge_download_file_btn"
-            android:text="合并M3U8文件"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:layout_width="180dp"
-            android:layout_marginTop="20dp"
-            android:layout_height="wrap_content" />
-        
-        <Button
-            android:background="@color/colorPrimaryDark"
-            android:id="@+id/video_transcode_btn"
-            android:text="TS转换为MP4"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:layout_width="180dp"
-            android:layout_marginTop="20dp"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </RelativeLayout>

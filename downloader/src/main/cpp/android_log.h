@@ -1,7 +1,7 @@
 #include <android/log.h>
 static int use_log_report = 0;
 
-#define FF_LOG_TAG     "FFmpeg_JeffMony"
+#define FF_LOG_TAG     "JeffMony_TS"
 
 #define FF_LOG_UNKNOWN        ANDROID_LOG_UNKNOWN
 #define FF_LOG_DEFAULT        ANDROID_LOG_DEFAULT

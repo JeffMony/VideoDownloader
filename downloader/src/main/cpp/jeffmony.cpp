@@ -2,7 +2,6 @@
 #include <string>
 
 extern "C" {
-
 #include "include/libavcodec/avcodec.h"
 #include "include/libavformat/avformat.h"
 #include "include/libavfilter/avfilter.h"
@@ -11,22 +10,12 @@ extern "C" {
 #include "libavutil/mathematics.h"
 #include "android_log.h"
 #include <android/log.h>
-
-#ifndef LOG_TAG
-#define LOG_TAG "FFmpegDemo"
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG ,__VA_ARGS__) // 定义LOGD类型
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,LOG_TAG ,__VA_ARGS__) // 定义LOGI类型
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,LOG_TAG ,__VA_ARGS__) // 定义LOGW类型
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG ,__VA_ARGS__) // 定义LOGE类型
-#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,LOG_TAG ,__VA_ARGS__) // 定义LOGF类型
-#endif
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_jeffmony_downloader_process_FFmpegRemuxUtils_remux(JNIEnv *env, jclass clazz,
-                                                            jstring input_path, jstring output_path,
-                                                            jint width, jint height) {
+                                                            jstring input_path, jstring output_path) {
     if (use_log_report) {
         av_log_set_callback(ffp_log_callback_report);
     } else {
@@ -101,14 +90,6 @@ Java_com_jeffmony_downloader_process_FFmpegRemuxUtils_remux(JNIEnv *env, jclass 
             goto end;
         }
         out_stream->codecpar->codec_tag = 0;
-        if (in_codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            if (in_codecpar->width == 0) {
-                out_stream->codecpar->width = width;
-            }
-            if (in_codecpar->height == 0) {
-                out_stream->codecpar->height = height;
-            }
-        }
     }
     av_dump_format(ofmt_ctx, 0, out_filename, 1);
 
@@ -157,14 +138,16 @@ Java_com_jeffmony_downloader_process_FFmpegRemuxUtils_remux(JNIEnv *env, jclass 
         ret = av_interleaved_write_frame(ofmt_ctx, &pkt);
         if (ret < 0) {
             LOGE("Error muxing packet\n");
-            break;
+            goto end;
         }
         av_packet_unref(&pkt);
     }
 
     av_write_trailer(ofmt_ctx);
 
-    end:
+    return 1;
+
+end:
 
     avformat_close_input(&ifmt_ctx);
 
@@ -177,13 +160,35 @@ Java_com_jeffmony_downloader_process_FFmpegRemuxUtils_remux(JNIEnv *env, jclass 
 
     if (ret < 0 && ret != AVERROR_EOF) {
         LOGE("Error occurred: %s\n", av_err2str(ret));
-        return 1;
+        return -1;
     }
 
-    return 0;
-}extern "C"
+    return -1;
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_jeffmony_downloader_process_FFmpegRemuxUtils_printVideoInfo(JNIEnv *env, jclass clazz,
                                                                      jstring src_path) {
-    // TODO: implement printVideoInfo()
+    if (use_log_report) {
+        av_log_set_callback(ffp_log_callback_report);
+    } else {
+        av_log_set_callback(ffp_log_callback_brief);
+    }
+    AVFormatContext *ifmt_ctx = NULL;
+    int ret;
+    const char *in_filename = env->GetStringUTFChars(src_path, 0);
+    if ((ret = avformat_open_input(&ifmt_ctx, in_filename, 0, 0)) < 0) {
+        LOGE("Cannot open input file");
+        goto end;
+    }
+    if ((ret = avformat_find_stream_info(ifmt_ctx, 0)) < 0) {
+        LOGE("Failed to retrieve input stream information");
+        goto end;
+    }
+    av_dump_format(ifmt_ctx, 0, in_filename, 0);
+
+end:
+    avformat_close_input(&ifmt_ctx);
+
 }

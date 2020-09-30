@@ -33,9 +33,12 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
     private RadioButton mBtn5;
     private RadioButton mBtn11;
     private RadioButton mBtn12;
+    private RadioButton mBtn13;
+    private RadioButton mBtn14;
 
     private int mConcurrentNum = 3;
     private boolean mIgnoreCertErrors = true;
+    private boolean mShouldM3U8Merged = false;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -59,17 +62,19 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
     }
 
     private void initViews() {
-        mStoreLocText = (TextView) findViewById(R.id.store_loc_txt);
-        mStoreSizeText = (TextView) findViewById(R.id.store_size);
-        mOpenFileText = (TextView) findViewById(R.id.open_file_txt);
-        mClearDownloadText = (TextView) findViewById(R.id.clear_download_cache);
-        mBtn1 = (RadioButton) findViewById(R.id.btn1);
-        mBtn2 = (RadioButton) findViewById(R.id.btn2);
-        mBtn3 = (RadioButton) findViewById(R.id.btn3);
-        mBtn4 = (RadioButton) findViewById(R.id.btn4);
-        mBtn5 = (RadioButton) findViewById(R.id.btn5);
-        mBtn11 = (RadioButton) findViewById(R.id.btn11);
-        mBtn12 = (RadioButton) findViewById(R.id.btn12);
+        mStoreLocText = findViewById(R.id.store_loc_txt);
+        mStoreSizeText = findViewById(R.id.store_size);
+        mOpenFileText = findViewById(R.id.open_file_txt);
+        mClearDownloadText = findViewById(R.id.clear_download_cache);
+        mBtn1 = findViewById(R.id.btn1);
+        mBtn2 = findViewById(R.id.btn2);
+        mBtn3 = findViewById(R.id.btn3);
+        mBtn4 = findViewById(R.id.btn4);
+        mBtn5 = findViewById(R.id.btn5);
+        mBtn11 = findViewById(R.id.btn11);
+        mBtn12 = findViewById(R.id.btn12);
+        mBtn13 = findViewById(R.id.btn13);
+        mBtn14 = findViewById(R.id.btn14);
 
         mStoreLocText.setText(VideoDownloadManager.getInstance().getDownloadPath());
         mOpenFileText.setOnClickListener(this);
@@ -81,6 +86,8 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
         mBtn5.setOnClickListener(this);
         mBtn11.setOnClickListener(this);
         mBtn12.setOnClickListener(this);
+        mBtn13.setOnClickListener(this);
+        mBtn14.setOnClickListener(this);
     }
 
     @Override
@@ -113,12 +120,21 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
         } else if (v == mBtn11) {
             mBtn11.setChecked(true);
             mBtn12.setChecked(false);
-            mIgnoreCertErrors = true;
+            mShouldM3U8Merged = true;
         } else if (v == mBtn12) {
             mBtn11.setChecked(false);
             mBtn12.setChecked(true);
+            mShouldM3U8Merged = false;
+        } else if (v == mBtn13) {
+            mBtn13.setChecked(true);
+            mBtn14.setChecked(false);
+            mIgnoreCertErrors = true;
+        } else if (v == mBtn14) {
+            mBtn13.setChecked(false);
+            mBtn14.setChecked(true);
             mIgnoreCertErrors = false;
         }
+        VideoDownloadManager.getInstance().setShouldM3U8Merged(mShouldM3U8Merged);
         VideoDownloadManager.getInstance().setConcurrentCount(mConcurrentNum);
         VideoDownloadManager.getInstance().setIgnoreAllCertErrors(mIgnoreCertErrors);
     }

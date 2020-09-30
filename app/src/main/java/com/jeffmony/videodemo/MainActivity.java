@@ -15,8 +15,6 @@ import android.widget.Toast;
 
 import com.jeffmony.videodemo.download.DownloadSettingsActivity;
 import com.jeffmony.videodemo.download.VideoDownloadListActivity;
-import com.jeffmony.videodemo.merge.MergeDownloadFileActivity;
-import com.jeffmony.videodemo.transcode.VideoTranscodeActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +25,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Button mDownloadSettingBtn;
     private Button mDownloadListBtn;
-    private Button mMergeM3U8FileBtn;
-    private Button mVideoTranscodeBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +37,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initViews() {
         mDownloadSettingBtn = (Button) findViewById(R.id.download_settings_btn);
         mDownloadListBtn = (Button) findViewById(R.id.download_list_btn);
-        mMergeM3U8FileBtn = (Button) findViewById(R.id.merge_download_file_btn);
-        mVideoTranscodeBtn = (Button) findViewById(R.id.video_transcode_btn);
 
         mDownloadSettingBtn.setOnClickListener(this);
         mDownloadListBtn.setOnClickListener(this);
-        mMergeM3U8FileBtn.setOnClickListener(this);
-        mVideoTranscodeBtn.setOnClickListener(this);
     }
 
     private void requestPermissions() {
@@ -94,12 +86,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
         } else if (v == mDownloadListBtn) {
             Intent intent = new Intent(this, VideoDownloadListActivity.class);
-            startActivity(intent);
-        } else if (v == mMergeM3U8FileBtn) {
-            Intent intent = new Intent(this, MergeDownloadFileActivity.class);
-            startActivity(intent);
-        } else if (v == mVideoTranscodeBtn) {
-            Intent intent = new Intent(this, VideoTranscodeActivity.class);
             startActivity(intent);
         }
     }
