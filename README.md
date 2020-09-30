@@ -9,6 +9,9 @@
 > * 增加M3U8合并为MP4的功能
 
 #### 版本更新
+##### 4.0.0
+> * M3U8文件下载完成后合并为MP4文件
+> * 优化部分HTTPS链接下载失败的问题
 ##### 3.0.0
 > * 解决部分M3U8视频下载失败的问题
 > * 更新playersdk版本
@@ -22,7 +25,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.JeffMony:VideoDownloader:3.0.0'
+    implementation 'com.github.JeffMony:VideoDownloader:4.0.0'
 }
 ```
 
