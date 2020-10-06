@@ -24,6 +24,7 @@ public class MyApplication extends Application {
                 .setTimeOut(DownloadConstants.READ_TIMEOUT, DownloadConstants.CONN_TIMEOUT)
                 .setConcurrentCount(DownloadConstants.CONCURRENT)
                 .setIgnoreCertErrors(true)
+                .setShouldM3U8Merged(true)
                 .buildConfig();
         VideoDownloadManager.getInstance().initConfig(config);
     }

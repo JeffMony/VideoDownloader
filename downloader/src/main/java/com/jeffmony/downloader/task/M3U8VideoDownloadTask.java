@@ -196,17 +196,18 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             }
             mTaskItem.setIsCompleted(isCompleted);
             if (isCompleted) {
+                try {
+                    createLocalM3U8File();
+                } catch (Exception e) {
+                    notifyDownloadError(e);
+                }
                 mTaskItem.setTotalSize(mCurrentCachedSize);
                 mTotalSize = mCurrentCachedSize;
                 mDownloadTaskListener.onTaskProgress(100.0f,
                         mCurrentCachedSize, mCurrentCachedSize, mM3U8);
                 mDownloadTaskListener.onTaskFinished(mTotalSize);
                 cancelTimer();
-                try {
-                    createLocalM3U8File();
-                } catch (Exception e) {
-                    notifyDownloadError(e);
-                }
+
             }
         }
     }
