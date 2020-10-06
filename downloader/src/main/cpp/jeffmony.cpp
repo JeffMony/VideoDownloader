@@ -4,7 +4,6 @@
 extern "C" {
 #include "include/libavcodec/avcodec.h"
 #include "include/libavformat/avformat.h"
-#include "include/libavfilter/avfilter.h"
 #include "include/libavutil/avutil.h"
 #include "libavutil/timestamp.h"
 #include "libavutil/mathematics.h"
