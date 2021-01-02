@@ -152,7 +152,7 @@ public class VideoDownloadManager {
             startBaseVideoDownloadTask(taskItem, headers);
         } else if (taskItem.isHlsType()) {
             VideoInfoParserManager.getInstance()
-                    .parseM3U8File(taskItem, new IVideoInfoParseListener() {
+                    .parseM3U8File(taskItem, headers, new IVideoInfoParseListener() {
 
                         @Override
                         public void onM3U8FileParseSuccess(VideoTaskItem info, M3U8 m3u8) {

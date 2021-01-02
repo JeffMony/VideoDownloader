@@ -153,7 +153,7 @@ public class VideoInfoParserManager {
                                HashMap<String, String> headers) {
         try {
             M3U8 m3u8 =
-                    M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null);
+                    M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null, headers);
             // HLS LIVE video cannot be proxy cached.
             if (m3u8.hasEndList()) {
                 String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
@@ -176,7 +176,7 @@ public class VideoInfoParserManager {
         }
     }
 
-    public void parseM3U8File(VideoTaskItem taskItem,
+    public void parseM3U8File(VideoTaskItem taskItem, final HashMap<String, String> headers,
                               IVideoInfoParseListener callback) {
         File remoteM3U8File = new File(taskItem.getSaveDir(), VideoDownloadUtils.REMOTE_M3U8);
         if (!remoteM3U8File.exists()) {
@@ -186,7 +186,7 @@ public class VideoInfoParserManager {
         }
         try {
             M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), true,
-                    remoteM3U8File);
+                    remoteM3U8File, headers);
             callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
             e.printStackTrace();
