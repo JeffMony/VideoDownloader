@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +37,7 @@ public class M3U8Utils {
      */
     public static M3U8 parseM3U8Info(VideoDownloadConfig config,
                                      String videoUrl, boolean isLocalFile,
-                                     File m3u8File) throws IOException {
+                                     File m3u8File, final HashMap<String, String> headers) throws IOException {
         URL url = new URL(videoUrl);
         InputStreamReader inputStreamReader = null;
         BufferedReader bufferedReader;
@@ -44,6 +46,11 @@ public class M3U8Utils {
             bufferedReader = new BufferedReader(inputStreamReader);
         } else {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            if (headers != null) {
+                for (Map.Entry<String, String> item : headers.entrySet()) {
+                    connection.setRequestProperty(item.getKey(), item.getValue());
+                }
+            }
             if (config.shouldIgnoreCertErrors() && connection instanceof
                     HttpsURLConnection) {
                 HttpUtils.trustAllCert((HttpsURLConnection) connection);
@@ -126,7 +133,7 @@ public class M3U8Utils {
             }
             // It has '#EXT-X-STREAM-INF' tag;
             if (hasStreamInfo) {
-                return parseM3U8Info(config, getFinalUrl(videoUrl, line), isLocalFile, m3u8File);
+                return parseM3U8Info(config, getFinalUrl(videoUrl, line), isLocalFile, m3u8File, headers);
             }
             M3U8Ts ts = new M3U8Ts();
             if (isLocalFile) {
