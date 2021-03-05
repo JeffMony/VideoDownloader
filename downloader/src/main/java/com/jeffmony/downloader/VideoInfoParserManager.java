@@ -16,14 +16,13 @@ import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
-import java.net.Proxy;
 import java.util.HashMap;
 
 public class VideoInfoParserManager {
 
     private static final String TAG = "VideoInfoParserManager";
 
-    private static VideoInfoParserManager sInstance;
+    private static volatile VideoInfoParserManager sInstance;
     private VideoDownloadConfig mConfig;
 
     public static VideoInfoParserManager getInstance() {
@@ -59,8 +58,7 @@ public class VideoInfoParserManager {
                 return;
             }
             if (!HttpUtils.matchHttpSchema(taskItem.getUrl())) {
-                listener.onBaseVideoInfoFailed(
-                        new Throwable("Can parse the request resource's schema."));
+                listener.onBaseVideoInfoFailed(new Throwable("Can parse the request resource's schema."));
                 return;
             }
 
@@ -85,7 +83,7 @@ public class VideoInfoParserManager {
                 fileName = fileName.toLowerCase();
                 if (fileName.endsWith(".m3u8")) {
                     taskItem.setMimeType(Video.Mime.M3U8);
-                    parseM3U8Info(taskItem, listener, null, headers);
+                    parseM3U8Info(taskItem, listener);
                     return;
                 } else if (fileName.endsWith(".mp4")) {
                     taskItem.setMimeType(Video.Mime.MP4);
@@ -124,7 +122,7 @@ public class VideoInfoParserManager {
                     taskItem.setVideoType(Video.Type.MP4_TYPE);
                     listener.onBaseVideoInfoSuccess(taskItem);
                 } else if (isM3U8Mimetype(mimeType)) {
-                    parseM3U8Info(taskItem, listener, null, headers);
+                    parseM3U8Info(taskItem, listener);
                 } else if (mimeType.contains(Video.Mime.MIME_TYPE_WEBM)) {
                     taskItem.setVideoType(Video.Type.WEBM_TYPE);
                     listener.onBaseVideoInfoSuccess(taskItem);
@@ -149,11 +147,9 @@ public class VideoInfoParserManager {
         }
     }
 
-    private void parseM3U8Info(VideoTaskItem taskItem, IVideoInfoListener listener, Proxy proxy,
-                               HashMap<String, String> headers) {
+    private void parseM3U8Info(VideoTaskItem taskItem, IVideoInfoListener listener) {
         try {
-            M3U8 m3u8 =
-                    M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null);
+            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null);
             // HLS LIVE video cannot be proxy cached.
             if (m3u8.hasEndList()) {
                 String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
@@ -180,13 +176,11 @@ public class VideoInfoParserManager {
                               IVideoInfoParseListener callback) {
         File remoteM3U8File = new File(taskItem.getSaveDir(), VideoDownloadUtils.REMOTE_M3U8);
         if (!remoteM3U8File.exists()) {
-            callback.onM3U8FileParseFailed(
-                    taskItem, new Throwable("Cannot find remote.m3u8 file."));
+            callback.onM3U8FileParseFailed(taskItem, new Throwable("Cannot find remote.m3u8 file."));
             return;
         }
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), true,
-                    remoteM3U8File);
+            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), true, remoteM3U8File);
             callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
             e.printStackTrace();

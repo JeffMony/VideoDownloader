@@ -1,12 +1,9 @@
 package com.jeffmony.downloader;
 
-import android.content.Context;
-
 import java.io.File;
 
 public class VideoDownloadConfig {
 
-    private Context mContext;
     private File mCacheRoot;
     private int mReadTimeOut;
     private int mConnTimeOut;
@@ -15,10 +12,9 @@ public class VideoDownloadConfig {
     private int mConcurrentCount;
     private boolean mShouldM3U8Merged;
 
-    public VideoDownloadConfig(Context context, File cacheRoot, int readTimeOut,
+    public VideoDownloadConfig(File cacheRoot, int readTimeOut,
                                int connTimeOut, boolean redirect, boolean ignoreAllCertErrors,
                                int concurrentCount, boolean shouldM3U8Merged) {
-        mContext = context;
         mCacheRoot = cacheRoot;
         mReadTimeOut = readTimeOut;
         mConnTimeOut = connTimeOut;
@@ -26,10 +22,6 @@ public class VideoDownloadConfig {
         mIgnoreAllCertErrors = ignoreAllCertErrors;
         mConcurrentCount = concurrentCount;
         mShouldM3U8Merged = shouldM3U8Merged;
-    }
-
-    public Context getContext() {
-        return mContext;
     }
 
     public File getCacheRoot() {

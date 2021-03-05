@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class VideoDownloadTask {
 
-    protected static final int THREAD_COUNT = 3;
+    protected static final int THREAD_COUNT = 6;
     protected static final int BUFFER_SIZE = VideoDownloadUtils.DEFAULT_BUFFER_SIZE;
     protected final VideoDownloadConfig mConfig;
     protected final VideoTaskItem mTaskItem;

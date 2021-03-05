@@ -43,7 +43,7 @@ public class HttpUtils {
                                      HashMap<String, String> headers)
             throws IOException {
         String mimeType = null;
-        URL url = null;
+        URL url;
         try {
             url = new URL(videoUrl);
         } catch (MalformedURLException e) {
@@ -85,7 +85,7 @@ public class HttpUtils {
                                      String videoUrl, Proxy proxy,
                                      HashMap<String, String> headers)
             throws IOException {
-        URL url = null;
+        URL url;
         try {
             url = new URL(videoUrl);
         } catch (MalformedURLException e) {
@@ -126,15 +126,13 @@ public class HttpUtils {
     private static HttpURLConnection
     makeConnection(VideoDownloadConfig config, URL url, Proxy proxy,
                    HashMap<String, String> headers) throws IOException {
-        HttpURLConnection connection = null;
+        HttpURLConnection connection;
         if (proxy != null) {
-            // V-Card
             connection = (HttpURLConnection) url.openConnection(proxy);
         } else {
             connection = (HttpURLConnection) url.openConnection();
         }
-        if (config.shouldIgnoreCertErrors() && connection instanceof
-                HttpsURLConnection) {
+        if (config.shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
             trustAllCert((HttpsURLConnection) (connection));
         }
         connection.setConnectTimeout(config.getConnTimeOut());
@@ -164,7 +162,6 @@ public class HttpUtils {
     private static void closeConnection(HttpURLConnection connection) {
         if (connection != null) {
             connection.disconnect();
-            connection = null;
         }
     }
 

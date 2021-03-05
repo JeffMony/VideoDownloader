@@ -26,13 +26,13 @@ import com.jeffmony.downloader.process.VideoProcessManager;
 import com.jeffmony.downloader.task.BaseVideoDownloadTask;
 import com.jeffmony.downloader.task.M3U8VideoDownloadTask;
 import com.jeffmony.downloader.task.VideoDownloadTask;
+import com.jeffmony.downloader.utils.ContextUtils;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class VideoDownloadManager {
     private static final int MSG_FETCH_DOWNLOAD_INFO = 100;
     private static final int MSG_DELETE_ALL_FILES = 101;
 
-    private static VideoDownloadManager sInstance = null;
+    private static volatile VideoDownloadManager sInstance = null;
     private DownloadListener mGlobalDownloadListener = null;
     private VideoDownloadDatabaseHelper mVideoDatabaseHelper = null;
     private VideoDownloadQueue mVideoDownloadQueue;
@@ -65,6 +65,74 @@ public class VideoDownloadManager {
     private List<IDownloadInfosCallback> mDownloadInfoCallbacks = new CopyOnWriteArrayList<>();
     private Map<String, VideoDownloadTask> mVideoDownloadTaskMap = new ConcurrentHashMap<>();
     private Map<String, VideoTaskItem> mVideoItemTaskMap = new ConcurrentHashMap<>();
+
+    public static class Build {
+        private File mCacheRoot;
+        private int mReadTimeOut = 30 * 1000;              // 30 seconds
+        private int mConnTimeOut = 30 * 1000;              // 30 seconds
+        private boolean mRedirect = true;
+        private boolean mIgnoreCertErrors = true;
+        private int mConcurrentCount = 3;
+        private boolean mShouldM3U8Merged = false;
+
+        public Build(Context context) {
+            ContextUtils.initApplicationContext(context);
+        }
+
+        public Build setCacheRoot(File cacheRoot) {
+            mCacheRoot = cacheRoot;
+            return this;
+        }
+
+        public Build setTimeOut(int readTimeOut, int connTimeOut) {
+            mReadTimeOut = readTimeOut;
+            mConnTimeOut = connTimeOut;
+            return this;
+        }
+
+        public Build setUrlRedirect(boolean redirect) {
+            mRedirect = redirect;
+            return this;
+        }
+
+        public Build setConcurrentCount(int count) {
+            mConcurrentCount = count;
+            return this;
+        }
+
+        public Build setIgnoreCertErrors(boolean ignoreCertErrors) {
+            mIgnoreCertErrors = ignoreCertErrors;
+            return this;
+        }
+
+        public Build setShouldM3U8Merged(boolean shouldM3U8Merged) {
+            mShouldM3U8Merged = shouldM3U8Merged;
+            return this;
+        }
+
+        public VideoDownloadConfig buildConfig() {
+            return new VideoDownloadConfig(mCacheRoot, mReadTimeOut, mConnTimeOut, mRedirect,
+                    mIgnoreCertErrors, mConcurrentCount, mShouldM3U8Merged);
+        }
+    }
+
+    public void setConcurrentCount(int count) {
+        if (mConfig != null) {
+            mConfig.setConcurrentCount(count);
+        }
+    }
+
+    public void setIgnoreAllCertErrors(boolean enable) {
+        if (mConfig != null) {
+            mConfig.setIgnoreAllCertErrors(enable);
+        }
+    }
+
+    public void setShouldM3U8Merged(boolean enable) {
+        if (mConfig != null) {
+            mConfig.setShouldM3U8Merged(enable);
+        }
+    }
 
     public static VideoDownloadManager getInstance() {
         if (sInstance == null) {
@@ -81,9 +149,9 @@ public class VideoDownloadManager {
         mVideoDownloadQueue = new VideoDownloadQueue();
     }
 
-    public void initConfig(VideoDownloadConfig config) {
+    public void initConfig(@NonNull VideoDownloadConfig config) {
         mConfig = config;
-        mVideoDatabaseHelper = new VideoDownloadDatabaseHelper(mConfig.getContext());
+        mVideoDatabaseHelper = new VideoDownloadDatabaseHelper(ContextUtils.getApplicationContext());
         VideoInfoParserManager.getInstance().initConfig(config);
         HandlerThread stateThread = new HandlerThread("Video_download_state_thread");
         stateThread.start();
@@ -336,13 +404,15 @@ public class VideoDownloadManager {
     }
 
     public void pauseAllDownloadTasks() {
-        List<VideoTaskItem> taskList = mVideoDownloadQueue.getDownloadList();
-        for (VideoTaskItem taskItem : taskList) {
-            if (taskItem.isPendingTask()) {
-                mVideoDownloadQueue.remove(taskItem);
-                mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
-            } else if (taskItem.isRunningTask()) {
-                pauseDownloadTask(taskItem);
+        synchronized (mQueueLock) {
+            List<VideoTaskItem> taskList = mVideoDownloadQueue.getDownloadList();
+            for (VideoTaskItem taskItem : taskList) {
+                if (taskItem.isPendingTask()) {
+                    mVideoDownloadQueue.remove(taskItem);
+                    mVideoDownloadHandler.obtainMessage(MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
+                } else if (taskItem.isRunningTask()) {
+                    pauseDownloadTask(taskItem);
+                }
             }
         }
     }
@@ -563,12 +633,9 @@ public class VideoDownloadManager {
         removeDownloadQueue(taskItem);
 
         if (mConfig.shouldM3U8Merged() && taskItem.isHlsType()) {
-            doMergeTs(taskItem, new IM3U8MergeResultListener() {
-                @Override
-                public void onCallback(VideoTaskItem taskItem) {
-                    listener.onDownloadSuccess(taskItem);
-                    markDownloadFinishEvent(taskItem);
-                }
+            doMergeTs(taskItem, taskItem1 -> {
+                listener.onDownloadSuccess(taskItem1);
+                markDownloadFinishEvent(taskItem1);
             });
         } else {
             listener.onDownloadSuccess(taskItem);
@@ -653,75 +720,5 @@ public class VideoDownloadManager {
                 mVideoDatabaseHelper.markDownloadProgressInfoUpdateEvent(taskItem);
             }
         });
-    }
-
-
-    public static class Build {
-        private Context mContext;
-        private File mCacheRoot;
-        private int mReadTimeOut = 30 * 1000;              // 30 seconds
-        private int mConnTimeOut = 30 * 1000;              // 30 seconds
-        private boolean mRedirect = true;
-        private boolean mIgnoreCertErrors = true;
-        private int mConcurrentCount = 3;
-        private boolean mShouldM3U8Merged = false;
-
-        public Build(Context context) {
-            mContext = context;
-        }
-
-        public Build setCacheRoot(File cacheRoot) {
-            mCacheRoot = cacheRoot;
-            return this;
-        }
-
-        public Build setTimeOut(int readTimeOut, int connTimeOut) {
-            mReadTimeOut = readTimeOut;
-            mConnTimeOut = connTimeOut;
-            return this;
-        }
-
-        public Build setUrlRedirect(boolean redirect) {
-            mRedirect = redirect;
-            return this;
-        }
-
-        public Build setConcurrentCount(int count) {
-            mConcurrentCount = count;
-            return this;
-        }
-
-        public Build setIgnoreCertErrors(boolean ignoreCertErrors) {
-            mIgnoreCertErrors = ignoreCertErrors;
-            return this;
-        }
-
-        public Build setShouldM3U8Merged(boolean shouldM3U8Merged) {
-            mShouldM3U8Merged = shouldM3U8Merged;
-            return this;
-        }
-
-        public VideoDownloadConfig buildConfig() {
-            return new VideoDownloadConfig(mContext, mCacheRoot, mReadTimeOut,
-                    mConnTimeOut, mRedirect, mIgnoreCertErrors, mConcurrentCount, mShouldM3U8Merged);
-        }
-    }
-
-    public void setConcurrentCount(int count) {
-        if (mConfig != null) {
-            mConfig.setConcurrentCount(count);
-        }
-    }
-
-    public void setIgnoreAllCertErrors(boolean enable) {
-        if (mConfig != null) {
-            mConfig.setIgnoreAllCertErrors(enable);
-        }
-    }
-
-    public void setShouldM3U8Merged(boolean enable) {
-        if (mConfig != null) {
-            mConfig.setShouldM3U8Merged(enable);
-        }
     }
 }

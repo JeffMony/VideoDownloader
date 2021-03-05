@@ -116,8 +116,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                     try {
                         downloadTsTask(ts, tsFile, tsName);
                     } catch (Exception e) {
-                        LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" +
-                                e);
+                        LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" + e);
                         notifyDownloadError(e);
                     }
                 }
@@ -257,8 +256,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         do {
             URL url = new URL(videoUrl);
             connection = (HttpURLConnection) url.openConnection();
-            if (mConfig.shouldIgnoreCertErrors() && connection instanceof
-                    HttpsURLConnection) {
+            if (mConfig.shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
                 HttpUtils.trustAllCert((HttpsURLConnection) (connection));
             }
             connection.setConnectTimeout(mConfig.getConnTimeOut());
