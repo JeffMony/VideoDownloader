@@ -1,22 +1,24 @@
 package com.jeffmony.downloader.utils;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.text.TextUtils;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
 import java.net.ProtocolException;
-import java.net.Proxy;
 import java.net.URL;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -28,6 +30,8 @@ public class HttpUtils {
     public static final int RESPONSE_200 = 200;
     public static final int RESPONSE_206 = 206;
 
+    private static int sRedirectCount = 0;
+
     public static boolean matchHttpSchema(String url) {
         if (TextUtils.isEmpty(url))
             return false;
@@ -36,100 +40,34 @@ public class HttpUtils {
         return "http".equals(schema) || "https".equals(schema);
     }
 
-    public static String getMimeType(String videoUrl, Proxy proxy,
-                                     HashMap<String, String> headers) throws IOException {
-        String mimeType = null;
-        URL url;
-        try {
-            url = new URL(videoUrl);
-        } catch (MalformedURLException e) {
-            LogUtils.w(TAG, "VideoUrl(" + videoUrl + ") packages error, exception = " + e.getMessage());
-            throw new MalformedURLException("URL parse error.");
-        }
-        HttpURLConnection connection = null;
-        if (url != null) {
+    public static HttpURLConnection getConnection(String videoUrl, Map<String, String> headers, boolean shouldIgnoreCertErrors) throws IOException {
+        URL url = new URL(videoUrl);
+        sRedirectCount = 0;
+        while(sRedirectCount < MAX_REDIRECT) {
             try {
-                connection = makeConnection(url, proxy, headers);
+                HttpURLConnection connection = makeConnection(url, headers, shouldIgnoreCertErrors);
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_MULT_CHOICE ||
+                        responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
+                        responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
+                        responseCode == HttpURLConnection.HTTP_SEE_OTHER &&
+                                (responseCode == 307 || responseCode == 308)) {
+                    String location = connection.getHeaderField("Location");
+                    connection.disconnect();
+                    url = handleRedirect(url, location);
+                    sRedirectCount++;
+                } else {
+                    return connection;
+                }
             } catch (IOException e) {
-                LogUtils.w(TAG, "Unable to connect videoUrl(" + videoUrl + "), exception = " + e.getMessage());
-                closeConnection(connection);
-                throw new IOException("getMimeType connect failed.");
-            }
-            int responseCode;
-            if (connection != null) {
-                try {
-                    responseCode = connection.getResponseCode();
-                } catch (IOException e) {
-                    LogUtils.w(TAG, "Unable to Get reponseCode videoUrl(" + videoUrl + "), exception = " + e.getMessage());
-                    closeConnection(connection);
-                    throw new IOException("getMimeType get responseCode failed.");
-                }
-                if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
-                    String contentType = connection.getContentType();
-                    LogUtils.i(TAG, "contentType = " + contentType);
-                    return contentType;
+                if ((e instanceof SSLHandshakeException || e instanceof SSLPeerUnverifiedException) &&
+                        !shouldIgnoreCertErrors) {
+                    //这种情况下需要信任证书重试
+                    return getConnection(videoUrl, headers, true);
                 }
             }
         }
-        return mimeType;
-    }
-
-    public static String getFinalUrl(String videoUrl, Proxy proxy,
-                                     HashMap<String, String> headers) throws IOException {
-        URL url;
-        try {
-            url = new URL(videoUrl);
-        } catch (MalformedURLException e) {
-            LogUtils.w(TAG, "VideoUrl(" + videoUrl + ") packages error, exception = " + e.getMessage());
-            throw new MalformedURLException("URL parse error.");
-        }
-        url = handleRedirectRequest(url, proxy, headers);
-        return url.toString();
-    }
-
-    public static URL handleRedirectRequest(URL url, Proxy proxy,
-                                            HashMap<String, String> headers) throws IOException {
-        int redirectCount = 0;
-        while (redirectCount++ < MAX_REDIRECT) {
-            HttpURLConnection connection = makeConnection(url, proxy, headers);
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_MULT_CHOICE ||
-                    responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
-                    responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
-                    responseCode == HttpURLConnection.HTTP_SEE_OTHER &&
-                            (responseCode == 307 /* HTTP_TEMP_REDIRECT */
-                                    || responseCode == 308 /* HTTP_PERM_REDIRECT */)) {
-                String location = connection.getHeaderField("Location");
-                connection.disconnect();
-                url = handleRedirect(url, location);
-                return handleRedirectRequest(url, proxy, headers);
-            } else {
-                return url;
-            }
-        }
-        throw new NoRouteToHostException("Too many redirects: " + redirectCount);
-    }
-
-    private static HttpURLConnection makeConnection(URL url, Proxy proxy,
-                   HashMap<String, String> headers) throws IOException {
-        HttpURLConnection connection;
-        if (proxy != null) {
-            connection = (HttpURLConnection) url.openConnection(proxy);
-        } else {
-            connection = (HttpURLConnection) url.openConnection();
-        }
-        if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
-            trustAllCert((HttpsURLConnection) (connection));
-        }
-        connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
-        connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
-        if (headers != null) {
-            for (Map.Entry<String, String> item : headers.entrySet()) {
-                connection.setRequestProperty(item.getKey(), item.getValue());
-            }
-        }
-        connection.connect();
-        return connection;
+        throw new NoRouteToHostException("Too many redirects: " + sRedirectCount);
     }
 
     private static URL handleRedirect(URL originalUrl, String location) throws IOException {
@@ -144,7 +82,24 @@ public class HttpUtils {
         return url;
     }
 
-    private static void closeConnection(HttpURLConnection connection) {
+    private static HttpURLConnection makeConnection(URL url, Map<String, String> headers, boolean shouldIgnoreCertErrors) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        if (shouldIgnoreCertErrors && connection instanceof HttpsURLConnection) {
+            trustAllCert((HttpsURLConnection) (connection));
+        }
+        connection.setInstanceFollowRedirects(false);
+        connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
+        connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
+        if (headers != null) {
+            for (Map.Entry<String, String> item : headers.entrySet()) {
+                connection.setRequestProperty(item.getKey(), item.getValue());
+            }
+        }
+        connection.connect();
+        return connection;
+    }
+
+    public static void closeConnection(HttpURLConnection connection) {
         if (connection != null) {
             connection.disconnect();
         }
@@ -155,33 +110,36 @@ public class HttpUtils {
         try {
             sslContext = SSLContext.getInstance("TLS");
             if (sslContext != null) {
-                TrustManager tm = new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-
+                sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                    @SuppressLint("TrustAllX509TrustManager")
+                    @Override
                     public void checkClientTrusted(X509Certificate[] chain,
-                                                   String authType) {
-                        LogUtils.d(TAG, "checkClientTrusted.");
+                                                   String authType) throws CertificateException {
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
+                    @Override
                     public void checkServerTrusted(X509Certificate[] chain,
-                                                   String authType) {
-                        LogUtils.d(TAG, "checkServerTrusted.");
+                                                   String authType) throws CertificateException {
                     }
-                };
-                sslContext.init(null, new TrustManager[]{tm}, null);
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+                }}, null);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "SSLContext init failed");
+            LogUtils.w(TAG,"SSLContext init failed");
         }
         // Cannot do ssl checkl.
-        if (sslContext != null) {
-            httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+        if (sslContext == null) {
+            return;
         }
         // Trust the cert.
         HostnameVerifier hostnameVerifier = (hostname, session) -> true;
         httpsURLConnection.setHostnameVerifier(hostnameVerifier);
+        httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
     }
 }
 

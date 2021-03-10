@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.jeffmony.downloader.VideoDownloadConfig;
+import com.jeffmony.downloader.model.Video;
 
 import java.io.Closeable;
 import java.io.File;
@@ -30,6 +31,47 @@ public class VideoDownloadUtils {
 
     public static VideoDownloadConfig getDownloadConfig() {
         return mDownloadConfig;
+    }
+
+    public static boolean isNameSupported(String fileName) {
+        if (fileName.endsWith(Video.SUFFIX.SUFFIX_MP4) ||
+                fileName.endsWith(Video.SUFFIX.SUFFIX_MOV) ||
+                fileName.endsWith(Video.SUFFIX.SUFFIX_WEBM) ||
+                fileName.endsWith(Video.SUFFIX.SUFFIX_3GP) ||
+                fileName.endsWith(Video.SUFFIX.SUFFIX_MKV)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String getVideoMime(String fileName) {
+        if (fileName.endsWith(Video.SUFFIX.SUFFIX_MP4)) {
+            return Video.TypeInfo.MP4;
+        } else if (fileName.endsWith(Video.SUFFIX.SUFFIX_MOV)) {
+            return Video.TypeInfo.MOV;
+        } else if (fileName.endsWith(Video.SUFFIX.SUFFIX_WEBM)) {
+            return Video.TypeInfo.WEBM;
+        } else if (fileName.endsWith(Video.SUFFIX.SUFFIX_3GP)) {
+            return Video.TypeInfo.GP3;
+        } else if (fileName.endsWith(Video.SUFFIX.SUFFIX_MKV)) {
+            return Video.TypeInfo.MKV;
+        }
+        return Video.TypeInfo.OTHER;
+    }
+
+    public static int getVideoType(String type) {
+        if (type.endsWith(Video.SUFFIX.SUFFIX_MP4) || type.contains(Video.Mime.MIME_TYPE_MP4)) {
+            return Video.Type.MP4_TYPE;
+        } else if (type.endsWith(Video.SUFFIX.SUFFIX_MOV) || type.contains(Video.Mime.MIME_TYPE_QUICKTIME)) {
+            return Video.Type.QUICKTIME_TYPE;
+        } else if (type.endsWith(Video.SUFFIX.SUFFIX_WEBM) || type.contains(Video.Mime.MIME_TYPE_WEBM)) {
+            return Video.Type.WEBM_TYPE;
+        } else if (type.endsWith(Video.SUFFIX.SUFFIX_3GP) || type.contains(Video.Mime.MIME_TYPE_3GP)) {
+            return Video.Type.GP3_TYPE;
+        } else if (type.endsWith(Video.SUFFIX.SUFFIX_MKV) || type.contains(Video.Mime.MIME_TYPE_MKV)) {
+            return Video.Type.MKV_TYPE;
+        }
+        return Video.Type.DEFAULT;
     }
 
     public static File getVideoCacheDir(Context context) {

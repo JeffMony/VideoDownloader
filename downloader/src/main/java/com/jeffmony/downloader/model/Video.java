@@ -39,12 +39,25 @@ public class Video {
         // Test urls:
         //  http://api.xundog.top/sp/320.mkv
         public static String MIME_TYPE_MKV = "video/x-matroska";
+    }
 
+    public static class TypeInfo {
         public static String M3U8 = "m3u8";
         public static String MP4 = "mp4";
         public static String MOV = "mov";
         public static String WEBM = "webm";
         public static String GP3 = "3gp";
         public static String MKV = "mkv";
+        public static final String OTHER = "other";
     }
+
+    public static class SUFFIX {
+        public static final String SUFFIX_M3U8 = ".m3u8";
+        public static final String SUFFIX_MP4 = ".mp4";
+        public static final String SUFFIX_MOV = ".mov";
+        public static final String SUFFIX_WEBM = ".webm";
+        public static final String SUFFIX_3GP = ".3gp";
+        public static final String SUFFIX_MKV = ".mkv";
+    }
+
 }
