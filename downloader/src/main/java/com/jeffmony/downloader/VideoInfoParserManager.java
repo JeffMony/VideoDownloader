@@ -23,7 +23,6 @@ public class VideoInfoParserManager {
     private static final String TAG = "VideoInfoParserManager";
 
     private static volatile VideoInfoParserManager sInstance;
-    private VideoDownloadConfig mConfig;
 
     public static VideoInfoParserManager getInstance() {
         if (sInstance == null) {
@@ -36,19 +35,10 @@ public class VideoInfoParserManager {
         return sInstance;
     }
 
-    public void initConfig(VideoDownloadConfig config) {
-        mConfig = config;
-    }
-
     public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener,
                                             final HashMap<String, String> headers,
                                             final boolean shouldRedirect) {
-        WorkerThreadHandler.submitRunnableTask(new Runnable() {
-            @Override
-            public void run() {
-                doParseVideoInfoTask(taskItem, listener, headers, shouldRedirect);
-            }
-        });
+        WorkerThreadHandler.submitRunnableTask(() -> doParseVideoInfoTask(taskItem, listener, headers, shouldRedirect));
     }
 
     private void doParseVideoInfoTask(VideoTaskItem taskItem, IVideoInfoListener listener, HashMap<String, String> headers, boolean shouldRedirect) {
@@ -65,9 +55,8 @@ public class VideoInfoParserManager {
             String finalUrl = taskItem.getUrl();
 
             // Redirect is enabled, send redirect request to get final location.
-            if (mConfig.shouldRedirect() && shouldRedirect) {
-                finalUrl =
-                        HttpUtils.getFinalUrl(mConfig, taskItem.getUrl(), null, headers);
+            if (VideoDownloadUtils.getDownloadConfig().shouldRedirect() && shouldRedirect) {
+                finalUrl = HttpUtils.getFinalUrl(taskItem.getUrl(), null, headers);
                 if (TextUtils.isEmpty(finalUrl)) {
                     listener.onBaseVideoInfoFailed(new Throwable("FinalUrl is null."));
                     return;
@@ -113,7 +102,7 @@ public class VideoInfoParserManager {
                 }
             }
             // Add more video mimeType.
-            String mimeType = HttpUtils.getMimeType(mConfig, finalUrl, null, headers);
+            String mimeType = HttpUtils.getMimeType(finalUrl, null, headers);
             LogUtils.i(TAG, "parseVideoInfo mimeType=" + mimeType);
             if (mimeType != null) {
                 mimeType = mimeType.toLowerCase();
@@ -149,11 +138,11 @@ public class VideoInfoParserManager {
 
     private void parseM3U8Info(VideoTaskItem taskItem, IVideoInfoListener listener) {
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), false, null);
+            M3U8 m3u8 = M3U8Utils.parseM3U8Info(taskItem.getUrl(), false, null);
             // HLS LIVE video cannot be proxy cached.
             if (m3u8.hasEndList()) {
                 String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
-                File dir = new File(mConfig.getCacheRoot(), saveName);
+                File dir = new File(VideoDownloadUtils.getDownloadConfig().getCacheRoot(), saveName);
                 if (!dir.exists()) {
                     dir.mkdir();
                 }
@@ -180,7 +169,7 @@ public class VideoInfoParserManager {
             return;
         }
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(mConfig, taskItem.getUrl(), true, remoteM3U8File);
+            M3U8 m3u8 = M3U8Utils.parseM3U8Info(taskItem.getUrl(), true, remoteM3U8File);
             callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
             e.printStackTrace();

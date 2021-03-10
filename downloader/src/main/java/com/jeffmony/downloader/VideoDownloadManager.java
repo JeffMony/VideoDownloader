@@ -56,11 +56,11 @@ public class VideoDownloadManager {
     private Map<String, VideoTaskItem> mVideoItemTaskMap = new ConcurrentHashMap<>();
 
     public static class Build {
-        private File mCacheRoot;
-        private int mReadTimeOut = 30 * 1000;              // 30 seconds
-        private int mConnTimeOut = 30 * 1000;              // 30 seconds
-        private boolean mRedirect = true;
-        private boolean mIgnoreCertErrors = true;
+        private String mCacheRoot;
+        private int mReadTimeOut = 60 * 1000;              // 60 seconds
+        private int mConnTimeOut = 60 * 1000;              // 60 seconds
+        private boolean mRedirect = false;
+        private boolean mIgnoreCertErrors = false;
         private int mConcurrentCount = 3;
         private boolean mShouldM3U8Merged = false;
 
@@ -68,32 +68,38 @@ public class VideoDownloadManager {
             ContextUtils.initApplicationContext(context);
         }
 
-        public Build setCacheRoot(File cacheRoot) {
+        //设置下载目录
+        public Build setCacheRoot(String cacheRoot) {
             mCacheRoot = cacheRoot;
             return this;
         }
 
+        //设置超时时间
         public Build setTimeOut(int readTimeOut, int connTimeOut) {
             mReadTimeOut = readTimeOut;
             mConnTimeOut = connTimeOut;
             return this;
         }
 
+        //是否支持请求重定向
         public Build setUrlRedirect(boolean redirect) {
             mRedirect = redirect;
             return this;
         }
 
+        //设置并发下载的个数
         public Build setConcurrentCount(int count) {
             mConcurrentCount = count;
             return this;
         }
 
+        //是否信任证书
         public Build setIgnoreCertErrors(boolean ignoreCertErrors) {
             mIgnoreCertErrors = ignoreCertErrors;
             return this;
         }
 
+        //M3U8下载成功之后是否自动合并
         public Build setShouldM3U8Merged(boolean shouldM3U8Merged) {
             mShouldM3U8Merged = shouldM3U8Merged;
             return this;
@@ -139,9 +145,10 @@ public class VideoDownloadManager {
     }
 
     public void initConfig(@NonNull VideoDownloadConfig config) {
+        //如果为null, 会crash
         mConfig = config;
+        VideoDownloadUtils.setDownloadConfig(config);
         mVideoDatabaseHelper = new VideoDownloadDatabaseHelper(ContextUtils.getApplicationContext());
-        VideoInfoParserManager.getInstance().initConfig(config);
         HandlerThread stateThread = new HandlerThread("Video_download_state_thread");
         stateThread.start();
         mVideoDownloadHandler = new VideoDownloadHandler(stateThread.getLooper());
@@ -277,7 +284,7 @@ public class VideoDownloadManager {
         }
         VideoDownloadTask downloadTask;
         if (!mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
-            downloadTask = new M3U8VideoDownloadTask(mConfig, taskItem, m3u8, headers);
+            downloadTask = new M3U8VideoDownloadTask(taskItem, m3u8, headers);
             mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
         } else {
             downloadTask = mVideoDownloadTaskMap.get(taskItem.getUrl());
@@ -297,7 +304,7 @@ public class VideoDownloadManager {
         }
         VideoDownloadTask downloadTask;
         if (!mVideoDownloadTaskMap.containsKey(taskItem.getUrl())) {
-            downloadTask = new BaseVideoDownloadTask(mConfig, taskItem, headers);
+            downloadTask = new BaseVideoDownloadTask(taskItem, headers);
             mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
         } else {
             downloadTask = mVideoDownloadTaskMap.get(taskItem.getUrl());
@@ -374,7 +381,7 @@ public class VideoDownloadManager {
 
     public String getDownloadPath() {
         if (mConfig != null) {
-            return mConfig.getCacheRoot().getAbsolutePath();
+            return mConfig.getCacheRoot();
         }
         return null;
     }

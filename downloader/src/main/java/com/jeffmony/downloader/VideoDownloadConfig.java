@@ -1,10 +1,8 @@
 package com.jeffmony.downloader;
 
-import java.io.File;
-
 public class VideoDownloadConfig {
 
-    private File mCacheRoot;
+    private String mCacheRoot;
     private int mReadTimeOut;
     private int mConnTimeOut;
     private boolean mRedirect;
@@ -12,7 +10,7 @@ public class VideoDownloadConfig {
     private int mConcurrentCount;
     private boolean mShouldM3U8Merged;
 
-    public VideoDownloadConfig(File cacheRoot, int readTimeOut,
+    public VideoDownloadConfig(String cacheRoot, int readTimeOut,
                                int connTimeOut, boolean redirect, boolean ignoreAllCertErrors,
                                int concurrentCount, boolean shouldM3U8Merged) {
         mCacheRoot = cacheRoot;
@@ -24,7 +22,7 @@ public class VideoDownloadConfig {
         mShouldM3U8Merged = shouldM3U8Merged;
     }
 
-    public File getCacheRoot() {
+    public String getCacheRoot() {
         return mCacheRoot;
     }
 

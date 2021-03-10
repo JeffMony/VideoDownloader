@@ -1,5 +1,7 @@
 package com.jeffmony.downloader.utils;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Process;
 
 import java.util.concurrent.BlockingQueue;
@@ -15,12 +17,38 @@ public class WorkerThreadHandler {
 
     private static final String TAG = "WorkerThreadHandler";
 
-    private static final int CPU_COUNT =
-            Runtime.getRuntime().availableProcessors();
+    private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
     private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
     private static final int KEEP_ALIVE = 1;
-    private static final int QUEUE_SIZE = 2 ^ CPU_COUNT;
+
+    private static final BlockingQueue<Runnable> S_THREAD_POOL_WORK_QUEUE = new LinkedBlockingQueue<Runnable>();
+    private static final ExecutorService S_THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
+            TimeUnit.SECONDS, S_THREAD_POOL_WORK_QUEUE, new MediaWorkerThreadFactory(), new ThreadPoolExecutor.DiscardOldestPolicy());
+
+    //sdk中唯一的主线程handler
+    private static Handler sMainHandler = new Handler(Looper.getMainLooper());
+
+    public static Handler getMainHandler() {
+        return sMainHandler;
+    }
+
+    public static void runOnUiThread(Runnable r) {
+        runOnUiThread(r, 0);
+    }
+    public static void runOnUiThread(Runnable r, int delayTime) {
+        if (delayTime > 0) {
+            sMainHandler.postDelayed(r, delayTime);
+        } else if (runningOnUiThread()) {
+            r.run();
+        } else {
+            sMainHandler.post(r);
+        }
+    }
+
+    private static boolean runningOnUiThread() {
+        return sMainHandler.getLooper() == Looper.myLooper();
+    }
 
     private static class MediaWorkerThreadFactory implements ThreadFactory {
         public Thread newThread(Runnable r) {
@@ -39,24 +67,15 @@ public class WorkerThreadHandler {
             long startTime = System.currentTimeMillis();
             super.run();
             long endTime = System.currentTimeMillis();
-            LogUtils.i(TAG, "ProxyCacheThreadHandler execution time: " +
-                    (endTime - startTime));
+            LogUtils.i(TAG, "MediaWorkerThread execution time: " + (endTime - startTime));
         }
     }
 
-    private static final BlockingQueue<Runnable> sThreadPoolWorkQueue =
-            new LinkedBlockingQueue<Runnable>(QUEUE_SIZE);
-    private static final ExecutorService sThreadPoolExecutor =
-            new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
-                    TimeUnit.SECONDS, sThreadPoolWorkQueue,
-                    new MediaWorkerThreadFactory(),
-                    new ThreadPoolExecutor.DiscardOldestPolicy());
-
     public static Future submitCallbackTask(Callable task) {
-        return sThreadPoolExecutor.submit(task);
+        return S_THREAD_POOL_EXECUTOR.submit(task);
     }
 
     public static Future submitRunnableTask(Runnable task) {
-        return sThreadPoolExecutor.submit(task);
+        return S_THREAD_POOL_EXECUTOR.submit(task);
     }
 }

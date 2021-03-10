@@ -1,6 +1,5 @@
 package com.jeffmony.downloader.task;
 
-import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -15,7 +14,6 @@ public abstract class VideoDownloadTask {
 
     protected static final int THREAD_COUNT = 6;
     protected static final int BUFFER_SIZE = VideoDownloadUtils.DEFAULT_BUFFER_SIZE;
-    protected final VideoDownloadConfig mConfig;
     protected final VideoTaskItem mTaskItem;
     protected final String mFinalUrl;
     protected final HashMap<String, String> mHeaders;
@@ -29,15 +27,13 @@ public abstract class VideoDownloadTask {
     protected float mPercent = 0.0f;
     protected float mSpeed = 0.0f;
 
-    protected VideoDownloadTask(VideoDownloadConfig config,
-                                VideoTaskItem taskItem,
+    protected VideoDownloadTask(VideoTaskItem taskItem,
                                 HashMap<String, String> headers) {
-        mConfig = config;
         mTaskItem = taskItem;
         mHeaders = headers;
         mFinalUrl = taskItem.getFinalUrl();
         mSaveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
-        mSaveDir = new File(mConfig.getCacheRoot(), mSaveName);
+        mSaveDir = new File(VideoDownloadUtils.getDownloadConfig().getCacheRoot(), mSaveName);
         if (!mSaveDir.exists()) {
             mSaveDir.mkdir();
         }

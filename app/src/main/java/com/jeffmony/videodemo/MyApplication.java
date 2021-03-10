@@ -19,12 +19,12 @@ public class MyApplication extends Application {
             file.mkdir();
         }
         VideoDownloadConfig config = new VideoDownloadManager.Build(this)
-                .setCacheRoot(file)
-                .setUrlRedirect(true)
+                .setCacheRoot(file.getAbsolutePath())
+                .setUrlRedirect(false)
                 .setTimeOut(DownloadConstants.READ_TIMEOUT, DownloadConstants.CONN_TIMEOUT)
                 .setConcurrentCount(DownloadConstants.CONCURRENT)
-                .setIgnoreCertErrors(true)
-                .setShouldM3U8Merged(true)
+                .setIgnoreCertErrors(false)
+                .setShouldM3U8Merged(false)
                 .buildConfig();
         VideoDownloadManager.getInstance().initConfig(config);
     }

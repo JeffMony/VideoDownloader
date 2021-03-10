@@ -2,7 +2,6 @@ package com.jeffmony.downloader.m3u8;
 
 import android.text.TextUtils;
 
-import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -33,8 +32,7 @@ public class M3U8Utils {
      * @return
      * @throws IOException
      */
-    public static M3U8 parseM3U8Info(VideoDownloadConfig config,
-                                     String videoUrl, boolean isLocalFile,
+    public static M3U8 parseM3U8Info(String videoUrl, boolean isLocalFile,
                                      File m3u8File) throws IOException {
         URL url = new URL(videoUrl);
         InputStreamReader inputStreamReader = null;
@@ -44,7 +42,7 @@ public class M3U8Utils {
             bufferedReader = new BufferedReader(inputStreamReader);
         } else {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            if (config.shouldIgnoreCertErrors() && connection instanceof
+            if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof
                     HttpsURLConnection) {
                 HttpUtils.trustAllCert((HttpsURLConnection) connection);
                 bufferedReader = new BufferedReader(
@@ -126,7 +124,7 @@ public class M3U8Utils {
             }
             // It has '#EXT-X-STREAM-INF' tag;
             if (hasStreamInfo) {
-                return parseM3U8Info(config, getFinalUrl(videoUrl, line), isLocalFile, m3u8File);
+                return parseM3U8Info(getFinalUrl(videoUrl, line), isLocalFile, m3u8File);
             }
             M3U8Ts ts = new M3U8Ts();
             if (isLocalFile) {

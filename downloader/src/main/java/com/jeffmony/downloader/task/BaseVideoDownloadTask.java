@@ -2,7 +2,6 @@ package com.jeffmony.downloader.task;
 
 import android.text.TextUtils;
 
-import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
@@ -32,10 +31,9 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     private long mTotalLength;
 
-    public BaseVideoDownloadTask(VideoDownloadConfig config,
-                                 VideoTaskItem taskItem,
+    public BaseVideoDownloadTask(VideoTaskItem taskItem,
                                  HashMap<String, String> headers) {
-        super(config, taskItem, headers);
+        super(taskItem, headers);
         mCurrentCachedSize = taskItem.getDownloadSize();
         mTotalLength = taskItem.getTotalSize();
     }
@@ -208,12 +206,12 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         HttpURLConnection connection;
         URL url = new URL(videoUrl);
         connection = (HttpURLConnection) url.openConnection();
-        if (mConfig.shouldIgnoreCertErrors() && connection instanceof
+        if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof
                 HttpsURLConnection) {
             HttpUtils.trustAllCert((HttpsURLConnection) (connection));
         }
-        connection.setConnectTimeout(mConfig.getReadTimeOut());
-        connection.setReadTimeout(mConfig.getConnTimeOut());
+        connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
+        connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
         if (mHeaders != null) {
             for (Map.Entry<String, String> item : mHeaders.entrySet()) {
                 connection.setRequestProperty(item.getKey(), item.getValue());

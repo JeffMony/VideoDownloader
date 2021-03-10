@@ -3,8 +3,6 @@ package com.jeffmony.downloader.utils;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import com.jeffmony.downloader.VideoDownloadConfig;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -19,7 +17,6 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -28,7 +25,8 @@ public class HttpUtils {
     private static final String TAG = "HttpUtils";
 
     public static int MAX_REDIRECT = 5;
-    public static final int RESPONSE_OK = 200;
+    public static final int RESPONSE_200 = 200;
+    public static final int RESPONSE_206 = 206;
 
     public static boolean matchHttpSchema(String url) {
         if (TextUtils.isEmpty(url))
@@ -38,40 +36,35 @@ public class HttpUtils {
         return "http".equals(schema) || "https".equals(schema);
     }
 
-    public static String getMimeType(VideoDownloadConfig config,
-                                     String videoUrl, Proxy proxy,
-                                     HashMap<String, String> headers)
-            throws IOException {
+    public static String getMimeType(String videoUrl, Proxy proxy,
+                                     HashMap<String, String> headers) throws IOException {
         String mimeType = null;
         URL url;
         try {
             url = new URL(videoUrl);
         } catch (MalformedURLException e) {
-            LogUtils.w(TAG, "VideoUrl(" + videoUrl +
-                    ") packages error, exception = " + e.getMessage());
+            LogUtils.w(TAG, "VideoUrl(" + videoUrl + ") packages error, exception = " + e.getMessage());
             throw new MalformedURLException("URL parse error.");
         }
         HttpURLConnection connection = null;
         if (url != null) {
             try {
-                connection = makeConnection(config, url, proxy, headers);
+                connection = makeConnection(url, proxy, headers);
             } catch (IOException e) {
-                LogUtils.w(TAG, "Unable to connect videoUrl(" + videoUrl +
-                        "), exception = " + e.getMessage());
+                LogUtils.w(TAG, "Unable to connect videoUrl(" + videoUrl + "), exception = " + e.getMessage());
                 closeConnection(connection);
                 throw new IOException("getMimeType connect failed.");
             }
-            int responseCode = 0;
+            int responseCode;
             if (connection != null) {
                 try {
                     responseCode = connection.getResponseCode();
                 } catch (IOException e) {
-                    LogUtils.w(TAG, "Unable to Get reponseCode videoUrl(" + videoUrl +
-                            "), exception = " + e.getMessage());
+                    LogUtils.w(TAG, "Unable to Get reponseCode videoUrl(" + videoUrl + "), exception = " + e.getMessage());
                     closeConnection(connection);
                     throw new IOException("getMimeType get responseCode failed.");
                 }
-                if (responseCode == RESPONSE_OK) {
+                if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
                     String contentType = connection.getContentType();
                     LogUtils.i(TAG, "contentType = " + contentType);
                     return contentType;
@@ -81,30 +74,24 @@ public class HttpUtils {
         return mimeType;
     }
 
-    public static String getFinalUrl(VideoDownloadConfig config,
-                                     String videoUrl, Proxy proxy,
-                                     HashMap<String, String> headers)
-            throws IOException {
+    public static String getFinalUrl(String videoUrl, Proxy proxy,
+                                     HashMap<String, String> headers) throws IOException {
         URL url;
         try {
             url = new URL(videoUrl);
         } catch (MalformedURLException e) {
-            LogUtils.w(TAG, "VideoUrl(" + videoUrl +
-                    ") packages error, exception = " + e.getMessage());
+            LogUtils.w(TAG, "VideoUrl(" + videoUrl + ") packages error, exception = " + e.getMessage());
             throw new MalformedURLException("URL parse error.");
         }
-        url = handleRedirectRequest(config, url, proxy, headers);
+        url = handleRedirectRequest(url, proxy, headers);
         return url.toString();
     }
 
-    public static URL handleRedirectRequest(VideoDownloadConfig config, URL url,
-                                            Proxy proxy,
-                                            HashMap<String, String> headers)
-            throws IOException {
+    public static URL handleRedirectRequest(URL url, Proxy proxy,
+                                            HashMap<String, String> headers) throws IOException {
         int redirectCount = 0;
         while (redirectCount++ < MAX_REDIRECT) {
-            HttpURLConnection connection =
-                    makeConnection(config, url, proxy, headers);
+            HttpURLConnection connection = makeConnection(url, proxy, headers);
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_MULT_CHOICE ||
                     responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
@@ -115,7 +102,7 @@ public class HttpUtils {
                 String location = connection.getHeaderField("Location");
                 connection.disconnect();
                 url = handleRedirect(url, location);
-                return handleRedirectRequest(config, url, proxy, headers);
+                return handleRedirectRequest(url, proxy, headers);
             } else {
                 return url;
             }
@@ -123,8 +110,7 @@ public class HttpUtils {
         throw new NoRouteToHostException("Too many redirects: " + redirectCount);
     }
 
-    private static HttpURLConnection
-    makeConnection(VideoDownloadConfig config, URL url, Proxy proxy,
+    private static HttpURLConnection makeConnection(URL url, Proxy proxy,
                    HashMap<String, String> headers) throws IOException {
         HttpURLConnection connection;
         if (proxy != null) {
@@ -132,11 +118,11 @@ public class HttpUtils {
         } else {
             connection = (HttpURLConnection) url.openConnection();
         }
-        if (config.shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
+        if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
             trustAllCert((HttpsURLConnection) (connection));
         }
-        connection.setConnectTimeout(config.getConnTimeOut());
-        connection.setReadTimeout(config.getReadTimeOut());
+        connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
+        connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
         if (headers != null) {
             for (Map.Entry<String, String> item : headers.entrySet()) {
                 connection.setRequestProperty(item.getKey(), item.getValue());
@@ -146,8 +132,7 @@ public class HttpUtils {
         return connection;
     }
 
-    private static URL handleRedirect(URL originalUrl, String location)
-            throws IOException {
+    private static URL handleRedirect(URL originalUrl, String location) throws IOException {
         if (location == null) {
             throw new ProtocolException("Null location redirect");
         }
@@ -195,12 +180,7 @@ public class HttpUtils {
             httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
         }
         // Trust the cert.
-        HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
+        HostnameVerifier hostnameVerifier = (hostname, session) -> true;
         httpsURLConnection.setHostnameVerifier(hostnameVerifier);
     }
 }

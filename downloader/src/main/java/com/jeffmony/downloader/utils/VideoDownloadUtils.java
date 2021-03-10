@@ -1,6 +1,11 @@
 package com.jeffmony.downloader.utils;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
+
+import com.jeffmony.downloader.VideoDownloadConfig;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +22,15 @@ public class VideoDownloadUtils {
     public static final String LOCAL_M3U8 = "local.m3u8";
     public static final String REMOTE_M3U8 = "remote.m3u8";
     public static final String OUPUT_VIDEO = "merged.mp4";
+    private static VideoDownloadConfig mDownloadConfig;
+
+    public static void setDownloadConfig(@NonNull VideoDownloadConfig config) {
+        mDownloadConfig = config;
+    }
+
+    public static VideoDownloadConfig getDownloadConfig() {
+        return mDownloadConfig;
+    }
 
     public static File getVideoCacheDir(Context context) {
         return new File(context.getExternalFilesDir("Video"), "Download");
@@ -120,8 +134,7 @@ public class VideoDownloadUtils {
             try {
                 closeable.close();
             } catch (Exception e) {
-                LogUtils.w(TAG, "VideoProxyCacheUtils close " + closeable +
-                        " failed, exception = " + e);
+                LogUtils.w(TAG, "VideoProxyCacheUtils close " + closeable + " failed, exception = " + e);
             }
         }
     }

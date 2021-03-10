@@ -43,7 +43,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     }
 
     private void initDatas() {
-        VideoTaskItem item1 = new VideoTaskItem("http://video.yjf138.com:8091/20180812/6yl0Q2YZ/index.m3u8");
+        VideoTaskItem item1 = new VideoTaskItem("https://www.fztxylgy.com:65/20210218/7EeCKw5j/index.m3u8");
         VideoTaskItem item2 = new VideoTaskItem("https://videos.kkyun-iqiyi.com/20171117/XZiuPaA3/index.m3u8");
         VideoTaskItem item3 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/MbqulRmS8sjQGJG9/playlist.m3u8");
         VideoTaskItem item4 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/Pejd7TL3wdLZVbxO/playlist.m3u8");

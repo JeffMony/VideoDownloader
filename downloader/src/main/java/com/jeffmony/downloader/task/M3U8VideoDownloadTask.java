@@ -1,6 +1,5 @@
 package com.jeffmony.downloader.task;
 
-import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.m3u8.M3U8;
@@ -47,10 +46,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private long mTotalSize;
     private long mDuration;
 
-    public M3U8VideoDownloadTask(VideoDownloadConfig config,
-                                 VideoTaskItem taskItem, M3U8 m3u8,
+    public M3U8VideoDownloadTask(VideoTaskItem taskItem, M3U8 m3u8,
                                  HashMap<String, String> headers) {
-        super(config, taskItem, headers);
+        super(taskItem, headers);
         this.mM3U8 = m3u8;
         this.mTsList = m3u8.getTsList();
         this.mTotalTs = mTsList.size();
@@ -130,7 +128,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             throws Exception {
         if (!tsFile.exists()) {
             // ts is network resource, download ts file then rename it to local file.
-            downloadFile(ts.getUrl(), tsFile, ts.getKeyUri(), ts.getMethod());
+            downloadFile(ts.getUrl(), tsFile);
         }
 
         if (tsFile.exists()) {
@@ -229,15 +227,15 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         notifyOnTaskFailed(e);
     }
 
-    public void downloadFile(String url, File file, String keyPath, String method) throws Exception {
+    public void downloadFile(String url, File file) throws Exception {
         HttpURLConnection connection = null;
         InputStream inputStream = null;
         try {
             connection = openConnection(url);
             int responseCode = connection.getResponseCode();
-            if (responseCode == HttpUtils.RESPONSE_OK) {
+            if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
                 inputStream = connection.getInputStream();
-                saveFile(inputStream, file, keyPath, method);
+                saveFile(inputStream, file);
             }
         } catch (Exception e) {
             throw e;
@@ -256,19 +254,18 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         do {
             URL url = new URL(videoUrl);
             connection = (HttpURLConnection) url.openConnection();
-            if (mConfig.shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
+            if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
                 HttpUtils.trustAllCert((HttpsURLConnection) (connection));
             }
-            connection.setConnectTimeout(mConfig.getConnTimeOut());
-            connection.setReadTimeout(mConfig.getReadTimeOut());
+            connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
+            connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
             if (mHeaders != null) {
                 for (Map.Entry<String, String> item : mHeaders.entrySet()) {
                     connection.setRequestProperty(item.getKey(), item.getValue());
                 }
             }
             int code = connection.getResponseCode();
-            redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP ||
-                    code == HTTP_SEE_OTHER;
+            redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP || code == HTTP_SEE_OTHER;
             if (redirected) {
                 redirectedCount++;
                 connection.disconnect();
@@ -280,18 +277,18 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         return connection;
     }
 
-    private void saveFile(InputStream inputStream, File file, String keyPath, String method) throws IOException {
+    private void saveFile(InputStream inputStream, File file) throws IOException {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-            int len = 0;
+            int len;
             byte[] buf = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buf)) != -1) {
                 fos.write(buf, 0, len);
             }
         } catch (IOException e) {
-            LogUtils.w(TAG, file.getAbsolutePath() +
-                    " saveFile failed, exception=" + e);
+
+            LogUtils.w(TAG, file.getAbsolutePath() + ", length="+file.length() +   ", saveFile failed, exception=" + e);
             if (file.exists()) {
                 file.delete();
             }
