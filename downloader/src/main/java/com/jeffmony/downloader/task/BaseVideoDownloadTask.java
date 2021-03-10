@@ -1,11 +1,6 @@
 package com.jeffmony.downloader.task;
 
-import android.text.TextUtils;
-
-import com.jeffmony.downloader.VideoDownloadException;
-import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
-import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -15,15 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class BaseVideoDownloadTask extends VideoDownloadTask {
 
@@ -31,16 +22,14 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     private long mTotalLength;
 
-    public BaseVideoDownloadTask(VideoTaskItem taskItem,
-                                 HashMap<String, String> headers) {
+    public BaseVideoDownloadTask(VideoTaskItem taskItem, Map<String, String> headers) {
         super(taskItem, headers);
         mCurrentCachedSize = taskItem.getDownloadSize();
         mTotalLength = taskItem.getTotalSize();
     }
 
     @Override
-    public void startDownload(IDownloadTaskListener listener) {
-        mDownloadTaskListener = listener;
+    public void startDownload() {
         startDownload(mCurrentCachedSize);
     }
 
@@ -59,16 +48,6 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
         mDownloadExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                if (mTotalLength == 0L) {
-                    mTotalLength = getContentLength(mFinalUrl);
-                    LogUtils.i(TAG, "file length = " + mTotalLength);
-                    if (mTotalLength <= 0) {
-                        LogUtils.w(TAG, "BaseVideoDownloadTask file length cannot be fetched.");
-                        notifyDownloadError(new VideoDownloadException(DownloadExceptionUtils.FILE_LENGTH_FETCHED_ERROR_STRING));
-                        return;
-                    }
-                    mTaskItem.setTotalSize(mTotalLength);
-                }
                 File videoFile;
                 try {
                     videoFile = new File(mSaveDir, mSaveName + VideoDownloadUtils.VIDEO_SUFFIX);
@@ -76,8 +55,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                         videoFile.createNewFile();
                     }
                 } catch (Exception e) {
-                    LogUtils.w(TAG, "BaseDownloadTask createNewFile failed, exception=" +
-                            e.getMessage());
+                    LogUtils.w(TAG, "BaseDownloadTask createNewFile failed, exception=" + e.getMessage());
                     return;
                 }
 
@@ -88,8 +66,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                     byte[] buf = new byte[BUFFER_SIZE];
                     // Read http stream body.
 
-                    randomAccessFile =
-                            new RandomAccessFile(videoFile.getAbsolutePath(), "rw");
+                    randomAccessFile = new RandomAccessFile(videoFile.getAbsolutePath(), "rw");
                     randomAccessFile.seek(mCurrentCachedSize);
                     int readLength = 0;
                     while ((readLength = inputStream.read(buf)) != -1) {
@@ -108,17 +85,8 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                     e.printStackTrace();
                     notifyDownloadError(e);
                 } finally {
-                    try {
-                        if (inputStream != null) {
-                            inputStream.close();
-                        }
-                        if (randomAccessFile != null) {
-                            randomAccessFile.close();
-                        }
-                    } catch (IOException e) {
-                        LogUtils.w(TAG, "Close stream failed, exception: " +
-                                e.getMessage());
-                    }
+                    VideoDownloadUtils.close(inputStream);
+                    VideoDownloadUtils.close(randomAccessFile);
                 }
             }
         });
@@ -138,22 +106,18 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadProgress() {
-        if (mDownloadTaskListener != null) {
-            if (mCurrentCachedSize >= mTotalLength) {
-                mTaskItem.setDownloadSize(mCurrentCachedSize);
-                mTaskItem.setIsCompleted(true);
-                mDownloadTaskListener.onTaskProgress(100,
-                        mTotalLength, mTotalLength, null);
-                mPercent = 100.0f;
-                notifyDownloadFinish();
-            } else {
-                mTaskItem.setDownloadSize(mCurrentCachedSize);
-                float percent = mCurrentCachedSize * 1.0f * 100 / mTotalLength;
-                if (!isFloatEqual(percent, mPercent)) {
-                    mDownloadTaskListener.onTaskProgress(percent,
-                            mCurrentCachedSize, mTotalLength, null);
-                    mPercent = percent;
-                }
+        if (mCurrentCachedSize >= mTotalLength) {
+            mTaskItem.setDownloadSize(mCurrentCachedSize);
+            mTaskItem.setIsCompleted(true);
+            mDownloadTaskListener.onTaskProgress(100, mTotalLength, mTotalLength, null);
+            mPercent = 100.0f;
+            notifyDownloadFinish();
+        } else {
+            mTaskItem.setDownloadSize(mCurrentCachedSize);
+            float percent = mCurrentCachedSize * 1.0f * 100 / mTotalLength;
+            if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
+                mDownloadTaskListener.onTaskProgress(percent, mCurrentCachedSize, mTotalLength, null);
+                mPercent = percent;
             }
         }
     }
@@ -163,60 +127,18 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadFinish() {
-        if (mDownloadTaskListener != null) {
-            mDownloadTaskListener.onTaskFinished(mTotalLength);
-            cancelTimer();
-        }
+        mDownloadTaskListener.onTaskFinished(mTotalLength);
+        cancelTimer();
     }
 
-    private InputStream getResponseBody(String url, long start, long end)
-            throws IOException {
-        HttpURLConnection connection = openConnection(url);
+    private InputStream getResponseBody(String url, long start, long end) throws IOException {
         if (end == mTotalLength) {
-            connection.setRequestProperty("Range", "bytes=" + start + "-");
+            mHeaders.put("Range", "bytes=" + start + "-");
         } else {
-            connection.setRequestProperty("Range", "bytes=" + start + "-" + end);
+            mHeaders.put("Range", "bytes=" + start + "-" + end);
         }
+        HttpURLConnection connection = HttpUtils.getConnection(url, mHeaders, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
         return connection.getInputStream();
     }
 
-    private long getContentLength(String videoUrl) {
-        long length = 0;
-        HttpURLConnection connection = null;
-        try {
-            connection = openConnection(videoUrl);
-            String contentLength = connection.getHeaderField("content-length");
-            if (TextUtils.isEmpty(contentLength)) {
-                return -1;
-            } else {
-                length = Long.parseLong(contentLength);
-            }
-        } catch (Exception e) {
-            LogUtils.w(TAG, "BaseDownloadTask failed, exception=" + e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-                connection = null;
-            }
-        }
-        return length;
-    }
-
-    private HttpURLConnection openConnection(String videoUrl) throws IOException {
-        HttpURLConnection connection;
-        URL url = new URL(videoUrl);
-        connection = (HttpURLConnection) url.openConnection();
-        if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof
-                HttpsURLConnection) {
-            HttpUtils.trustAllCert((HttpsURLConnection) (connection));
-        }
-        connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
-        connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
-        if (mHeaders != null) {
-            for (Map.Entry<String, String> item : mHeaders.entrySet()) {
-                connection.setRequestProperty(item.getKey(), item.getValue());
-            }
-        }
-        return connection;
-    }
 }

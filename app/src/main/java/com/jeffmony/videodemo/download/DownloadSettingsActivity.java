@@ -13,8 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.jeffmony.downloader.VideoDownloadManager;
-import com.jeffmony.downloader.utils.Utility;
-import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.downloader.utils.VideoStorageUtils;
 import com.jeffmony.videodemo.R;
 
 import java.io.File;
@@ -47,8 +46,8 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
                 String filePath = VideoDownloadManager.getInstance().getDownloadPath();
                 File file = new File(filePath);
                 if (file.exists()) {
-                    long size = VideoDownloadUtils.countTotalSize(file);
-                    mStoreSizeText.setText(Utility.getSize(size));
+                    long size = VideoStorageUtils.countTotalSize(file);
+                    mStoreSizeText.setText(VideoStorageUtils.getSizeStr(size));
                 }
             }
         }

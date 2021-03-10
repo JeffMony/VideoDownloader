@@ -1,6 +1,7 @@
 package com.jeffmony.downloader.utils;
 
-import android.content.Context;
+
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -8,15 +9,15 @@ import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.model.Video;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VideoDownloadUtils {
 
     private static final String TAG = "VideoDownloadUtils";
+    public static final long DEFAULT_CONTENT_LENGTH = -1;
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     public static final int UPDATE_INTERVAL = 1000;
     public static final String VIDEO_SUFFIX = ".video";
@@ -74,44 +75,12 @@ public class VideoDownloadUtils {
         return Video.Type.DEFAULT;
     }
 
-    public static File getVideoCacheDir(Context context) {
-        return new File(context.getExternalFilesDir("Video"), "Download");
-    }
-
-    public static void clearVideoCacheDir(Context context) throws IOException {
-        File videoCacheDir = getVideoCacheDir(context);
-        cleanDirectory(videoCacheDir);
-    }
-
-    private static void cleanDirectory(File file) throws IOException {
-        if (!file.exists()) {
-            return;
-        }
-        File[] contentFiles = file.listFiles();
-        if (contentFiles != null) {
-            for (File contentFile : contentFiles) {
-                delete(contentFile);
-            }
-        }
-    }
-
-    public static void delete(File file) throws IOException {
-        if (file.isFile() && file.exists()) {
-            deleteOrThrow(file);
-        } else {
-            cleanDirectory(file);
-            deleteOrThrow(file);
-        }
-    }
-
-    private static void deleteOrThrow(File file) throws IOException {
-        if (file.exists()) {
-            boolean isDeleted = file.delete();
-            if (!isDeleted) {
-                throw new IOException(
-                        String.format("File %s can't be deleted", file.getAbsolutePath()));
-            }
-        }
+    public static boolean isM3U8Mimetype(String mimeType) {
+        return !TextUtils.isEmpty(mimeType) &&
+                (mimeType.contains(Video.Mime.MIME_TYPE_M3U8_1) ||
+                mimeType.contains(Video.Mime.MIME_TYPE_M3U8_2) ||
+                mimeType.contains(Video.Mime.MIME_TYPE_M3U8_3) ||
+                mimeType.contains(Video.Mime.MIME_TYPE_M3U8_4));
     }
 
     public static String computeMD5(String string) {
@@ -181,15 +150,15 @@ public class VideoDownloadUtils {
         }
     }
 
-    public static long countTotalSize(File file) {
-        if (file.isDirectory()) {
-            long totalSize = 0;
-            for (File f : file.listFiles()) {
-                totalSize += countTotalSize(f);
-            }
-            return totalSize;
-        } else {
-            return file.length();
+    public static String getPercent(float percent) {
+        DecimalFormat format = new DecimalFormat("###.00");
+        return format.format(percent) + "%";
+    }
+
+    public static boolean isFloatEqual(float f1, float f2) {
+        if (Math.abs(f1 - f2) < 0.0001f) {
+            return true;
         }
+        return false;
     }
 }

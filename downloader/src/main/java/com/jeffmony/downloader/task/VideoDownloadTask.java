@@ -1,11 +1,13 @@
 package com.jeffmony.downloader.task;
 
+import androidx.annotation.NonNull;
+
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,7 +18,7 @@ public abstract class VideoDownloadTask {
     protected static final int BUFFER_SIZE = VideoDownloadUtils.DEFAULT_BUFFER_SIZE;
     protected final VideoTaskItem mTaskItem;
     protected final String mFinalUrl;
-    protected final HashMap<String, String> mHeaders;
+    protected final Map<String, String> mHeaders;
     protected File mSaveDir;
     protected String mSaveName;
     protected ThreadPoolExecutor mDownloadExecutor;
@@ -27,8 +29,7 @@ public abstract class VideoDownloadTask {
     protected float mPercent = 0.0f;
     protected float mSpeed = 0.0f;
 
-    protected VideoDownloadTask(VideoTaskItem taskItem,
-                                HashMap<String, String> headers) {
+    protected VideoDownloadTask(VideoTaskItem taskItem, Map<String, String> headers) {
         mTaskItem = taskItem;
         mHeaders = headers;
         mFinalUrl = taskItem.getFinalUrl();
@@ -40,7 +41,11 @@ public abstract class VideoDownloadTask {
         mTaskItem.setSaveDir(mSaveDir.getAbsolutePath());
     }
 
-    public abstract void startDownload(IDownloadTaskListener listener);
+    public void setDownloadTaskListener(@NonNull IDownloadTaskListener listener) {
+        mDownloadTaskListener = listener;
+    }
+
+    public abstract void startDownload();
 
     public abstract void resumeDownload();
 
@@ -86,18 +91,8 @@ public abstract class VideoDownloadTask {
         if (mDownloadExecutor != null && mDownloadExecutor.isShutdown()) {
             return;
         }
-        if (mDownloadTaskListener != null) {
-            mDownloadExecutor.shutdownNow();
-            mDownloadTaskListener.onTaskFailed(e);
-            cancelTimer();
-        }
-    }
-
-
-    protected boolean isFloatEqual(float f1, float f2) {
-        if (Math.abs(f1 - f2) < 0.0001f) {
-            return true;
-        }
-        return false;
+        mDownloadExecutor.shutdownNow();
+        mDownloadTaskListener.onTaskFailed(e);
+        cancelTimer();
     }
 }

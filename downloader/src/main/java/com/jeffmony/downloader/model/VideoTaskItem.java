@@ -1,7 +1,8 @@
 package com.jeffmony.downloader.model;
 
 import com.jeffmony.downloader.m3u8.M3U8;
-import com.jeffmony.downloader.utils.Utility;
+import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.downloader.utils.VideoStorageUtils;
 
 public class VideoTaskItem implements Cloneable {
 
@@ -117,7 +118,7 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public String getSpeedString() {
-        return Utility.getSize((long) mSpeed) + "/s";
+        return VideoStorageUtils.getSizeStr((long) mSpeed) + "/s";
     }
 
     public void setPercent(float percent) {
@@ -129,7 +130,7 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public String getPercentString() {
-        return Utility.getPercent(mPercent);
+        return VideoDownloadUtils.getPercent(mPercent);
     }
 
     public void setDownloadSize(long size) {
@@ -141,7 +142,7 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public String getDownloadSizeString() {
-        return Utility.getSize(mDownloadSize);
+        return VideoStorageUtils.getSizeStr(mDownloadSize);
     }
 
     public void setTotalSize(long size) {
@@ -298,11 +299,11 @@ public class VideoTaskItem implements Cloneable {
 
     public String toString() {
         return "VideoTaskItem[Url=" + mUrl +
-                ",Type=" + mVideoType +
-                ",Percent=" + mPercent +
-                ",DownloadSize=" + mDownloadSize +
-                ",State=" + mTaskState +
-                ",FilePath=" + mFileName +
-                ",LocalFile=" + mFilePath + "]";
+                ", Type=" + mVideoType +
+                ", Percent=" + mPercent +
+                ", DownloadSize=" + mDownloadSize +
+                ", State=" + mTaskState +
+                ", FilePath=" + mFileName +
+                ", LocalFile=" + mFilePath + "]";
     }
 }

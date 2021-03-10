@@ -1,7 +1,5 @@
 package com.jeffmony.downloader.task;
 
-import com.jeffmony.downloader.VideoDownloadException;
-import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Constants;
 import com.jeffmony.downloader.m3u8.M3U8Ts;
@@ -9,6 +7,7 @@ import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
+import com.jeffmony.downloader.utils.VideoStorageUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,8 +16,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -26,16 +23,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
-import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
-import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
-
 public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private static final String TAG = "M3U8VideoDownloadTask";
-    private static final int REDIRECTED_COUNT = 3;
     private final Object mFileLock = new Object();
 
     private static final String TS_PREFIX = "video_";
@@ -47,7 +37,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private long mDuration;
 
     public M3U8VideoDownloadTask(VideoTaskItem taskItem, M3U8 m3u8,
-                                 HashMap<String, String> headers) {
+                                 Map<String, String> headers) {
         super(taskItem, headers);
         this.mM3U8 = m3u8;
         this.mTsList = m3u8.getTsList();
@@ -79,11 +69,8 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
 
     @Override
-    public void startDownload(IDownloadTaskListener listener) {
-        mDownloadTaskListener = listener;
-        if (listener != null) {
-            listener.onTaskStart(mTaskItem.getUrl());
-        }
+    public void startDownload() {
+        mDownloadTaskListener.onTaskStart(mTaskItem.getUrl());
         initM3U8Ts();
         startDownload(mCurTs);
     }
@@ -155,57 +142,51 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadProgress() {
-        if (mDownloadTaskListener != null) {
-            initM3U8Ts();
-            if (mCurrentCachedSize == 0) {
-                mCurrentCachedSize = VideoDownloadUtils.countTotalSize(mSaveDir);
+        initM3U8Ts();
+        if (mCurrentCachedSize == 0) {
+            mCurrentCachedSize = VideoStorageUtils.countTotalSize(mSaveDir);
+        }
+        if (mTaskItem.isCompleted()) {
+            mCurTs = mTotalTs;
+            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            mPercent = 100.0f;
+            mTotalSize = mCurrentCachedSize;
+            mDownloadTaskListener.onTaskFinished(mTotalSize);
+            cancelTimer();
+            return;
+        }
+        if (mCurTs >= mTotalTs - 1) {
+            mCurTs = mTotalTs;
+        }
+        mTaskItem.setCurTs(mCurTs);
+        mM3U8.setCurTsIndex(mCurTs);
+        float percent = mCurTs * 1.0f * 100 / mTotalTs;
+        if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
+            mDownloadTaskListener.onTaskProgress(percent, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            mPercent = percent;
+            mTaskItem.setPercent(percent);
+            mTaskItem.setDownloadSize(mCurrentCachedSize);
+        }
+        boolean isCompleted = true;
+        for (M3U8Ts ts : mTsList) {
+            File tsFile = new File(mSaveDir, ts.getIndexName());
+            if (!tsFile.exists()) {
+                isCompleted = false;
+                break;
             }
-            if (mTaskItem.isCompleted()) {
-                mCurTs = mTotalTs;
-                mDownloadTaskListener.onTaskProgress(100.0f,
-                        mCurrentCachedSize, mCurrentCachedSize, mM3U8);
-                mPercent = 100.0f;
-                mTotalSize = mCurrentCachedSize;
-                mDownloadTaskListener.onTaskFinished(mTotalSize);
-                cancelTimer();
-                return;
+        }
+        mTaskItem.setIsCompleted(isCompleted);
+        if (isCompleted) {
+            try {
+                createLocalM3U8File();
+            } catch (Exception e) {
+                notifyDownloadError(e);
             }
-            if (mCurTs >= mTotalTs - 1) {
-                mCurTs = mTotalTs;
-            }
-            mTaskItem.setCurTs(mCurTs);
-            mM3U8.setCurTsIndex(mCurTs);
-            float percent = mCurTs * 1.0f * 100 / mTotalTs;
-            if (!isFloatEqual(percent, mPercent)) {
-                mDownloadTaskListener.onTaskProgress(percent,
-                        mCurrentCachedSize, mCurrentCachedSize, mM3U8);
-                mPercent = percent;
-                mTaskItem.setPercent(percent);
-                mTaskItem.setDownloadSize(mCurrentCachedSize);
-            }
-            boolean isCompleted = true;
-            for (M3U8Ts ts : mTsList) {
-                File tsFile = new File(mSaveDir, ts.getIndexName());
-                if (!tsFile.exists()) {
-                    isCompleted = false;
-                    break;
-                }
-            }
-            mTaskItem.setIsCompleted(isCompleted);
-            if (isCompleted) {
-                try {
-                    createLocalM3U8File();
-                } catch (Exception e) {
-                    notifyDownloadError(e);
-                }
-                mTaskItem.setTotalSize(mCurrentCachedSize);
-                mTotalSize = mCurrentCachedSize;
-                mDownloadTaskListener.onTaskProgress(100.0f,
-                        mCurrentCachedSize, mCurrentCachedSize, mM3U8);
-                mDownloadTaskListener.onTaskFinished(mTotalSize);
-                cancelTimer();
-
-            }
+            mTaskItem.setTotalSize(mCurrentCachedSize);
+            mTotalSize = mCurrentCachedSize;
+            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            mDownloadTaskListener.onTaskFinished(mTotalSize);
+            cancelTimer();
         }
     }
 
@@ -215,11 +196,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadFinish(long size) {
-        if (mDownloadTaskListener != null) {
-            if (mTaskItem.isCompleted()) {
-                mDownloadTaskListener.onTaskFinished(size);
-                cancelTimer();
-            }
+        if (mTaskItem.isCompleted()) {
+            mDownloadTaskListener.onTaskFinished(size);
+            cancelTimer();
         }
     }
 
@@ -231,7 +210,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         HttpURLConnection connection = null;
         InputStream inputStream = null;
         try {
-            connection = openConnection(url);
+            connection = HttpUtils.getConnection(url, mHeaders, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
                 inputStream = connection.getInputStream();
@@ -240,41 +219,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         } catch (Exception e) {
             throw e;
         } finally {
-            if (connection != null)
-                connection.disconnect();
+            HttpUtils.closeConnection(connection);
             VideoDownloadUtils.close(inputStream);
         }
-    }
-
-    private HttpURLConnection openConnection(String videoUrl)
-            throws IOException, VideoDownloadException {
-        HttpURLConnection connection;
-        boolean redirected;
-        int redirectedCount = 0;
-        do {
-            URL url = new URL(videoUrl);
-            connection = (HttpURLConnection) url.openConnection();
-            if (VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors() && connection instanceof HttpsURLConnection) {
-                HttpUtils.trustAllCert((HttpsURLConnection) (connection));
-            }
-            connection.setConnectTimeout(VideoDownloadUtils.getDownloadConfig().getConnTimeOut());
-            connection.setReadTimeout(VideoDownloadUtils.getDownloadConfig().getReadTimeOut());
-            if (mHeaders != null) {
-                for (Map.Entry<String, String> item : mHeaders.entrySet()) {
-                    connection.setRequestProperty(item.getKey(), item.getValue());
-                }
-            }
-            int code = connection.getResponseCode();
-            redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP || code == HTTP_SEE_OTHER;
-            if (redirected) {
-                redirectedCount++;
-                connection.disconnect();
-            }
-            if (redirectedCount > REDIRECTED_COUNT) {
-                throw new VideoDownloadException("Too many redirects: " + redirectedCount);
-            }
-        } while (redirected);
-        return connection;
     }
 
     private void saveFile(InputStream inputStream, File file) throws IOException {
@@ -287,7 +234,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 fos.write(buf, 0, len);
             }
         } catch (IOException e) {
-
             LogUtils.w(TAG, file.getAbsolutePath() + ", length="+file.length() +   ", saveFile failed, exception=" + e);
             if (file.exists()) {
                 file.delete();
@@ -306,15 +252,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 tempM3U8File.delete();
             }
 
-            BufferedWriter bfw =
-                    new BufferedWriter(new FileWriter(tempM3U8File, false));
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(tempM3U8File, false));
             bfw.write(M3U8Constants.PLAYLIST_HEADER + "\n");
             bfw.write(M3U8Constants.TAG_VERSION + ":" + mM3U8.getVersion() + "\n");
-            bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() +
-                    "\n");
+            bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() + "\n");
 
-            bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" +
-                    mM3U8.getTargetDuration() + "\n");
+            bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + mM3U8.getTargetDuration() + "\n");
 
             for (M3U8Ts m3u8Ts : mTsList) {
                 if (m3u8Ts.hasKey()) {
@@ -337,8 +280,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 if (m3u8Ts.hasDiscontinuity()) {
                     bfw.write(M3U8Constants.TAG_DISCONTINUITY + "\n");
                 }
-                bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() +
-                        ",\n");
+                bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() + ",\n");
                 bfw.write(mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getIndexName());
                 bfw.newLine();
             }

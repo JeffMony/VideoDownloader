@@ -5,18 +5,16 @@ public class VideoDownloadConfig {
     private String mCacheRoot;
     private int mReadTimeOut;
     private int mConnTimeOut;
-    private boolean mRedirect;
     private boolean mIgnoreAllCertErrors;
     private int mConcurrentCount;
     private boolean mShouldM3U8Merged;
 
     public VideoDownloadConfig(String cacheRoot, int readTimeOut,
-                               int connTimeOut, boolean redirect, boolean ignoreAllCertErrors,
+                               int connTimeOut, boolean ignoreAllCertErrors,
                                int concurrentCount, boolean shouldM3U8Merged) {
         mCacheRoot = cacheRoot;
         mReadTimeOut = readTimeOut;
         mConnTimeOut = connTimeOut;
-        mRedirect = redirect;
         mIgnoreAllCertErrors = ignoreAllCertErrors;
         mConcurrentCount = concurrentCount;
         mShouldM3U8Merged = shouldM3U8Merged;
@@ -32,10 +30,6 @@ public class VideoDownloadConfig {
 
     public int getConnTimeOut() {
         return mConnTimeOut;
-    }
-
-    public boolean shouldRedirect() {
-        return mRedirect;
     }
 
     public boolean shouldIgnoreCertErrors() {

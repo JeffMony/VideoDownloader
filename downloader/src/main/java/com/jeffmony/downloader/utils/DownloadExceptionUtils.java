@@ -33,6 +33,7 @@ public class DownloadExceptionUtils {
     public static final String URL_SCHEMA_ERROR = "Cannot parse the request resource's schema";
     public static final String CREATE_CONNECTION_ERROR = "Create connection failed";
     public static final String FINAL_URL_EMPTY = "FinalUrl is null";
+    public static final String REMOTE_M3U8_EMPTY = "Cannot find remote.m3u8 file";
 
     public static int getErrorCode(Throwable e) {
         if (e instanceof SocketTimeoutException) {
