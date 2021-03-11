@@ -44,18 +44,13 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private volatile int mCurTs = 0;
     private int mTotalTs;
     private long mTotalSize;
-    private long mDuration;
 
     public M3U8VideoDownloadTask(VideoTaskItem taskItem, M3U8 m3u8, Map<String, String> headers) {
         super(taskItem, headers);
-        this.mM3U8 = m3u8;
-        this.mTsList = m3u8.getTsList();
-        this.mTotalTs = mTsList.size();
-        this.mPercent = taskItem.getPercent();
-        this.mDuration = m3u8.getDuration();
-        if (mDuration == 0) {
-            mDuration = 1;
-        }
+        mM3U8 = m3u8;
+        mTsList = m3u8.getTsList();
+        mTotalTs = mTsList.size();
+        mPercent = taskItem.getPercent();
         if (mHeaders == null) {
             mHeaders = new HashMap<>();
         }
@@ -363,7 +358,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             bfw.flush();
             bfw.close();
 
-            File localM3U8File = new File(mSaveDir, VideoDownloadUtils.LOCAL_M3U8);
+            File localM3U8File = new File(mSaveDir, mSaveName + "_" + VideoDownloadUtils.LOCAL_M3U8);
             if (localM3U8File.exists()) {
                 localM3U8File.delete();
             }

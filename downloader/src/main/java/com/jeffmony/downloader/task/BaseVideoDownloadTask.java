@@ -81,7 +81,6 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                         randomAccessFile.write(buf, 0, readLength);
                         mCurrentCachedSize += readLength;
                     }
-                    LogUtils.i(TAG, "mCurrentCachedSize=" + mCurrentCachedSize);
                     notifyDownloadProgress();
                 }
             } catch (Exception e) {

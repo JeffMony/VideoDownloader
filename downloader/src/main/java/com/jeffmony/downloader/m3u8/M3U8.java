@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class M3U8 {
-    private static final String TAG = "M3U8";
 
     private String mUrl;
-    private String mBaseUrl;
-    private String mHostUrl;
     private List<M3U8Ts> mTsList;
     private float mTargetDuration;
     private int mSequence;
@@ -16,15 +13,13 @@ public class M3U8 {
     private boolean mHasEndList;
 
     public M3U8() {
-        this("", "", "");
+        this("");
     }
 
-    public M3U8(String url, String baseUrl, String hostUrl) {
-        this.mUrl = url;
-        this.mBaseUrl = baseUrl;
-        this.mHostUrl = hostUrl;
-        this.mSequence = 0;
-        this.mTsList = new ArrayList<>();
+    public M3U8(String url) {
+        mUrl = url;
+        mSequence = 0;
+        mTsList = new ArrayList<>();
     }
 
     public void addTs(M3U8Ts ts) {

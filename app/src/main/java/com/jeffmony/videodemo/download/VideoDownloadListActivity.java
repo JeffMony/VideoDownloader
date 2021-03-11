@@ -43,12 +43,12 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     }
 
     private void initDatas() {
-        VideoTaskItem item1 = new VideoTaskItem("https://www.fztxylgy.com:65/20210218/7EeCKw5j/index.m3u8");
-        VideoTaskItem item2 = new VideoTaskItem("https://videos.kkyun-iqiyi.com/20171117/XZiuPaA3/index.m3u8");
-        VideoTaskItem item3 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/MbqulRmS8sjQGJG9/playlist.m3u8");
-        VideoTaskItem item4 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/Pejd7TL3wdLZVbxO/playlist.m3u8");
-        VideoTaskItem item5 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/13/AWlDA5ORHHzLX81U/playlist.m3u8");
-        VideoTaskItem item6 = new VideoTaskItem("https://hls.aoxtv.com/v3.szjal.cn/20200114/dtOHlPFE/index.m3u8");
+        VideoTaskItem item1 = new VideoTaskItem("https://eth.ppzuida.com/20171008/YzYFXX0V/index.m3u8");
+        VideoTaskItem item2 = new VideoTaskItem("https://eth.ppzuida.com/20171008/jzppZCx9/index.m3u8");
+        VideoTaskItem item3 = new VideoTaskItem("https://eth.ppzuida.com/20171008/Kc5MPjQC/index.m3u8");
+        VideoTaskItem item4 = new VideoTaskItem("https://eth.ppzuida.com/20171008/53rENUwm/index.m3u8");
+        VideoTaskItem item5 = new VideoTaskItem("https://eth.ppzuida.com/20171008/n3pfm145/index.m3u8");
+        VideoTaskItem item6 = new VideoTaskItem("https://eth.ppzuida.com/20171008/ugzGVG2p/index.m3u8");
         VideoTaskItem item7 = new VideoTaskItem("http://gv.vivo.com.cn/appstore/gamecenter/upload/video/201701/2017011314414026850.mp4");
 
         items[0] = item1;

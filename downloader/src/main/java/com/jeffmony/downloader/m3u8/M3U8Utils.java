@@ -36,14 +36,12 @@ public class M3U8Utils {
         try {
             HttpURLConnection connection = HttpUtils.getConnection(videoUrl, headers, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
             int responseCode = connection.getResponseCode();
+            LogUtils.i(TAG, "parseNetworkM3U8Info responseCode="+responseCode);
             if (responseCode == HttpUtils.RESPONSE_503 && retryCount < HttpUtils.MAX_RETRY_COUNT) {
                 return parseNetworkM3U8Info(videoUrl, headers, retryCount+1);
             }
             bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-            String baseUriPath = getBaseUrl(videoUrl);
-            String hostUrl = getHostUrl(videoUrl);
-            M3U8 m3u8 = new M3U8(videoUrl, baseUriPath, hostUrl);
+            M3U8 m3u8 = new M3U8(videoUrl);
             float tsDuration = 0;
             int targetDuration = 0;
             int tsIndex = 0;
@@ -310,8 +308,7 @@ public class M3U8Utils {
                         while ((line = bufferedReader.readLine()) != null) {
                             textBuilder.append(line);
                         }
-                        boolean isMessyStr =
-                                VideoDownloadUtils.isMessyCode(textBuilder.toString());
+                        boolean isMessyStr = VideoDownloadUtils.isMessyCode(textBuilder.toString());
                         m3u8Ts.setIsMessyKey(isMessyStr);
                         File keyFile = new File(dir, m3u8Ts.getLocalKeyUri());
                         FileOutputStream outputStream = new FileOutputStream(keyFile);

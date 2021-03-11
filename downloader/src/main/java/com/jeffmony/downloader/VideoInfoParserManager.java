@@ -10,6 +10,7 @@ import com.jeffmony.downloader.model.Video;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
+import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
@@ -51,6 +52,7 @@ public class VideoInfoParserManager {
             }
 
             String finalUrl = taskItem.getUrl();
+            LogUtils.i(TAG, "doParseVideoInfoTask url="+finalUrl);
 
             HttpURLConnection connection = null;
             // Redirect is enabled, send redirect request to get final location.

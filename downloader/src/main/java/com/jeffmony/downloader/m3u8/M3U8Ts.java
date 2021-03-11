@@ -15,24 +15,23 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     private long mContentLength;
     private int mRetryCount;
 
-    public M3U8Ts() {
-    }
+    public M3U8Ts() { }
 
     public void initTsAttributes(String url, float duration, int index,
                                  boolean hasDiscontinuity, boolean hasKey) {
-        this.mUrl = url;
-        this.mName = url;
-        this.mDuration = duration;
-        this.mIndex = index;
-        this.mHasDiscontinuity = hasDiscontinuity;
-        this.mHasKey = hasKey;
-        this.mTsSize = 0L;
+        mUrl = url;
+        mName = url;
+        mDuration = duration;
+        mIndex = index;
+        mHasDiscontinuity = hasDiscontinuity;
+        mHasKey = hasKey;
+        mTsSize = 0L;
     }
 
     public void setKeyConfig(String method, String keyUri, String keyIV) {
-        this.mMethod = method;
-        this.mKeyUri = keyUri;
-        this.mKeyIV = keyIV;
+        mMethod = method;
+        mKeyUri = keyUri;
+        mKeyIV = keyIV;
     }
 
     public boolean hasKey() {
