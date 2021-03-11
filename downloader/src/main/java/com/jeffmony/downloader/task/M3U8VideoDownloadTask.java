@@ -1,9 +1,13 @@
 package com.jeffmony.downloader.task;
 
+import android.text.TextUtils;
+
+import com.jeffmony.downloader.VideoDownloadException;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Constants;
 import com.jeffmony.downloader.m3u8.M3U8Ts;
 import com.jeffmony.downloader.model.VideoTaskItem;
+import com.jeffmony.downloader.utils.DownloadExceptionUtils;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -16,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +32,11 @@ import java.util.concurrent.TimeUnit;
 public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private static final String TAG = "M3U8VideoDownloadTask";
+    private static final int CONTINUOUS_SUCCESS_TS_THRESHOLD = 6;
     private final Object mFileLock = new Object();
+
+    private volatile int mM3U8DownloadPoolCount;
+    private volatile int mContinuousSuccessTsCount;   //连续请求ts成功的个数
 
     private static final String TS_PREFIX = "video_";
     private final M3U8 mM3U8;
@@ -87,10 +96,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         mCurTs = curDownloadTs;
         LogUtils.i(TAG, "startDownload curDownloadTs = " + curDownloadTs);
-        mDownloadExecutor = new ThreadPoolExecutor(
-                THREAD_COUNT, THREAD_COUNT, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(), Executors.defaultThreadFactory(),
-                new ThreadPoolExecutor.DiscardOldestPolicy());
+        mDownloadExecutor = new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
+                0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+                Executors.defaultThreadFactory(), new ThreadPoolExecutor.DiscardOldestPolicy());
         for (int index = curDownloadTs; index < mTotalTs; index++) {
             if (mDownloadExecutor.isShutdown()) {
                 break;
@@ -114,10 +122,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private void downloadTsTask(M3U8Ts ts, File tsFile, String tsName) throws Exception {
         if (!tsFile.exists()) {
             // ts is network resource, download ts file then rename it to local file.
-            downloadFile(ts.getUrl(), tsFile);
+            downloadFile(ts, tsFile);
         }
 
-        if (tsFile.exists()) {
+        if (tsFile.exists() && (tsFile.length() == ts.getContentLength())) {
             // rename network ts name to local file name.
             ts.setName(tsName);
             ts.setTsSize(tsFile.length());
@@ -200,8 +208,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         mCurrentCachedSize = tempCurrentCachedSize;
     }
 
-
-
     private void notifyDownloadFinish() {
         notifyDownloadProgress();
         notifyDownloadFinish(mTotalSize);
@@ -217,17 +223,44 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         notifyOnTaskFailed(e);
     }
 
-    public void downloadFile(String url, File file) throws Exception {
+    public void downloadFile(M3U8Ts ts, File file) throws Exception {
         HttpURLConnection connection = null;
         InputStream inputStream = null;
         try {
-            connection = HttpUtils.getConnection(url, mHeaders, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
+            connection = HttpUtils.getConnection(ts.getUrl(), mHeaders, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
+                ts.setRetryCount(0);
+                mContinuousSuccessTsCount++;
+                if (mContinuousSuccessTsCount > CONTINUOUS_SUCCESS_TS_THRESHOLD && mM3U8DownloadPoolCount < THREAD_COUNT) {
+                    mM3U8DownloadPoolCount += 1;
+                    mContinuousSuccessTsCount -= 1;
+                    setThreadPoolArgument(mM3U8DownloadPoolCount, mM3U8DownloadPoolCount);
+                }
                 inputStream = connection.getInputStream();
-                saveFile(inputStream, file);
+                long contentLength = connection.getContentLength();
+                saveFile(inputStream, file, contentLength, ts);
+            } else {
+                mContinuousSuccessTsCount = 0;
+                if (responseCode == HttpUtils.RESPONSE_503) {
+                    if (mM3U8DownloadPoolCount > 1) {
+                        mM3U8DownloadPoolCount -= 1;
+                        setThreadPoolArgument(mM3U8DownloadPoolCount, mM3U8DownloadPoolCount);
+                        downloadFile(ts, file);
+                    } else {
+                        ts.setRetryCount(ts.getRetryCount() + 1);
+                        if (ts.getRetryCount() < HttpUtils.MAX_RETRY_COUNT) {
+                            downloadFile(ts, file);
+                        } else {
+                            throw new VideoDownloadException(DownloadExceptionUtils.RETRY_COUNT_EXCEED_WITH_THREAD_CONTROL_STRING);
+                        }
+                    }
+                } else {
+                    throw new VideoDownloadException(DownloadExceptionUtils.VIDEO_REQUEST_FAILED);
+                }
             }
         } catch (Exception e) {
+            LogUtils.w(TAG, "downloadFile failed, exception="+e.getMessage());
             throw e;
         } finally {
             HttpUtils.closeConnection(connection);
@@ -235,21 +268,52 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
     }
 
-    private void saveFile(InputStream inputStream, File file) throws IOException {
+    private void saveFile(InputStream inputStream, File file, long contentLength, M3U8Ts ts) throws Exception {
         FileOutputStream fos = null;
+        long totalLength = 0;
         try {
             fos = new FileOutputStream(file);
             int len;
             byte[] buf = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buf)) != -1) {
+                totalLength += (long)len;
                 fos.write(buf, 0, len);
             }
-        } catch (IOException e) {
-            LogUtils.w(TAG, file.getAbsolutePath() + ", length="+file.length() +   ", saveFile failed, exception=" + e);
-            if (file.exists()) {
-                file.delete();
+            if (contentLength > 0 && contentLength == totalLength) {
+                ts.setContentLength(contentLength);
+            } else {
+                ts.setContentLength(totalLength);
             }
-            throw e;
+        } catch (IOException e) {
+            if (file.exists() && ((contentLength > 0 && contentLength == file.length()) || (contentLength == -1 && totalLength == file.length()))) {
+                //这时候也能说明ts已经下载好了
+            } else {
+                if ((e instanceof ProtocolException &&
+                        !TextUtils.isEmpty(e.getMessage()) &&
+                        e.getMessage().contains(DownloadExceptionUtils.PROTOCOL_UNEXPECTED_END_OF_STREAM)) &&
+                        (contentLength > totalLength && totalLength == file.length())) {
+                    if (file.length() == 0) {
+                        ts.setRetryCount(ts.getRetryCount() + 1);
+                        if (ts.getRetryCount() < HttpUtils.MAX_RETRY_COUNT) {
+                            downloadFile(ts, file);
+                        } else {
+                            LogUtils.w(TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
+                            if (file.exists()) {
+                                file.delete();
+                            }
+                            throw e;
+                        }
+                    } else {
+                        ts.setContentLength(totalLength);
+                    }
+                } else {
+                    LogUtils.w(TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                    throw e;
+                }
+            }
         } finally {
             VideoDownloadUtils.close(inputStream);
             VideoDownloadUtils.close(fos);

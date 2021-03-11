@@ -62,4 +62,11 @@ public abstract class VideoDownloadTask {
         mDownloadExecutor.shutdownNow();
         mDownloadTaskListener.onTaskFailed(e);
     }
+
+    protected void setThreadPoolArgument(int corePoolSize, int maxPoolSize) {
+        if (mDownloadExecutor != null && !mDownloadExecutor.isShutdown()) {
+            mDownloadExecutor.setCorePoolSize(corePoolSize);
+            mDownloadExecutor.setMaximumPoolSize(maxPoolSize);
+        }
+    }
 }

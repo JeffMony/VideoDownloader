@@ -34,6 +34,9 @@ public class DownloadExceptionUtils {
     public static final String CREATE_CONNECTION_ERROR = "Create connection failed";
     public static final String FINAL_URL_EMPTY = "FinalUrl is null";
     public static final String REMOTE_M3U8_EMPTY = "Cannot find remote.m3u8 file";
+    public static final String PROTOCOL_UNEXPECTED_END_OF_STREAM = "unexpected end of stream";
+    public static final String RETRY_COUNT_EXCEED_WITH_THREAD_CONTROL_STRING = "Retry count exceeding with thread control";
+    public static final String VIDEO_REQUEST_FAILED = "Video request failed";
 
     public static int getErrorCode(Throwable e) {
         if (e instanceof SocketTimeoutException) {
