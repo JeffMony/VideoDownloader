@@ -49,7 +49,7 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         VideoTaskItem item4 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/14/Pejd7TL3wdLZVbxO/playlist.m3u8");
         VideoTaskItem item5 = new VideoTaskItem("https://tv2.youkutv.cc/2020/04/13/AWlDA5ORHHzLX81U/playlist.m3u8");
         VideoTaskItem item6 = new VideoTaskItem("https://hls.aoxtv.com/v3.szjal.cn/20200114/dtOHlPFE/index.m3u8");
-        VideoTaskItem item7 = new VideoTaskItem("http://videoconverter.vivo.com.cn/201706/655_1498479540118.mp4.main.m3u8");
+        VideoTaskItem item7 = new VideoTaskItem("http://gv.vivo.com.cn/appstore/gamecenter/upload/video/201701/2017011314414026850.mp4");
 
         items[0] = item1;
         items[1] = item2;

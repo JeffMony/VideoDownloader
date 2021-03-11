@@ -81,7 +81,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             notifyDownloadFinish();
             return;
         }
-        startTimerTask();
         mCurTs = curDownloadTs;
         LogUtils.i(TAG, "startDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(
@@ -95,15 +94,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             final M3U8Ts ts = mTsList.get(index);
             final String tsName = TS_PREFIX + index + ".ts";
             final File tsFile = new File(mSaveDir, tsName);
-            mDownloadExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        downloadTsTask(ts, tsFile, tsName);
-                    } catch (Exception e) {
-                        LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" + e);
-                        notifyDownloadError(e);
-                    }
+            mDownloadExecutor.execute(() -> {
+                try {
+                    downloadTsTask(ts, tsFile, tsName);
+                } catch (Exception e) {
+                    LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" + e);
+                    notifyDownloadError(e);
                 }
             });
         }
@@ -148,11 +144,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         if (mTaskItem.isCompleted()) {
             mCurTs = mTotalTs;
-            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+//            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
             mPercent = 100.0f;
             mTotalSize = mCurrentCachedSize;
             mDownloadTaskListener.onTaskFinished(mTotalSize);
-            cancelTimer();
             return;
         }
         if (mCurTs >= mTotalTs - 1) {
@@ -162,7 +157,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         mM3U8.setCurTsIndex(mCurTs);
         float percent = mCurTs * 1.0f * 100 / mTotalTs;
         if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
-            mDownloadTaskListener.onTaskProgress(percent, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+//            mDownloadTaskListener.onTaskProgress(percent, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
             mPercent = percent;
             mTaskItem.setPercent(percent);
             mTaskItem.setDownloadSize(mCurrentCachedSize);
@@ -184,9 +179,8 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             }
             mTaskItem.setTotalSize(mCurrentCachedSize);
             mTotalSize = mCurrentCachedSize;
-            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+//            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
             mDownloadTaskListener.onTaskFinished(mTotalSize);
-            cancelTimer();
         }
     }
 
@@ -198,7 +192,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private void notifyDownloadFinish(long size) {
         if (mTaskItem.isCompleted()) {
             mDownloadTaskListener.onTaskFinished(size);
-            cancelTimer();
         }
     }
 

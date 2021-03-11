@@ -241,14 +241,6 @@ public class VideoTaskItem implements Cloneable {
         return mTaskState == VideoTaskState.DEFAULT;
     }
 
-    public boolean isNonHlsType() {
-        return mVideoType == Video.Type.MKV_TYPE ||
-                mVideoType == Video.Type.QUICKTIME_TYPE ||
-                mVideoType == Video.Type.WEBM_TYPE ||
-                mVideoType == Video.Type.GP3_TYPE ||
-                mVideoType == Video.Type.MP4_TYPE;
-    }
-
     public boolean isHlsType() {
         return mVideoType == Video.Type.HLS_TYPE;
     }
@@ -279,6 +271,7 @@ public class VideoTaskItem implements Cloneable {
         taskItem.setVideoType(mVideoType);
         taskItem.setPercent(mPercent);
         taskItem.setDownloadSize(mDownloadSize);
+        taskItem.setSpeed(mSpeed);
         taskItem.setTotalSize(mTotalSize);
         taskItem.setFileHash(mFileHash);
         taskItem.setFilePath(mFilePath);

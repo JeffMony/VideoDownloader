@@ -6,9 +6,9 @@ public interface IDownloadTaskListener {
 
     void onTaskStart(String url);
 
-    void onTaskProgress(float percent, long cachedSize, long totalSize, M3U8 m3u8);
+    void onTaskProgress(float percent, long cachedSize, long totalSize, float speed);
 
-    void onTaskSpeedChanged(float speed);
+    void onTaskProgressForM3U8(float percent, long cachedSize, float speed, M3U8 m3u8);
 
     void onTaskPaused();
 

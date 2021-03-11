@@ -11,10 +11,9 @@ public class DownloadConstants {
     public static final int MSG_DOWNLOAD_PREPARE = 2;
     public static final int MSG_DOWNLOAD_START = 3;
     public static final int MSG_DOWNLOAD_PROCESSING = 4;
-    public static final int MSG_DOWNLOAD_SPEED = 5;
-    public static final int MSG_DOWNLOAD_PAUSE = 6;
-    public static final int MSG_DOWNLOAD_SUCCESS = 7;
-    public static final int MSG_DOWNLOAD_ERROR = 8;
+    public static final int MSG_DOWNLOAD_PAUSE = 5;
+    public static final int MSG_DOWNLOAD_SUCCESS = 6;
+    public static final int MSG_DOWNLOAD_ERROR = 7;
 
     public static final int MSG_FETCH_DOWNLOAD_INFO = 100;
     public static final int MSG_DELETE_ALL_FILES = 101;

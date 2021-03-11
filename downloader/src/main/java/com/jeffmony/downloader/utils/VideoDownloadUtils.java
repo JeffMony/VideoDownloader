@@ -156,7 +156,7 @@ public class VideoDownloadUtils {
     }
 
     public static boolean isFloatEqual(float f1, float f2) {
-        if (Math.abs(f1 - f2) < 0.0001f) {
+        if (Math.abs(f1 - f2) < 0.01f) {
             return true;
         }
         return false;
