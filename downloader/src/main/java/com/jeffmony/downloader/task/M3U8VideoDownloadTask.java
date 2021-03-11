@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -36,8 +37,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     private long mTotalSize;
     private long mDuration;
 
-    public M3U8VideoDownloadTask(VideoTaskItem taskItem, M3U8 m3u8,
-                                 Map<String, String> headers) {
+    public M3U8VideoDownloadTask(VideoTaskItem taskItem, M3U8 m3u8, Map<String, String> headers) {
         super(taskItem, headers);
         this.mM3U8 = m3u8;
         this.mTsList = m3u8.getTsList();
@@ -47,6 +47,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         if (mDuration == 0) {
             mDuration = 1;
         }
+        if (mHeaders == null) {
+            mHeaders = new HashMap<>();
+        }
+        mHeaders.put("Connection", "close");
         taskItem.setTotalTs(mTotalTs);
         taskItem.setCurTs(mCurTs);
     }
@@ -85,7 +89,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         LogUtils.i(TAG, "startDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(
                 THREAD_COUNT, THREAD_COUNT, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),
+                new LinkedBlockingQueue<>(), Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.DiscardOldestPolicy());
         for (int index = curDownloadTs; index < mTotalTs; index++) {
             if (mDownloadExecutor.isShutdown()) {
@@ -107,8 +111,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         notifyDownloadFinish(mCurrentCachedSize);
     }
 
-    private void downloadTsTask(M3U8Ts ts, File tsFile, String tsName)
-            throws Exception {
+    private void downloadTsTask(M3U8Ts ts, File tsFile, String tsName) throws Exception {
         if (!tsFile.exists()) {
             // ts is network resource, download ts file then rename it to local file.
             downloadFile(ts.getUrl(), tsFile);
@@ -138,29 +141,31 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadProgress() {
-        initM3U8Ts();
+        updateM3U8TsInfo();
         if (mCurrentCachedSize == 0) {
             mCurrentCachedSize = VideoStorageUtils.countTotalSize(mSaveDir);
         }
         if (mTaskItem.isCompleted()) {
             mCurTs = mTotalTs;
-//            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
             mPercent = 100.0f;
             mTotalSize = mCurrentCachedSize;
             mDownloadTaskListener.onTaskFinished(mTotalSize);
             return;
         }
-        if (mCurTs >= mTotalTs - 1) {
+        if (mCurTs >= mTotalTs) {
             mCurTs = mTotalTs;
         }
-        mTaskItem.setCurTs(mCurTs);
-        mM3U8.setCurTsIndex(mCurTs);
         float percent = mCurTs * 1.0f * 100 / mTotalTs;
         if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
-//            mDownloadTaskListener.onTaskProgress(percent, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            long nowTime = System.currentTimeMillis();
+            if (mCurrentCachedSize > mLastCachedSize && nowTime > mLastInvokeTime) {
+                mSpeed = (mCurrentCachedSize - mLastCachedSize) * 1000 * 1.0f / (nowTime - mLastInvokeTime);
+            }
+            mDownloadTaskListener.onTaskProgressForM3U8(percent, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
             mPercent = percent;
-            mTaskItem.setPercent(percent);
-            mTaskItem.setDownloadSize(mCurrentCachedSize);
+            mLastCachedSize = mCurrentCachedSize;
+            mLastInvokeTime = nowTime;
         }
         boolean isCompleted = true;
         for (M3U8Ts ts : mTsList) {
@@ -170,19 +175,33 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 break;
             }
         }
-        mTaskItem.setIsCompleted(isCompleted);
         if (isCompleted) {
             try {
                 createLocalM3U8File();
             } catch (Exception e) {
                 notifyDownloadError(e);
             }
-            mTaskItem.setTotalSize(mCurrentCachedSize);
             mTotalSize = mCurrentCachedSize;
-//            mDownloadTaskListener.onTaskProgress(100.0f, mCurrentCachedSize, mCurrentCachedSize, mM3U8);
+            mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
             mDownloadTaskListener.onTaskFinished(mTotalSize);
         }
     }
+
+    private void updateM3U8TsInfo() {
+        long tempCurrentCachedSize = 0;
+        int tempCurTs = 0;
+        for (M3U8Ts ts : mTsList) {
+            File tempTsFile = new File(mSaveDir, ts.getIndexName());
+            if (tempTsFile.exists() && tempTsFile.length() > 0) {
+                ts.setTsSize(tempTsFile.length());
+                tempCurTs++;
+            }
+        }
+        mCurTs = tempCurTs;
+        mCurrentCachedSize = tempCurrentCachedSize;
+    }
+
+
 
     private void notifyDownloadFinish() {
         notifyDownloadProgress();

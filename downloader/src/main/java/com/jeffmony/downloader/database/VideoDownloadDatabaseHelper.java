@@ -119,13 +119,10 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.VIDEO_TYPE, item.getVideoType());
             values.put(VideoDownloadSQLiteHelper.Columns.CACHED_LENGTH, item.getDownloadSize());
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_LENGTH, item.getTotalSize());
-            if (item.getM3U8() != null && item.getM3U8().getTsList() != null) {
-                values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getM3U8().getCurTsIndex());
-                values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getM3U8().getTsList().size());
-            }
+            values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getCurTs());
+            values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getTotalTs());
             values.put(VideoDownloadSQLiteHelper.Columns.COMPLETED, item.isCompleted());
-            db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null,
-                    values);
+            db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
             LogUtils.w(TAG,

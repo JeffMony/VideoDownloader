@@ -308,8 +308,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgress(float percent, long cachedSize, long totalSize, float speed) {
-                    if (taskItem.isPaused()) {
-                    } else {
+                    if (!taskItem.isPaused()) {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
                         taskItem.setSpeed(speed);
@@ -320,8 +319,16 @@ public class VideoDownloadManager {
                 }
 
                 @Override
-                public void onTaskProgressForM3U8(float percent, long cachedSize, float speed, M3U8 m3u8) {
-
+                public void onTaskProgressForM3U8(float percent, long cachedSize, int curTs, int totalTs, float speed) {
+                    if (!taskItem.isPaused()) {
+                        taskItem.setTaskState(VideoTaskState.DOWNLOADING);
+                        taskItem.setPercent(percent);
+                        taskItem.setSpeed(speed);
+                        taskItem.setDownloadSize(cachedSize);
+                        taskItem.setCurTs(curTs);
+                        taskItem.setTotalTs(totalTs);
+                        mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_PROCESSING, taskItem).sendToTarget();
+                    }
                 }
 
                 @Override

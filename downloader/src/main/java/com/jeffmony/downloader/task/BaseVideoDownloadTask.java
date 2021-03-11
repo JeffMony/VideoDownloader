@@ -34,6 +34,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     @Override
     public void startDownload() {
+        mDownloadTaskListener.onTaskStart(mTaskItem.getUrl());
         startDownload(mCurrentCachedSize);
     }
 
@@ -71,7 +72,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
                 randomAccessFile = new RandomAccessFile(videoFile.getAbsolutePath(), "rw");
                 randomAccessFile.seek(mCurrentCachedSize);
-                int readLength = 0;
+                int readLength;
                 while ((readLength = inputStream.read(buf)) != -1) {
                     if (mCurrentCachedSize + readLength > mTotalLength) {
                         randomAccessFile.write(buf, 0, (int) (mTotalLength - mCurrentCachedSize));
@@ -109,13 +110,10 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     private void notifyDownloadProgress() {
         if (mCurrentCachedSize >= mTotalLength) {
-            mTaskItem.setDownloadSize(mCurrentCachedSize);
-            mTaskItem.setIsCompleted(true);
             mDownloadTaskListener.onTaskProgress(100, mTotalLength, mTotalLength, mSpeed);
             mPercent = 100.0f;
             notifyDownloadFinish();
         } else {
-            mTaskItem.setDownloadSize(mCurrentCachedSize);
             float percent = mCurrentCachedSize * 1.0f * 100 / mTotalLength;
             if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
                 long nowTime = System.currentTimeMillis();

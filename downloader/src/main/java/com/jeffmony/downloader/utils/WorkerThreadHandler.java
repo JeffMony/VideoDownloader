@@ -58,7 +58,7 @@ public class WorkerThreadHandler {
 
     private static class MediaWorkerThread extends Thread {
         public MediaWorkerThread(Runnable r) {
-            super(r, "vivo_media_worker_pool_thread");
+            super(r, "video_download_worker_pool_thread");
         }
 
         @Override

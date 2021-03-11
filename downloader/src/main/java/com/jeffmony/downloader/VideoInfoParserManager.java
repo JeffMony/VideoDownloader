@@ -158,8 +158,7 @@ public class VideoInfoParserManager {
         }
     }
 
-    public void parseM3U8File(VideoTaskItem taskItem,
-                              IVideoInfoParseListener callback) {
+    public void parseM3U8File(VideoTaskItem taskItem, IVideoInfoParseListener callback) {
         File remoteM3U8File = new File(taskItem.getSaveDir(), VideoDownloadUtils.REMOTE_M3U8);
         if (!remoteM3U8File.exists()) {
             callback.onM3U8FileParseFailed(taskItem, new VideoDownloadException(DownloadExceptionUtils.REMOTE_M3U8_EMPTY));
