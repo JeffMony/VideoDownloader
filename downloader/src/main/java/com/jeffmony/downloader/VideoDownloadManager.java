@@ -98,8 +98,7 @@ public class VideoDownloadManager {
         }
 
         public VideoDownloadConfig buildConfig() {
-            return new VideoDownloadConfig(mCacheRoot, mReadTimeOut, mConnTimeOut,
-                    mIgnoreCertErrors, mConcurrentCount, mShouldM3U8Merged);
+            return new VideoDownloadConfig(mCacheRoot, mReadTimeOut, mConnTimeOut, mIgnoreCertErrors, mConcurrentCount, mShouldM3U8Merged);
         }
     }
 
@@ -202,7 +201,7 @@ public class VideoDownloadManager {
 
     private void parseExistVideoDownloadInfo(final VideoTaskItem taskItem, final Map<String, String> headers) {
         if (taskItem.isHlsType()) {
-            VideoInfoParserManager.getInstance().parseM3U8File(taskItem, new IVideoInfoParseListener() {
+            VideoInfoParserManager.getInstance().parseLocalM3U8File(taskItem, new IVideoInfoParseListener() {
                 @Override
                 public void onM3U8FileParseSuccess(VideoTaskItem info, M3U8 m3u8) {
                     startM3U8VideoDownloadTask(taskItem, m3u8, headers);
@@ -632,7 +631,6 @@ public class VideoDownloadManager {
                 taskItem.setMimeType(Video.Mime.MIME_TYPE_MP4);
                 taskItem.setVideoType(Video.Type.MP4_TYPE);
                 listener.onCallback(taskItem);
-
 
                 //delete source file
                 File outputFile = new File(outputPath);

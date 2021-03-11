@@ -15,6 +15,10 @@ public class M3U8 {
     private int mVersion = 3;
     private boolean mHasEndList;
 
+    public M3U8() {
+        this("", "", "");
+    }
+
     public M3U8(String url, String baseUrl, String hostUrl) {
         this.mUrl = url;
         this.mBaseUrl = baseUrl;

@@ -12,6 +12,8 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     private String mKeyUri;
     private String mKeyIV;
     private boolean mIsMessyKey;
+    private long mContentLength;
+    private int mRetryCount;
 
     public M3U8Ts() {
     }
@@ -97,6 +99,22 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
 
     public boolean isMessyKey() {
         return mIsMessyKey;
+    }
+
+    public void setContentLength(long contentLength) {
+        mContentLength = contentLength;
+    }
+
+    public long getContentLength() {
+        return mContentLength;
+    }
+
+    public void setRetryCount(int retryCount) {
+        mRetryCount = retryCount;
+    }
+
+    public int getRetryCount() {
+        return mRetryCount;
     }
 
     public String toString() {

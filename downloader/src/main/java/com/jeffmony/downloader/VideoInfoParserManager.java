@@ -35,8 +35,7 @@ public class VideoInfoParserManager {
         return sInstance;
     }
 
-    public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener,
-                                            final Map<String, String> headers) {
+    public synchronized void parseVideoInfo(final VideoTaskItem taskItem, IVideoInfoListener listener, final Map<String, String> headers) {
         WorkerThreadHandler.submitRunnableTask(() -> doParseVideoInfoTask(taskItem, listener, headers));
     }
 
@@ -78,7 +77,7 @@ public class VideoInfoParserManager {
             if (finalUrl.contains(Video.TypeInfo.M3U8) || VideoDownloadUtils.isM3U8Mimetype(contentType)) {
                 //这是M3U8视频类型
                 taskItem.setMimeType(Video.TypeInfo.M3U8);
-                parseM3U8Info(taskItem, listener);
+                parseNetworkM3U8Info(taskItem, headers, listener);
             } else {
                 //这是非M3U8类型, 需要获取视频的totalLength ===> contentLength
                 long contentLength = getContentLength(taskItem, headers, connection, false);
@@ -133,9 +132,9 @@ public class VideoInfoParserManager {
         }
     }
 
-    private void parseM3U8Info(VideoTaskItem taskItem, IVideoInfoListener listener) {
+    private void parseNetworkM3U8Info(VideoTaskItem taskItem, Map<String, String> headers, IVideoInfoListener listener) {
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(taskItem.getUrl(), false, null);
+            M3U8 m3u8 = M3U8Utils.parseNetworkM3U8Info(taskItem.getUrl(), headers, 0);
             // HLS LIVE video cannot be proxy cached.
             if (m3u8.hasEndList()) {
                 String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
@@ -158,14 +157,14 @@ public class VideoInfoParserManager {
         }
     }
 
-    public void parseM3U8File(VideoTaskItem taskItem, IVideoInfoParseListener callback) {
+    public void parseLocalM3U8File(VideoTaskItem taskItem, IVideoInfoParseListener callback) {
         File remoteM3U8File = new File(taskItem.getSaveDir(), VideoDownloadUtils.REMOTE_M3U8);
         if (!remoteM3U8File.exists()) {
             callback.onM3U8FileParseFailed(taskItem, new VideoDownloadException(DownloadExceptionUtils.REMOTE_M3U8_EMPTY));
             return;
         }
         try {
-            M3U8 m3u8 = M3U8Utils.parseM3U8Info(taskItem.getUrl(), true, remoteM3U8File);
+            M3U8 m3u8 = M3U8Utils.parseLocalM3U8File(remoteM3U8File);
             callback.onM3U8FileParseSuccess(taskItem, m3u8);
         } catch (Exception e) {
             e.printStackTrace();

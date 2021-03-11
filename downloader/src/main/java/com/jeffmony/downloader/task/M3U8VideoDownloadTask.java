@@ -121,7 +121,6 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             // rename network ts name to local file name.
             ts.setName(tsName);
             ts.setTsSize(tsFile.length());
-            mCurTs++;
             notifyDownloadProgress();
         }
     }

@@ -18,7 +18,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -26,9 +25,12 @@ public class HttpUtils {
 
     private static final String TAG = "HttpUtils";
 
-    public static int MAX_REDIRECT = 5;
+    public static final int MAX_RETRY_COUNT = 100;
+    public static final int MAX_REDIRECT = 5;
     public static final int RESPONSE_200 = 200;
     public static final int RESPONSE_206 = 206;
+
+    public static final int RESPONSE_503 = 503;
 
     private static int sRedirectCount = 0;
 
@@ -60,8 +62,7 @@ public class HttpUtils {
                     return connection;
                 }
             } catch (IOException e) {
-                if ((e instanceof SSLHandshakeException || e instanceof SSLPeerUnverifiedException) &&
-                        !shouldIgnoreCertErrors) {
+                if ((e instanceof SSLHandshakeException || e instanceof SSLPeerUnverifiedException) && !shouldIgnoreCertErrors) {
                     //这种情况下需要信任证书重试
                     return getConnection(videoUrl, headers, true);
                 }
