@@ -144,6 +144,7 @@ public class VideoInfoParserManager {
                 if (!dir.exists()) {
                     dir.mkdir();
                 }
+
                 M3U8Utils.createRemoteM3U8(dir, m3u8);
 
                 taskItem.setSaveDir(dir.getAbsolutePath());

@@ -330,6 +330,16 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + mM3U8.getTargetDuration() + "\n");
 
             for (M3U8Ts m3u8Ts : mTsList) {
+                if (m3u8Ts.hasInitSegment()) {
+                    String initSegmentInfo;
+                    String initSegmentFilePath = mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getInitSegmentName();
+                    if (m3u8Ts.getSegmentByteRange() != null) {
+                        initSegmentInfo = "URI=\"" + initSegmentFilePath + "\"" + ",BYTERANGE=\"" + m3u8Ts.getSegmentByteRange() + "\"";
+                    } else {
+                        initSegmentInfo = "URI=\"" + initSegmentFilePath  + "\"";
+                    }
+                    bfw.write(M3U8Constants.TAG_INIT_SEGMENT + ":" + initSegmentInfo);
+                }
                 if (m3u8Ts.hasKey()) {
                     if (m3u8Ts.getMethod() != null) {
                         String key = "METHOD=" + m3u8Ts.getMethod();

@@ -14,6 +14,9 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     private boolean mIsMessyKey;
     private long mContentLength;
     private int mRetryCount;
+    private boolean mHasInitSegment;
+    private String mInitSegmentUri;
+    private String mSegmentByteRange;
 
     public M3U8Ts() { }
 
@@ -32,6 +35,12 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
         mMethod = method;
         mKeyUri = keyUri;
         mKeyIV = keyIV;
+    }
+
+    public void setInitSegmentInfo(String initSegmentUri, String segmentByteRange) {
+        mHasInitSegment = true;
+        mInitSegmentUri = initSegmentUri;
+        mSegmentByteRange = segmentByteRange;
     }
 
     public boolean hasKey() {
@@ -114,6 +123,16 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
 
     public int getRetryCount() {
         return mRetryCount;
+    }
+
+    public boolean hasInitSegment() { return mHasInitSegment; }
+
+    public String getInitSegmentUri() { return mInitSegmentUri; }
+
+    public String getSegmentByteRange() { return mSegmentByteRange; }
+
+    public String getInitSegmentName() {
+        return "init_video_" + mIndex + ".ts";
     }
 
     public String toString() {

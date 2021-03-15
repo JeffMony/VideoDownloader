@@ -51,9 +51,12 @@ public class M3U8Utils {
             boolean hasEndList = false;
             boolean hasStreamInfo = false;
             boolean hasKey = false;
+            boolean hasInitSegment = false;
             String method = null;
             String encryptionIV = null;
             String encryptionKeyUri = null;
+            String initSegmentUri = null;
+            String segmentByteRange = null;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 line = line.trim();
@@ -110,6 +113,13 @@ public class M3U8Utils {
                                 // Do nothing.
                             }
                         }
+                    } else if (line.startsWith(M3U8Constants.TAG_INIT_SEGMENT)) {
+                        String tempInitSegmentUri = parseStringAttr(line, M3U8Constants.REGEX_URI);
+                        if (!TextUtils.isEmpty(tempInitSegmentUri)) {
+                            hasInitSegment = true;
+                            initSegmentUri = getM3U8AbsoluteUrl(videoUrl, tempInitSegmentUri);
+                            segmentByteRange = parseOptionalStringAttr(line, M3U8Constants.REGEX_ATTR_BYTERANGE);
+                        }
                     }
                     continue;
                 }
@@ -125,15 +135,21 @@ public class M3U8Utils {
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
+                if (hasInitSegment) {
+                    ts.setInitSegmentInfo(initSegmentUri, segmentByteRange);
+                }
                 m3u8.addTs(ts);
                 tsIndex++;
                 tsDuration = 0;
                 hasStreamInfo = false;
                 hasDiscontinuity = false;
                 hasKey = false;
+                hasInitSegment = false;
                 method = null;
                 encryptionKeyUri = null;
                 encryptionIV = null;
+                initSegmentUri = null;
+                segmentByteRange = null;
             }
             m3u8.setTargetDuration(targetDuration);
             m3u8.setVersion(version);
@@ -162,9 +178,12 @@ public class M3U8Utils {
             int sequence = 0;
             boolean hasDiscontinuity = false;
             boolean hasKey = false;
+            boolean hasInitSegment = false;
             String method = null;
             String encryptionIV = null;
             String encryptionKeyUri = null;
+            String initSegmentUri = null;
+            String segmentByteRange = null;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 LogUtils.i(TAG, "line = " + line);
@@ -210,6 +229,12 @@ public class M3U8Utils {
                                 // Do nothing.
                             }
                         }
+                    } else if (line.startsWith(M3U8Constants.TAG_INIT_SEGMENT)) {
+                        initSegmentUri = parseStringAttr(line, M3U8Constants.REGEX_URI);
+                        if (!TextUtils.isEmpty(initSegmentUri)) {
+                            hasInitSegment = true;
+                            segmentByteRange = parseOptionalStringAttr(line, M3U8Constants.REGEX_ATTR_BYTERANGE);
+                        }
                     }
                     continue;
                 }
@@ -218,14 +243,20 @@ public class M3U8Utils {
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
+                if (hasInitSegment) {
+                    ts.setInitSegmentInfo(initSegmentUri, segmentByteRange);
+                }
                 m3u8.addTs(ts);
                 tsIndex++;
                 tsDuration = 0;
                 hasDiscontinuity = false;
                 hasKey = false;
+                hasInitSegment = false;
                 method = null;
                 encryptionKeyUri = null;
                 encryptionIV = null;
+                initSegmentUri = null;
+                segmentByteRange = null;
             }
             m3u8.setTargetDuration(targetDuration);
             m3u8.setVersion(version);
@@ -238,32 +269,6 @@ public class M3U8Utils {
             VideoDownloadUtils.close(inputStreamReader);
             VideoDownloadUtils.close(bufferedReader);
         }
-    }
-
-    private static String getFinalUrl(String videoUrl, String line) throws IOException {
-        URL url = new URL(videoUrl);
-        String baseUriPath = videoUrl.substring(0, videoUrl.lastIndexOf("/") + 1);
-        String hostUrl = videoUrl.substring(0, videoUrl.indexOf(url.getPath()) + 1);
-        if (line.startsWith("/")) {
-            int tempIndex = line.indexOf('/', 1);
-            String tempUrl;
-            if (tempIndex == -1) {
-                tempUrl = baseUriPath + line.substring(1);
-            } else {
-                tempUrl = line.substring(0, tempIndex);
-                tempIndex = videoUrl.indexOf(tempUrl);
-                if (tempIndex == -1) {
-                    tempUrl = hostUrl + line.substring(1);
-                } else {
-                    tempUrl = videoUrl.substring(0, tempIndex) + line;
-                }
-            }
-            return tempUrl;
-        }
-        if (line.startsWith("https://") || line.startsWith("http://")) {
-            return line;
-        }
-        return baseUriPath + line;
     }
 
     public static String parseStringAttr(String line, Pattern pattern) {
@@ -294,6 +299,15 @@ public class M3U8Utils {
         bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + m3u8.getSequence() + "\n");
         bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + m3u8.getTargetDuration() + "\n");
         for (M3U8Ts m3u8Ts : m3u8.getTsList()) {
+            if (m3u8Ts.hasInitSegment()) {
+                String initSegmentInfo;
+                if (m3u8Ts.getSegmentByteRange() != null) {
+                    initSegmentInfo = "URI=\"" + m3u8Ts.getInitSegmentUri() + "\"" + ",BYTERANGE=\"" + m3u8Ts.getSegmentByteRange() + "\"";
+                } else {
+                    initSegmentInfo = "URI=\"" + m3u8Ts.getInitSegmentUri()  + "\"";
+                }
+                bfw.write(M3U8Constants.TAG_INIT_SEGMENT + ":" + initSegmentInfo);
+            }
             if (m3u8Ts.hasKey()) {
                 if (m3u8Ts.getMethod() != null) {
                     String key = "METHOD=" + m3u8Ts.getMethod();
@@ -301,10 +315,9 @@ public class M3U8Utils {
                         String keyUri = m3u8Ts.getKeyUri();
                         key += ",URI=\"" + keyUri + "\"";
                         URL keyURL = new URL(keyUri);
-                        BufferedReader bufferedReader =
-                                new BufferedReader(new InputStreamReader(keyURL.openStream()));
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(keyURL.openStream()));
                         StringBuilder textBuilder = new StringBuilder();
-                        String line = null;
+                        String line;
                         while ((line = bufferedReader.readLine()) != null) {
                             textBuilder.append(line);
                         }
