@@ -130,7 +130,7 @@ public class M3U8Utils {
                 if (Math.abs(tsDuration) < 0.001f) {
                     continue;
                 }
-                M3U8Ts ts = new M3U8Ts();
+                M3U8Seg ts = new M3U8Seg();
                 ts.initTsAttributes(getM3U8AbsoluteUrl(videoUrl, line), tsDuration, tsIndex, hasDiscontinuity, hasKey);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
@@ -238,7 +238,7 @@ public class M3U8Utils {
                     }
                     continue;
                 }
-                M3U8Ts ts = new M3U8Ts();
+                M3U8Seg ts = new M3U8Seg();
                 ts.initTsAttributes(line, tsDuration, tsIndex, hasDiscontinuity, hasKey);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
@@ -298,7 +298,7 @@ public class M3U8Utils {
         bfw.write(M3U8Constants.TAG_VERSION + ":" + m3u8.getVersion() + "\n");
         bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + m3u8.getSequence() + "\n");
         bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + m3u8.getTargetDuration() + "\n");
-        for (M3U8Ts m3u8Ts : m3u8.getTsList()) {
+        for (M3U8Seg m3u8Ts : m3u8.getTsList()) {
             if (m3u8Ts.hasInitSegment()) {
                 String initSegmentInfo;
                 if (m3u8Ts.getSegmentByteRange() != null) {
@@ -306,7 +306,7 @@ public class M3U8Utils {
                 } else {
                     initSegmentInfo = "URI=\"" + m3u8Ts.getInitSegmentUri()  + "\"";
                 }
-                bfw.write(M3U8Constants.TAG_INIT_SEGMENT + ":" + initSegmentInfo);
+                bfw.write(M3U8Constants.TAG_INIT_SEGMENT + ":" + initSegmentInfo + "\n");
             }
             if (m3u8Ts.hasKey()) {
                 if (m3u8Ts.getMethod() != null) {

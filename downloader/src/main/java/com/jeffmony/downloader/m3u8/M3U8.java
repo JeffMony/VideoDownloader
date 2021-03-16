@@ -6,7 +6,7 @@ import java.util.List;
 public class M3U8 {
 
     private String mUrl;
-    private List<M3U8Ts> mTsList;
+    private List<M3U8Seg> mTsList;
     private float mTargetDuration;
     private int mSequence;
     private int mVersion = 3;
@@ -22,27 +22,27 @@ public class M3U8 {
         mTsList = new ArrayList<>();
     }
 
-    public void addTs(M3U8Ts ts) {
-        this.mTsList.add(ts);
+    public void addTs(M3U8Seg ts) {
+        mTsList.add(ts);
     }
 
     public void setTargetDuration(float targetDuration) {
-        this.mTargetDuration = targetDuration;
+        mTargetDuration = targetDuration;
     }
 
     public void setVersion(int version) {
-        this.mVersion = version;
+        mVersion = version;
     }
 
     public void setSequence(int sequence) {
-        this.mSequence = sequence;
+        mSequence = sequence;
     }
 
     public void setHasEndList(boolean hasEndList) {
-        this.mHasEndList = hasEndList;
+        mHasEndList = hasEndList;
     }
 
-    public List<M3U8Ts> getTsList() {
+    public List<M3U8Seg> getTsList() {
         return mTsList;
     }
 
@@ -64,7 +64,7 @@ public class M3U8 {
 
     public long getDuration() {
         long duration = 0L;
-        for (M3U8Ts ts : mTsList) {
+        for (M3U8Seg ts : mTsList) {
             duration += ts.getDuration();
         }
         return duration;

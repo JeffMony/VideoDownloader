@@ -23,6 +23,9 @@ public class VideoDownloadUtils {
     public static final String LOCAL_M3U8 = "local.m3u8";
     public static final String REMOTE_M3U8 = "remote.m3u8";
     public static final String OUPUT_VIDEO = "merged.mp4";
+    public static final String SEGMENT_PREFIX = "video_";
+    public static final String INIT_SEGMENT_PREFIX = "init_video_";
+
     private static VideoDownloadConfig mDownloadConfig;
 
     public static void setDownloadConfig(@NonNull VideoDownloadConfig config) {
@@ -160,4 +163,13 @@ public class VideoDownloadUtils {
         }
         return false;
     }
+
+    public static String getSuffixName(String name) {
+        if (TextUtils.isEmpty(name)) {
+            return "";
+        }
+        int dotIndex = name.lastIndexOf('.');
+        return (dotIndex >= 0 && dotIndex < name.length()) ? name.substring(dotIndex) : "";
+    }
+
 }

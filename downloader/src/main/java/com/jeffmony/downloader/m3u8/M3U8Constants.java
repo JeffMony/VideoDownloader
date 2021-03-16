@@ -15,7 +15,7 @@ public class M3U8Constants {
     public static final String TAG_DISCONTINUITY = "#EXT-X-DISCONTINUITY"; // Optional
     public static final String TAG_ENDLIST = "#EXT-X-ENDLIST"; // It is not live if hls has '#EXT-X-ENDLIST' tag; Or it is.
     public static final String TAG_KEY = "#EXT-X-KEY"; // Optional
-    public static final String TAG_INIT_SEGMENT = "EXT-X-MAP";
+    public static final String TAG_INIT_SEGMENT = "#EXT-X-MAP";
 
     // extra hls tag:
 

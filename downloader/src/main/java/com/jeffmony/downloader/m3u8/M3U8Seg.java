@@ -1,6 +1,11 @@
 package com.jeffmony.downloader.m3u8;
 
-public class M3U8Ts implements Comparable<M3U8Ts> {
+import android.net.Uri;
+import android.text.TextUtils;
+
+import com.jeffmony.downloader.utils.VideoDownloadUtils;
+
+public class M3U8Seg implements Comparable<M3U8Seg> {
     private float mDuration;
     private int mIndex;
     private String mUrl;
@@ -18,7 +23,7 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     private String mInitSegmentUri;
     private String mSegmentByteRange;
 
-    public M3U8Ts() { }
+    public M3U8Seg() { }
 
     public void initTsAttributes(String url, float duration, int index,
                                  boolean hasDiscontinuity, boolean hasKey) {
@@ -86,11 +91,20 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     }
 
     public String getIndexName() {
-        return "video_" + mIndex + ".ts";
+        String suffixName = "";
+        if (!TextUtils.isEmpty(mUrl)) {
+            Uri uri = Uri.parse(mUrl);
+            String fileName = uri.getLastPathSegment();
+            if (!TextUtils.isEmpty(fileName)) {
+                fileName = fileName.toLowerCase();
+                suffixName = VideoDownloadUtils.getSuffixName(fileName);
+            }
+        }
+        return VideoDownloadUtils.SEGMENT_PREFIX + mIndex + suffixName;
     }
 
     public void setTsSize(long tsSize) {
-        this.mTsSize = tsSize;
+        mTsSize = tsSize;
     }
 
     public long getTsSize() {
@@ -102,7 +116,7 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     }
 
     public void setIsMessyKey(boolean isMessyKey) {
-        this.mIsMessyKey = isMessyKey;
+        mIsMessyKey = isMessyKey;
     }
 
     public boolean isMessyKey() {
@@ -132,7 +146,16 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     public String getSegmentByteRange() { return mSegmentByteRange; }
 
     public String getInitSegmentName() {
-        return "init_video_" + mIndex + ".ts";
+        String suffixName = "";
+        if (!TextUtils.isEmpty(mInitSegmentUri)) {
+            Uri uri = Uri.parse(mInitSegmentUri);
+            String fileName = uri.getLastPathSegment();
+            if (!TextUtils.isEmpty(fileName)) {
+                fileName = fileName.toLowerCase();
+                suffixName = VideoDownloadUtils.getSuffixName(fileName);
+            }
+        }
+        return VideoDownloadUtils.INIT_SEGMENT_PREFIX + mIndex + suffixName;
     }
 
     public String toString() {
@@ -140,7 +163,7 @@ public class M3U8Ts implements Comparable<M3U8Ts> {
     }
 
     @Override
-    public int compareTo(M3U8Ts object) {
+    public int compareTo(M3U8Seg object) {
         return mName.compareTo(object.mName);
     }
 }
