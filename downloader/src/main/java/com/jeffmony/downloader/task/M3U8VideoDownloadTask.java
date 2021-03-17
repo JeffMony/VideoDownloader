@@ -72,6 +72,9 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         mCurTs = tempCurTs;
         mCurrentCachedSize = tempCurrentCachedSize;
+        if (mCurTs == mTotalTs) {
+            mTaskItem.setIsCompleted(true);
+        }
     }
 
 

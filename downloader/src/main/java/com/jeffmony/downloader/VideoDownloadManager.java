@@ -116,6 +116,7 @@ public class VideoDownloadManager {
 
     public void setShouldM3U8Merged(boolean enable) {
         if (mConfig != null) {
+            LogUtils.w(TAG, "setShouldM3U8Merged = " + enable);
             mConfig.setShouldM3U8Merged(enable);
         }
     }
@@ -525,8 +526,16 @@ public class VideoDownloadManager {
             WorkerThreadHandler.submitRunnableTask(() -> {
                 List<VideoTaskItem> taskItems = mVideoDatabaseHelper.getDownloadInfos();
                 for (VideoTaskItem taskItem : taskItems) {
-                    mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
+                    if (mConfig != null && mConfig.shouldM3U8Merged() && taskItem.isHlsType()) {
+                        doMergeTs(taskItem, taskItem1 -> {
+                            mVideoItemTaskMap.put(taskItem1.getUrl(), taskItem1);
+                            markDownloadFinishEvent(taskItem1);
+                        });
+                    } else {
+                        mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
+                    }
                 }
+
                 for (IDownloadInfosCallback callback : mDownloadInfoCallbacks) {
                     callback.onDownloadInfos(taskItems);
                 }
@@ -617,6 +626,9 @@ public class VideoDownloadManager {
         }
         LogUtils.i(TAG, "VideoMerge doMergeTs taskItem=" + taskItem);
         String inputPath = taskItem.getFilePath();
+        if (TextUtils.isEmpty(taskItem.getFileHash())) {
+            taskItem.setFileHash(VideoDownloadUtils.computeMD5(taskItem.getUrl()));
+        }
         String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.OUPUT_VIDEO;
         File outputFile = new File(outputPath);
         if (outputFile.exists()) {
