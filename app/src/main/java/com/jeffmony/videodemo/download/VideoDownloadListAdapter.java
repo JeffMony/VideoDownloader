@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.utils.LogUtils;
-import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.videodemo.play.PlayerActivity;
 import com.jeffmony.videodemo.R;
 
@@ -39,26 +38,17 @@ public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
         urlTextView.setText(item.getUrl());
         TextView stateTextView = (TextView) view.findViewById(R.id.status_txt);
         TextView playBtn = (TextView) view.findViewById(R.id.download_play_btn);
-        playBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(mContext, PlayerActivity.class);
-                String filePath = item.getFilePath();
-                File file = new File(filePath);
-                if (file.exists()) {
-                    intent.putExtra("videoUrl", item.getFilePath());
-                    mContext.startActivity(intent);
-                } else {
-                    File mp4File = new File(filePath.substring(0, filePath.lastIndexOf("/")), VideoDownloadUtils.OUPUT_VIDEO);
-                    if (item.isHlsType() && mp4File.exists()) {
-                        intent.putExtra("videoUrl", mp4File.getAbsolutePath());
-                        mContext.startActivity(intent);
-                    } else {
-                        LogUtils.w(TAG, "File = " + filePath + " is gone");
-                    }
-                }
-
+        playBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(mContext, PlayerActivity.class);
+            String filePath = item.getFilePath();
+            File file = new File(filePath);
+            if (file.exists()) {
+                intent.putExtra("videoUrl", item.getFilePath());
+                mContext.startActivity(intent);
+            } else {
+                LogUtils.w(TAG, "File = " + filePath + " is gone");
             }
+
         });
         setStateText(stateTextView, playBtn, item);
         TextView infoTextView = (TextView) view.findViewById(R.id.download_txt);

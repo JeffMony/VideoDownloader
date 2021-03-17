@@ -93,8 +93,7 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.FILE_PATH, item.getFilePath());
             String whereClause = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] whereArgs = {item.getUrl()};
-            db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values,
-                    whereClause, whereArgs);
+            db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values, whereClause, whereArgs);
             db.setTransactionSuccessful();
         } catch (Exception e) {
             LogUtils.w(TAG,
@@ -141,8 +140,7 @@ public class VideoDownloadDatabaseHelper {
         try {
             String selection = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] selectionArgs = {item.getUrl() + ""};
-            cursor =
-                    db.query(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null,
+            cursor = db.query(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null,
                             selection, selectionArgs, null, null, null, null);
             if (cursor != null && cursor.moveToFirst() && cursor.getLong(0) > 0) {
                 return true;
@@ -172,33 +170,20 @@ public class VideoDownloadDatabaseHelper {
                     null, null, null, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 do {
-                    String url = cursor.getString(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.VIDEO_URL));
+                    String url = cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.VIDEO_URL));
                     VideoTaskItem item = new VideoTaskItem(url);
-                    item.setMimeType(cursor.getString(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.MIME_TYPE)));
-                    item.setDownloadCreateTime(cursor.getLong(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.DOWNLOAD_TIME)));
-                    item.setPercent(cursor.getFloat(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.PERCENT)));
-                    item.setTaskState(cursor.getInt(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.TASK_STATE)));
-                    item.setVideoType(cursor.getInt(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.VIDEO_TYPE)));
-                    item.setDownloadSize(cursor.getLong(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.CACHED_LENGTH)));
-                    item.setTotalSize(cursor.getLong(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.TOTAL_LENGTH)));
-                    item.setCurTs(cursor.getInt(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.CACHED_TS)));
-                    item.setTotalTs(cursor.getInt(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.TOTAL_TS)));
-                    item.setIsCompleted(cursor.getInt(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.COMPLETED)) == 1 ? true : false);
-                    item.setFileName(cursor.getString(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.FILE_NAME)));
-                    item.setFilePath(cursor.getString(cursor.getColumnIndex(
-                            VideoDownloadSQLiteHelper.Columns.FILE_PATH)));
+                    item.setMimeType(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.MIME_TYPE)));
+                    item.setDownloadCreateTime(cursor.getLong(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.DOWNLOAD_TIME)));
+                    item.setPercent(cursor.getFloat(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.PERCENT)));
+                    item.setTaskState(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.TASK_STATE)));
+                    item.setVideoType(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.VIDEO_TYPE)));
+                    item.setDownloadSize(cursor.getLong(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.CACHED_LENGTH)));
+                    item.setTotalSize(cursor.getLong(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.TOTAL_LENGTH)));
+                    item.setCurTs(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.CACHED_TS)));
+                    item.setTotalTs(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.TOTAL_TS)));
+                    item.setIsCompleted(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COMPLETED)) == 1 ? true : false);
+                    item.setFileName(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.FILE_NAME)));
+                    item.setFilePath(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.FILE_PATH)));
                     if (item.isRunningTask() && Math.abs(item.getSpeed()) < 0.0001f) {
                         item.setTaskState(VideoTaskState.PAUSE);
                     }

@@ -598,6 +598,7 @@ public class VideoDownloadManager {
     private void handleOnDownloadSuccess(VideoTaskItem taskItem) {
         removeDownloadQueue(taskItem);
 
+        LogUtils.i(TAG, "handleOnDownloadSuccess shouldM3U8Merged="+mConfig.shouldM3U8Merged() + ", isHlsType="+taskItem.isHlsType());
         if (mConfig.shouldM3U8Merged() && taskItem.isHlsType()) {
             doMergeTs(taskItem, taskItem1 -> {
                 mGlobalDownloadListener.onDownloadSuccess(taskItem1);
@@ -616,7 +617,7 @@ public class VideoDownloadManager {
         }
         LogUtils.i(TAG, "VideoMerge doMergeTs taskItem=" + taskItem);
         String inputPath = taskItem.getFilePath();
-        String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + VideoDownloadUtils.OUPUT_VIDEO;
+        String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.OUPUT_VIDEO;
         File outputFile = new File(outputPath);
         if (outputFile.exists()) {
             outputFile.delete();

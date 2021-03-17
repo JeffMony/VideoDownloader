@@ -46,10 +46,10 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
         VideoTaskItem item1 = new VideoTaskItem("https://eth.ppzuida.com/20171008/YzYFXX0V/index.m3u8");
         VideoTaskItem item2 = new VideoTaskItem("https://eth.ppzuida.com/20171008/jzppZCx9/index.m3u8");
         VideoTaskItem item3 = new VideoTaskItem("https://eth.ppzuida.com/20171008/Kc5MPjQC/index.m3u8");
-        VideoTaskItem item4 = new VideoTaskItem("https://eth.ppzuida.com/20171008/53rENUwm/index.m3u8");
-        VideoTaskItem item5 = new VideoTaskItem("https://eth.ppzuida.com/20171008/n3pfm145/index.m3u8");
+        VideoTaskItem item4 = new VideoTaskItem("https://www.qzamfz.com/20190710/BjhH5Ffw/index.m3u8");
+        VideoTaskItem item5 = new VideoTaskItem("http://videoconverter.vivo.com.cn/201706/655_1498479540118.mp4.main.m3u8");
         VideoTaskItem item6 = new VideoTaskItem("https://europe.olemovienews.com/hlstimeofffmp4/20210226/fICqcpqr/mp4/fICqcpqr.mp4/master.m3u8");
-        VideoTaskItem item7 = new VideoTaskItem("http://gv.vivo.com.cn/appstore/gamecenter/upload/video/201701/2017011314414026850.mp4");
+        VideoTaskItem item7 = new VideoTaskItem("https://rrsp-1252816746.cos.ap-shanghai.myqcloud.com/0c1f023caa3bbefbe16a5ce564142bbe.mp4");
 
         items[0] = item1;
         items[1] = item2;

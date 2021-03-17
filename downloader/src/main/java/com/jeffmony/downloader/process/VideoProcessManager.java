@@ -3,6 +3,7 @@ package com.jeffmony.downloader.process;
 import androidx.annotation.NonNull;
 
 import com.jeffmony.downloader.utils.LogUtils;
+import com.jeffmony.ffmpeglib.FFmpegVideoUtils;
 
 import java.io.File;
 
@@ -24,7 +25,7 @@ public class VideoProcessManager {
     }
 
     public void mergeTs(String inputPath, String outputPath, @NonNull IM3U8MergeListener listener) {
-        int result = FFmpegRemuxUtils.remux(inputPath, outputPath);
+        int result = FFmpegVideoUtils.transformVideo(inputPath, outputPath);
         LogUtils.i(TAG, "VideoMerge mergeTs result=" +result);
         if (result < 0) {
             listener.onMergeFailed(new Exception("Merge ts failed"));
@@ -39,7 +40,7 @@ public class VideoProcessManager {
     }
 
     public void printVideoInfo(String srcPath) {
-        FFmpegRemuxUtils.printVideoInfo(srcPath);
+        FFmpegVideoUtils.printVideoInfo(srcPath);
     }
 
 }
