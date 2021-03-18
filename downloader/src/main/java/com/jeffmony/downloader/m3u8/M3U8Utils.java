@@ -131,7 +131,7 @@ public class M3U8Utils {
                     continue;
                 }
                 M3U8Seg ts = new M3U8Seg();
-                ts.initTsAttributes(getM3U8AbsoluteUrl(videoUrl, line), tsDuration, tsIndex, hasDiscontinuity, hasKey);
+                ts.initTsAttributes(getM3U8AbsoluteUrl(videoUrl, line), tsDuration, tsIndex, sequence++, hasDiscontinuity);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
@@ -239,7 +239,7 @@ public class M3U8Utils {
                     continue;
                 }
                 M3U8Seg ts = new M3U8Seg();
-                ts.initTsAttributes(line, tsDuration, tsIndex, hasDiscontinuity, hasKey);
+                ts.initTsAttributes(line, tsDuration, tsIndex, sequence++, hasDiscontinuity);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
@@ -296,7 +296,7 @@ public class M3U8Utils {
         BufferedWriter bfw = new BufferedWriter(new FileWriter(m3u8File, false));
         bfw.write(M3U8Constants.PLAYLIST_HEADER + "\n");
         bfw.write(M3U8Constants.TAG_VERSION + ":" + m3u8.getVersion() + "\n");
-        bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + m3u8.getSequence() + "\n");
+        bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + m3u8.getInitSequence() + "\n");
         bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + m3u8.getTargetDuration() + "\n");
         for (M3U8Seg m3u8Ts : m3u8.getTsList()) {
             if (m3u8Ts.hasInitSegment()) {

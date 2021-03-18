@@ -6,37 +6,39 @@ import android.text.TextUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 
 public class M3U8Seg implements Comparable<M3U8Seg> {
-    private float mDuration;
-    private int mIndex;
-    private String mUrl;
-    private String mName;
-    private long mTsSize;
-    private boolean mHasDiscontinuity;
-    private boolean mHasKey;
-    private String mMethod;
-    private String mKeyUri;
-    private String mKeyIV;
-    private boolean mIsMessyKey;
-    private long mContentLength;
-    private int mRetryCount;
-    private boolean mHasInitSegment;
-    private String mInitSegmentUri;
-    private String mSegmentByteRange;
+    private float mDuration;                     //分片时长
+    private int mIndex;                          //分片索引值,第一个为0
+    private int mSequence;                       //分片的sequence, 根据initSequence自增得到的
+    private String mUrl;                         //分片url
+    private String mName;                        //分片名,可以自己定义
+    private long mTsSize;                        //分片大小
+    private boolean mHasDiscontinuity;           //分片前是否有#EXT-X-DISCONTINUITY标识
+    private boolean mHasKey;                     //分片是否有#EXT-X-KEY
+    private String mMethod;                      //加密的方式
+    private String mKeyUri;                      //加密的url
+    private String mKeyIV;                       //加密的IV
+    private boolean mIsMessyKey;                 //当前加密key是否是乱码
+    private long mContentLength;                 //分片的Content-Length
+    private int mRetryCount;                     //分片的请求重试次数
+    private boolean mHasInitSegment;             //分片前是否有#EXT-X-MAP
+    private String mInitSegmentUri;              //MAP的url
+    private String mSegmentByteRange;            //MAP的range
 
     public M3U8Seg() { }
 
     public void initTsAttributes(String url, float duration, int index,
-                                 boolean hasDiscontinuity, boolean hasKey) {
+                                 int sequence, boolean hasDiscontinuity) {
         mUrl = url;
         mName = url;
         mDuration = duration;
         mIndex = index;
+        mSequence = sequence;
         mHasDiscontinuity = hasDiscontinuity;
-        mHasKey = hasKey;
         mTsSize = 0L;
     }
 
     public void setKeyConfig(String method, String keyUri, String keyIV) {
+        mHasKey = true;
         mMethod = method;
         mKeyUri = keyUri;
         mKeyIV = keyIV;
@@ -47,6 +49,8 @@ public class M3U8Seg implements Comparable<M3U8Seg> {
         mInitSegmentUri = initSegmentUri;
         mSegmentByteRange = segmentByteRange;
     }
+
+    public int getSequence() { return mSequence; }
 
     public boolean hasKey() {
         return mHasKey;
@@ -61,7 +65,7 @@ public class M3U8Seg implements Comparable<M3U8Seg> {
     }
 
     public String getLocalKeyUri() {
-        return "local.key";
+        return  "local_"+ mIndex + ".key";
     }
 
     public String getKeyIV() {

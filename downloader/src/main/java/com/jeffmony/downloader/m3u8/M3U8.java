@@ -8,7 +8,7 @@ public class M3U8 {
     private String mUrl;
     private List<M3U8Seg> mTsList;
     private float mTargetDuration;
-    private int mSequence;
+    private int mInitSequence;
     private int mVersion = 3;
     private boolean mHasEndList;
 
@@ -18,7 +18,7 @@ public class M3U8 {
 
     public M3U8(String url) {
         mUrl = url;
-        mSequence = 0;
+        mInitSequence = 0;
         mTsList = new ArrayList<>();
     }
 
@@ -35,7 +35,7 @@ public class M3U8 {
     }
 
     public void setSequence(int sequence) {
-        mSequence = sequence;
+        mInitSequence = sequence;
     }
 
     public void setHasEndList(boolean hasEndList) {
@@ -54,8 +54,8 @@ public class M3U8 {
         return mTargetDuration;
     }
 
-    public int getSequence() {
-        return mSequence;
+    public int getInitSequence() {
+        return mInitSequence;
     }
 
     public boolean hasEndList() {

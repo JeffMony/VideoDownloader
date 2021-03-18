@@ -330,7 +330,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             BufferedWriter bfw = new BufferedWriter(new FileWriter(tempM3U8File, false));
             bfw.write(M3U8Constants.PLAYLIST_HEADER + "\n");
             bfw.write(M3U8Constants.TAG_VERSION + ":" + mM3U8.getVersion() + "\n");
-            bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getSequence() + "\n");
+            bfw.write(M3U8Constants.TAG_MEDIA_SEQUENCE + ":" + mM3U8.getInitSequence() + "\n");
 
             bfw.write(M3U8Constants.TAG_TARGET_DURATION + ":" + mM3U8.getTargetDuration() + "\n");
 
