@@ -63,13 +63,7 @@ public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
                 stateView.setText("等待中");
                 break;
             case VideoTaskState.PREPARE:
-                playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("准备好");
-                break;
             case VideoTaskState.START:
-                playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("开始下载");
-                break;
             case VideoTaskState.DOWNLOADING:
                 stateView.setText("下载中...");
                 break;

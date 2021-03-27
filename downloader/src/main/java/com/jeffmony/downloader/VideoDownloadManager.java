@@ -265,6 +265,7 @@ public class VideoDownloadManager {
 
     private void startM3U8VideoDownloadTask(final VideoTaskItem taskItem, M3U8 m3u8, Map<String, String> headers) {
         taskItem.setTaskState(VideoTaskState.PREPARE);
+        mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
         VideoTaskItem tempTaskItem = (VideoTaskItem) taskItem.clone();
         mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_PREPARE, tempTaskItem).sendToTarget();
         synchronized (mQueueLock) {
@@ -282,6 +283,7 @@ public class VideoDownloadManager {
 
     private void startBaseVideoDownloadTask(VideoTaskItem taskItem, Map<String, String> headers) {
         taskItem.setTaskState(VideoTaskState.PREPARE);
+        mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
         VideoTaskItem tempTaskItem = (VideoTaskItem) taskItem.clone();
         mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_PREPARE, tempTaskItem).sendToTarget();
         synchronized (mQueueLock) {

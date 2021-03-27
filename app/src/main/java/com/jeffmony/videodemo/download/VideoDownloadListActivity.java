@@ -64,17 +64,14 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
 
         VideoDownloadManager.getInstance().fetchDownloadItems(mInfosCallback);
 
-        mDownloadListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                VideoTaskItem item = items[position];
-                if (item.isInitialTask()) {
-                    VideoDownloadManager.getInstance().startDownload(item);
-                } else if (item.isRunningTask()) {
-                    VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
-                } else if (item.isInterruptTask()) {
-                    VideoDownloadManager.getInstance().resumeDownload(item.getUrl());
-                }
+        mDownloadListView.setOnItemClickListener((parent, view, position, id) -> {
+            VideoTaskItem item = items[position];
+            if (item.isInitialTask()) {
+                VideoDownloadManager.getInstance().startDownload(item);
+            } else if (item.isRunningTask()) {
+                VideoDownloadManager.getInstance().pauseDownloadTask(item.getUrl());
+            } else if (item.isInterruptTask()) {
+                VideoDownloadManager.getInstance().resumeDownload(item.getUrl());
             }
         });
     }
