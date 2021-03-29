@@ -26,7 +26,7 @@ public class HttpUtils {
     private static final String TAG = "HttpUtils";
 
     public static final int MAX_RETRY_COUNT = 100;
-    public static final int MAX_REDIRECT = 5;
+    public static final int MAX_REDIRECT = 20;
     public static final int RESPONSE_200 = 200;
     public static final int RESPONSE_206 = 206;
 
@@ -56,7 +56,7 @@ public class HttpUtils {
                                 (responseCode == 307 || responseCode == 308)) {
                     String location = connection.getHeaderField("Location");
                     connection.disconnect();
-                    url = handleRedirect(url, location);
+                    url = new URL(location);
                     sRedirectCount++;
                 } else {
                     return connection;
