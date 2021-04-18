@@ -91,6 +91,8 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.COMPLETED, item.isCompleted());
             values.put(VideoDownloadSQLiteHelper.Columns.FILE_NAME, item.getFileName());
             values.put(VideoDownloadSQLiteHelper.Columns.FILE_PATH, item.getFilePath());
+            values.put(VideoDownloadSQLiteHelper.Columns.COVER_URL, item.getCoverUrl());
+            values.put(VideoDownloadSQLiteHelper.Columns.COVER_PATH, item.getCoverPath());
             String whereClause = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] whereArgs = {item.getUrl()};
             db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values, whereClause, whereArgs);
@@ -120,6 +122,8 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.CACHED_TS, item.getCurTs());
             values.put(VideoDownloadSQLiteHelper.Columns.TOTAL_TS, item.getTotalTs());
             values.put(VideoDownloadSQLiteHelper.Columns.COMPLETED, item.isCompleted());
+            values.put(VideoDownloadSQLiteHelper.Columns.COVER_URL, item.getCoverUrl());
+            values.put(VideoDownloadSQLiteHelper.Columns.COVER_PATH, item.getCoverPath());
             db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -181,6 +185,8 @@ public class VideoDownloadDatabaseHelper {
                     item.setIsCompleted(cursor.getInt(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COMPLETED)) == 1 ? true : false);
                     item.setFileName(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.FILE_NAME)));
                     item.setFilePath(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.FILE_PATH)));
+                    item.setCoverUrl(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COVER_URL)));
+                    item.setCoverPath(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COVER_PATH)));
                     if (item.isRunningTask() && Math.abs(item.getSpeed()) < 0.0001f) {
                         item.setTaskState(VideoTaskState.PAUSE);
                     }

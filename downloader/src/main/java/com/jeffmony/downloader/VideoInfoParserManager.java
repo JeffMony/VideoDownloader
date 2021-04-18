@@ -15,6 +15,9 @@ import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +52,20 @@ public class VideoInfoParserManager {
             if (!HttpUtils.matchHttpSchema(taskItem.getUrl())) {
                 listener.onBaseVideoInfoFailed(new VideoDownloadException(DownloadExceptionUtils.URL_SCHEMA_ERROR));
                 return;
+            }
+
+            if (TextUtils.isEmpty(taskItem.getCoverPath()) && !TextUtils.isEmpty(taskItem.getCoverUrl())) {
+                //请求视频的封面图
+                HttpURLConnection coverConn = HttpUtils.getConnection(taskItem.getCoverUrl(), headers, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
+                int responseCode = coverConn.getResponseCode();
+                if (responseCode == HttpUtils.RESPONSE_200 || responseCode == HttpUtils.RESPONSE_206) {
+                    InputStream inputStream = coverConn.getInputStream();
+                    File coverFile = new File(VideoDownloadUtils.getDownloadConfig().getCacheRoot(), taskItem.getFileHash() + ".jpg");
+                    boolean result = saveCoverFile(inputStream, coverFile);
+                    if (result) {
+                        taskItem.setCoverPath(coverFile.getAbsolutePath());
+                    }
+                }
             }
 
             String finalUrl = taskItem.getUrl();
@@ -173,6 +190,24 @@ public class VideoInfoParserManager {
             e.printStackTrace();
             callback.onM3U8FileParseFailed(taskItem, e);
         }
+    }
+
+    private boolean saveCoverFile(InputStream inputStream, File coverFile) {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(coverFile);
+            int len;
+            byte[] buf = new byte[VideoDownloadUtils.DEFAULT_BUFFER_SIZE];
+            while((len = inputStream.read(buf))!= -1) {
+                fos.write(buf, 0, len);
+            }
+        } catch (IOException e) {
+            return false;
+        } finally {
+            VideoDownloadUtils.close(inputStream);
+            VideoDownloadUtils.close(fos);
+        }
+        return true;
     }
 
 }

@@ -2,8 +2,8 @@ package com.jeffmony.downloader.common;
 
 public class DownloadConstants {
 
-    public static final int READ_TIMEOUT = 60 * 1000;
-    public static final int CONN_TIMEOUT = 60 * 1000;
+    public static final int READ_TIMEOUT = 2 * 60 * 1000;
+    public static final int CONN_TIMEOUT = 2 * 60 * 1000;
     public static final int CONCURRENT = 3;
 
     public static final int MSG_DOWNLOAD_DEFAULT = 0;

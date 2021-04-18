@@ -7,6 +7,8 @@ import com.jeffmony.downloader.utils.VideoStorageUtils;
 public class VideoTaskItem implements Cloneable {
 
     private String mUrl;                 //下载视频的url
+    private String mCoverUrl;            //封面图的url
+    private String mCoverPath;           //封面图存储的位置
     private long mDownloadCreateTime;    //下载创建的时间
     private int mTaskState;              //当前任务的状态
     private String mMimeType;            // 视频url的mime type
@@ -30,12 +32,25 @@ public class VideoTaskItem implements Cloneable {
     private boolean mPaused;
 
     public VideoTaskItem(String url) {
+        this(url, "");
+    }
+
+    public VideoTaskItem(String url, String coverUrl) {
         mUrl = url;
+        mCoverUrl = coverUrl;
     }
 
     public String getUrl() {
         return mUrl;
     }
+
+    public void setCoverUrl(String coverUrl) { mCoverUrl = coverUrl; }
+
+    public String getCoverUrl() { return mCoverUrl; }
+
+    public void setCoverPath(String coverPath) { mCoverPath = coverPath; }
+
+    public String getCoverPath() { return mCoverPath; }
 
     public void setDownloadCreateTime(long time) {
         mDownloadCreateTime = time;
@@ -259,6 +274,8 @@ public class VideoTaskItem implements Cloneable {
         mTotalSize = 0;
         mFileName = null;
         mFilePath = null;
+        mCoverUrl = null;
+        mCoverPath = null;
     }
 
     @Override
@@ -276,6 +293,8 @@ public class VideoTaskItem implements Cloneable {
         taskItem.setFileHash(mFileHash);
         taskItem.setFilePath(mFilePath);
         taskItem.setFileName(mFileName);
+        taskItem.setCoverUrl(mCoverUrl);
+        taskItem.setCoverPath(mCoverPath);
         return taskItem;
     }
 
@@ -297,6 +316,9 @@ public class VideoTaskItem implements Cloneable {
                 ", DownloadSize=" + mDownloadSize +
                 ", State=" + mTaskState +
                 ", FilePath=" + mFileName +
-                ", LocalFile=" + mFilePath + "]";
+                ", LocalFile=" + mFilePath +
+                ", CoverUrl=" + mCoverUrl +
+                ", CoverPath=" + mCoverPath +
+                "]";
     }
 }
