@@ -96,8 +96,7 @@ public class VideoDownloadDatabaseHelper {
             db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values, whereClause, whereArgs);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG,
-                    "updateVideoDownloadInfo failed, exception = " + e.getMessage());
+            LogUtils.w(TAG, "updateVideoDownloadInfo failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
         }
@@ -124,8 +123,7 @@ public class VideoDownloadDatabaseHelper {
             db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG,
-                    "insertVideoDownloadInfo failed, exception = " + e.getMessage());
+            LogUtils.w(TAG, "insertVideoDownloadInfo failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
             item.setIsInDatabase(true);
@@ -148,8 +146,7 @@ public class VideoDownloadDatabaseHelper {
                 return false;
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "isTaskInfoExistInTable query failed, exception = " +
-                    e.getMessage());
+            LogUtils.w(TAG, "isTaskInfoExistInTable query failed, exception = " + e.getMessage());
             return false;
         } finally {
             if (cursor != null) {

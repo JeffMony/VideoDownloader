@@ -2,7 +2,6 @@ package com.jeffmony.videodemo.download;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -43,10 +42,10 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     }
 
     private void initDatas() {
-        VideoTaskItem item1 = new VideoTaskItem("https://eth.ppzuida.com/20171008/YzYFXX0V/index.m3u8");
-        VideoTaskItem item2 = new VideoTaskItem("https://eth.ppzuida.com/20171008/jzppZCx9/index.m3u8");
-        VideoTaskItem item3 = new VideoTaskItem("https://eth.ppzuida.com/20171008/Kc5MPjQC/index.m3u8");
-        VideoTaskItem item4 = new VideoTaskItem("https://www.qzamfz.com/20190710/BjhH5Ffw/index.m3u8");
+        VideoTaskItem item1 = new VideoTaskItem("https://v3.dious.cc/20201224/v04Vp1ES/index.m3u8");
+        VideoTaskItem item2 = new VideoTaskItem("https://v3.dious.cc/20201224/6Q1yAHRu/index.m3u8");
+        VideoTaskItem item3 = new VideoTaskItem("https://v3.dious.cc/20201224/aQKzuq6G/index.m3u8");
+        VideoTaskItem item4 = new VideoTaskItem("https://v3.dious.cc/20201224/WWTyUxS6/index.m3u8");
         VideoTaskItem item5 = new VideoTaskItem("http://videoconverter.vivo.com.cn/201706/655_1498479540118.mp4.main.m3u8");
         VideoTaskItem item6 = new VideoTaskItem("https://europe.olemovienews.com/hlstimeofffmp4/20210226/fICqcpqr/mp4/fICqcpqr.mp4/master.m3u8");
         VideoTaskItem item7 = new VideoTaskItem("https://rrsp-1252816746.cos.ap-shanghai.myqcloud.com/0c1f023caa3bbefbe16a5ce564142bbe.mp4");
