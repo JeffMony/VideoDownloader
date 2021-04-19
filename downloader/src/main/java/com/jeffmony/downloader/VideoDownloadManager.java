@@ -381,9 +381,11 @@ public class VideoDownloadManager {
         return null;
     }
 
-    public void deleteAllVideoFiles(Context context) {
+    public void deleteAllVideoFiles() {
         try {
-            VideoStorageUtils.clearVideoCacheDir(context);
+            VideoStorageUtils.clearVideoCacheDir();
+            mVideoItemTaskMap.clear();
+            mVideoDownloadTaskMap.clear();
             mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DELETE_ALL_FILES).sendToTarget();
         } catch (Exception e) {
             LogUtils.w(TAG, "clearVideoCacheDir failed, exception = " + e.getMessage());

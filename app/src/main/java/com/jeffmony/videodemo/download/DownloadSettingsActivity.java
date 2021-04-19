@@ -99,7 +99,7 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
     @Override
     public void onClick(View v) {
         if (v == mClearDownloadText) {
-            VideoDownloadManager.getInstance().deleteAllVideoFiles(DownloadSettingsActivity.this);
+            VideoDownloadManager.getInstance().deleteAllVideoFiles();
             mHandler.sendEmptyMessage(MSG_COUNT_SIZE);
         }else if (v == mOpenFileText) {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);

@@ -12,9 +12,11 @@ public class VideoStorageUtils {
         return new File(context.getExternalFilesDir("Video"), "Download");
     }
 
-    public static void clearVideoCacheDir(Context context) throws IOException {
-        File videoCacheDir = getVideoCacheDir(context);
-        cleanDirectory(videoCacheDir);
+    public static void clearVideoCacheDir() throws IOException {
+        if (ContextUtils.getApplicationContext() != null) {
+            File videoCacheDir = getVideoCacheDir(ContextUtils.getApplicationContext());
+            cleanDirectory(videoCacheDir);
+        }
     }
 
     private static void cleanDirectory(File file) throws IOException {
