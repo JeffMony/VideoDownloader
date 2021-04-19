@@ -260,8 +260,24 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "downloadFile failed, exception="+e.getMessage());
-            throw e;
+            mContinuousSuccessTsCount = 0;
+            if (e instanceof IOException && e.getMessage().contains(DownloadExceptionUtils.PROTOCOL_UNEXPECTED_END_OF_STREAM)) {
+                if (mM3U8DownloadPoolCount > 1) {
+                    mM3U8DownloadPoolCount -= 1;
+                    setThreadPoolArgument(mM3U8DownloadPoolCount, mM3U8DownloadPoolCount);
+                    downloadFile(ts, file, videoUrl);
+                } else {
+                    ts.setRetryCount(ts.getRetryCount() + 1);
+                    if (ts.getRetryCount() < HttpUtils.MAX_RETRY_COUNT) {
+                        downloadFile(ts, file, videoUrl);
+                    } else {
+                        throw e;
+                    }
+                }
+            } else {
+                LogUtils.w(TAG, "downloadFile failed, exception="+e.getMessage());
+                throw e;
+            }
         } finally {
             HttpUtils.closeConnection(connection);
             VideoDownloadUtils.close(inputStream);
