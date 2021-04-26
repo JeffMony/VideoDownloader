@@ -7,8 +7,14 @@
 > * 视频下载数据库记录视频下载信息
 > * 增加视频下载队列
 > * 增加M3U8合并为MP4的功能
+> * 可以定制下载视频的标题和封面
 
 #### 版本更新
+##### 5.4.0
+> * 可以定制视频下载的封面和标题
+##### 5.3.0
+> * 优化M3U8合并为MP4的过程，解决时间戳不连续导致的合并失败的问题
+> * 优化视频下载成功率
 ##### 4.2.0
 > * 裁剪ffmpeg库，从10M降至1M
 > * 优化TS合并逻辑
@@ -20,15 +26,26 @@
 > * 更新playersdk版本
 > * 优化fileName和filePath问题
 
+在build.gradle中引入
 ```
 allprojects {
     repositories {
 	    maven { url 'https://jitpack.io' }
 	}
 }
+```
 
+在demo中直接引用
+```
 dependencies {
     implementation 'com.github.JeffMony:VideoDownloader:4.2.0'
+}
+```
+
+如果需要使用M3U8合并为MP4的功能，还需要额外引入(因为这个包有点大，如果需要就引入吧)
+```
+dependencies {
+    implementation 'com.github.JeffMony:JeffFFmpegDemo:1.5.0'
 }
 ```
 
@@ -157,6 +174,23 @@ VideoDownloadManager.getInstance().deleteVideoTask(String videoUrl, boolean shou
 ##### 8.全部暂停
 ```
 VideoDownloadManager.getInstance().pauseDownloadTask(List<String> urlList)
+```
+
+##### 9.M3U8合并接口
+```
+        VideoProcessManager.getInstance().mergeTs(inputFilePath, outputFilePath, new IM3U8MergeListener() {
+            @Override
+            public void onMergedFinished() {
+                LogUtils.i(TAG, "onMergedFinished");
+                Toast.makeText(VideoMergeActivity.this, "合并成功", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onMergeFailed(Exception e) {
+                LogUtils.i(TAG, "onMergeFailed, e=" + e.getMessage());
+                Toast.makeText(VideoMergeActivity.this, "合并失败", Toast.LENGTH_SHORT).show();
+            }
+        });
 ```
 
 ##### 功能示意
