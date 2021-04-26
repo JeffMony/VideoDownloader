@@ -9,6 +9,7 @@ public class VideoTaskItem implements Cloneable {
     private String mUrl;                 //下载视频的url
     private String mCoverUrl;            //封面图的url
     private String mCoverPath;           //封面图存储的位置
+    private String mTitle;               //视频的标题
     private long mDownloadCreateTime;    //下载创建的时间
     private int mTaskState;              //当前任务的状态
     private String mMimeType;            // 视频url的mime type
@@ -32,12 +33,13 @@ public class VideoTaskItem implements Cloneable {
     private boolean mPaused;
 
     public VideoTaskItem(String url) {
-        this(url, "");
+        this(url, "", "");
     }
 
-    public VideoTaskItem(String url, String coverUrl) {
+    public VideoTaskItem(String url, String coverUrl, String title) {
         mUrl = url;
         mCoverUrl = coverUrl;
+        mTitle = title;
     }
 
     public String getUrl() {
@@ -51,6 +53,10 @@ public class VideoTaskItem implements Cloneable {
     public void setCoverPath(String coverPath) { mCoverPath = coverPath; }
 
     public String getCoverPath() { return mCoverPath; }
+
+    public void setTitle(String title) { mTitle = title; }
+
+    public String getTitle() { return mTitle; }
 
     public void setDownloadCreateTime(long time) {
         mDownloadCreateTime = time;
@@ -272,10 +278,11 @@ public class VideoTaskItem implements Cloneable {
         mPercent = 0.0f;
         mDownloadSize = 0;
         mTotalSize = 0;
-        mFileName = null;
-        mFilePath = null;
-        mCoverUrl = null;
-        mCoverPath = null;
+        mFileName = "";
+        mFilePath = "";
+        mCoverUrl = "";
+        mCoverPath = "";
+        mTitle = "";
     }
 
     @Override
@@ -295,6 +302,7 @@ public class VideoTaskItem implements Cloneable {
         taskItem.setFileName(mFileName);
         taskItem.setCoverUrl(mCoverUrl);
         taskItem.setCoverPath(mCoverPath);
+        taskItem.setTitle(mTitle);
         return taskItem;
     }
 
@@ -319,6 +327,7 @@ public class VideoTaskItem implements Cloneable {
                 ", LocalFile=" + mFilePath +
                 ", CoverUrl=" + mCoverUrl +
                 ", CoverPath=" + mCoverPath +
+                ", Title=" + mTitle +
                 "]";
     }
 }
