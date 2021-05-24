@@ -10,6 +10,7 @@ public class VideoTaskItem implements Cloneable {
     private String mCoverUrl;            //封面图的url
     private String mCoverPath;           //封面图存储的位置
     private String mTitle;               //视频的标题
+    private String mGroupName;           //下载分组的名称
     private long mDownloadCreateTime;    //下载创建的时间
     private int mTaskState;              //当前任务的状态
     private String mMimeType;            // 视频url的mime type
@@ -33,13 +34,14 @@ public class VideoTaskItem implements Cloneable {
     private boolean mPaused;
 
     public VideoTaskItem(String url) {
-        this(url, "", "");
+        this(url, "", "", "");
     }
 
-    public VideoTaskItem(String url, String coverUrl, String title) {
+    public VideoTaskItem(String url, String coverUrl, String title, String groupName) {
         mUrl = url;
         mCoverUrl = coverUrl;
         mTitle = title;
+        mGroupName = groupName;
     }
 
     public String getUrl() {
@@ -57,6 +59,10 @@ public class VideoTaskItem implements Cloneable {
     public void setTitle(String title) { mTitle = title; }
 
     public String getTitle() { return mTitle; }
+
+    public void setGroupName(String groupName) { mGroupName = groupName; }
+
+    public String getGroupName() { return mGroupName; }
 
     public void setDownloadCreateTime(long time) {
         mDownloadCreateTime = time;
@@ -283,6 +289,7 @@ public class VideoTaskItem implements Cloneable {
         mCoverUrl = "";
         mCoverPath = "";
         mTitle = "";
+        mGroupName = "";
     }
 
     @Override
@@ -303,6 +310,7 @@ public class VideoTaskItem implements Cloneable {
         taskItem.setCoverUrl(mCoverUrl);
         taskItem.setCoverPath(mCoverPath);
         taskItem.setTitle(mTitle);
+        taskItem.setGroupName(mGroupName);
         return taskItem;
     }
 
