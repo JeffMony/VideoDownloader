@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "video_download_info.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     public static final String TABLE_VIDEO_DOWNLOAD_INFO = "video_download_info";
 
@@ -29,6 +29,7 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
         public static final String COVER_URL = "cover_url";
         public static final String COVER_PATH = "cover_path";
         public static final String VIDEO_TITLE = "video_title";
+        public static final String GROUP_NAME = "group_name";
     }
 
     public VideoDownloadSQLiteHelper(Context context) {
@@ -47,6 +48,9 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
         }
         if (oldVersion == 2) {
             upgradeDatabaseToVersion3(db);
+        }
+        if (oldVersion == 3) {
+            upgradeDatabaseToVersion4(db);
         }
     }
 
@@ -73,7 +77,8 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
                 + Columns.FILE_PATH + " TEXT, "
                 + Columns.COVER_URL + " TEXT, "
                 + Columns.COVER_PATH + " TEXT,"
-                + Columns.VIDEO_TITLE +" TEXT);");
+                + Columns.VIDEO_TITLE + " TEXT,"
+                + Columns.GROUP_NAME + " TEXT);");
     }
 
     private void upgradeDatabaseToVersion2(SQLiteDatabase db) {
@@ -83,5 +88,9 @@ public class VideoDownloadSQLiteHelper extends SQLiteOpenHelper {
 
     private void upgradeDatabaseToVersion3(SQLiteDatabase db) {
         db.execSQL("ALTER TABLE " + TABLE_VIDEO_DOWNLOAD_INFO + " ADD COLUMN "  + Columns.VIDEO_TITLE + " TEXT");
+    }
+
+    private void upgradeDatabaseToVersion4(SQLiteDatabase db) {
+        db.execSQL("ALTER TABLE " + TABLE_VIDEO_DOWNLOAD_INFO + " ADD COLUMN " + Columns.GROUP_NAME + " TEXT");
     }
 }

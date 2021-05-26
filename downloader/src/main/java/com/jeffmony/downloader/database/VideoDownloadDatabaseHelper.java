@@ -94,6 +94,7 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.COVER_URL, item.getCoverUrl());
             values.put(VideoDownloadSQLiteHelper.Columns.COVER_PATH, item.getCoverPath());
             values.put(VideoDownloadSQLiteHelper.Columns.VIDEO_TITLE, item.getTitle());
+            values.put(VideoDownloadSQLiteHelper.Columns.GROUP_NAME, item.getGroupName());
             String whereClause = VideoDownloadSQLiteHelper.Columns.VIDEO_URL + " = ?";
             String[] whereArgs = {item.getUrl()};
             db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values, whereClause, whereArgs);
@@ -126,6 +127,7 @@ public class VideoDownloadDatabaseHelper {
             values.put(VideoDownloadSQLiteHelper.Columns.COVER_URL, item.getCoverUrl());
             values.put(VideoDownloadSQLiteHelper.Columns.COVER_PATH, item.getCoverPath());
             values.put(VideoDownloadSQLiteHelper.Columns.VIDEO_TITLE, item.getTitle());
+            values.put(VideoDownloadSQLiteHelper.Columns.GROUP_NAME, item.getGroupName());
             db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -190,6 +192,7 @@ public class VideoDownloadDatabaseHelper {
                     item.setCoverUrl(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COVER_URL)));
                     item.setCoverPath(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.COVER_PATH)));
                     item.setTitle(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.VIDEO_TITLE)));
+                    item.setGroupName(cursor.getString(cursor.getColumnIndex(VideoDownloadSQLiteHelper.Columns.GROUP_NAME)));
                     if (item.isRunningTask() && Math.abs(item.getSpeed()) < 0.0001f) {
                         item.setTaskState(VideoTaskState.PAUSE);
                     }
