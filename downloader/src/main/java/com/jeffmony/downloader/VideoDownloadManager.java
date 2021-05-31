@@ -34,6 +34,7 @@ import com.jeffmony.downloader.utils.VideoStorageUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -395,14 +396,19 @@ public class VideoDownloadManager {
     public void pauseAllDownloadTasks() {
         synchronized (mQueueLock) {
             List<VideoTaskItem> taskList = mVideoDownloadQueue.getDownloadList();
+            LogUtils.i(TAG, "pauseAllDownloadTasks queue size="+taskList.size());
+            List<String> pausedUrlList = new ArrayList<>();
             for (VideoTaskItem taskItem : taskList) {
                 if (taskItem.isPendingTask()) {
                     mVideoDownloadQueue.remove(taskItem);
-                    mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
-                } else if (taskItem.isRunningTask()) {
-                    pauseDownloadTask(taskItem);
+                    taskItem.setTaskState(VideoTaskState.PAUSE);
+                    mVideoItemTaskMap.put(taskItem.getUrl(), taskItem);
+                    mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_PAUSE, taskItem).sendToTarget();
+                } else {
+                    pausedUrlList.add(taskItem.getUrl());
                 }
             }
+            pauseDownloadTask(pausedUrlList);
         }
     }
 

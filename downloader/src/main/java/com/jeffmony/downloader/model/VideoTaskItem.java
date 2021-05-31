@@ -249,7 +249,7 @@ public class VideoTaskItem implements Cloneable {
     }
 
     public boolean isPendingTask() {
-        return mTaskState == VideoTaskState.PENDING;
+        return mTaskState == VideoTaskState.PENDING || mTaskState == VideoTaskState.PREPARE;
     }
 
     public boolean isErrorState() {

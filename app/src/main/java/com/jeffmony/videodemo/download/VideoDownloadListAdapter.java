@@ -59,10 +59,10 @@ public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
     private void setStateText(TextView stateView, TextView playBtn, VideoTaskItem item) {
         switch (item.getTaskState()) {
             case VideoTaskState.PENDING:
+            case VideoTaskState.PREPARE:
                 playBtn.setVisibility(View.INVISIBLE);
                 stateView.setText("等待中");
                 break;
-            case VideoTaskState.PREPARE:
             case VideoTaskState.START:
             case VideoTaskState.DOWNLOADING:
                 stateView.setText("下载中...");
