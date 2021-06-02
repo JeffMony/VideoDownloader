@@ -449,9 +449,7 @@ public class VideoDownloadManager {
     public void deleteVideoTask(VideoTaskItem taskItem, boolean shouldDeleteSourceFile) {
         String cacheFilePath = getDownloadPath();
         if (!TextUtils.isEmpty(cacheFilePath)) {
-            if (taskItem.isRunningTask()) {
-                pauseDownloadTask(taskItem);
-            }
+            pauseDownloadTask(taskItem);
             String saveName = VideoDownloadUtils.computeMD5(taskItem.getUrl());
             File file = new File(cacheFilePath + File.separator + saveName);
             WorkerThreadHandler.submitRunnableTask(() -> mVideoDatabaseHelper.deleteDownloadItemByUrl(taskItem));
