@@ -311,7 +311,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgress(float percent, long cachedSize, long totalSize, float speed) {
-                    if (!taskItem.isPaused()) {
+                    if (!taskItem.isPaused() && !taskItem.isErrorState()) {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
                         taskItem.setSpeed(speed);
@@ -323,7 +323,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgressForM3U8(float percent, long cachedSize, int curTs, int totalTs, float speed) {
-                    if (!taskItem.isPaused()) {
+                    if (!taskItem.isPaused() && !taskItem.isErrorState()) {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
                         taskItem.setSpeed(speed);
@@ -368,6 +368,7 @@ public class VideoDownloadManager {
                     taskItem.setErrorCode(errorCode);
                     taskItem.setTaskState(VideoTaskState.ERROR);
                     mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+                    mVideoDownloadHandler.removeMessages(DownloadConstants.MSG_DOWNLOAD_PROCESSING);
                 }
             });
 
@@ -497,8 +498,7 @@ public class VideoDownloadManager {
             LogUtils.w(TAG, "removeDownloadQueue size=" + mVideoDownloadQueue.size() + "," + mVideoDownloadQueue.getDownloadingCount() + "," + mVideoDownloadQueue.getPendingCount());
             int pendingCount = mVideoDownloadQueue.getPendingCount();
             int downloadingCount = mVideoDownloadQueue.getDownloadingCount();
-            while (downloadingCount < mConfig.getConcurrentCount()
-                    && pendingCount > 0) {
+            while (downloadingCount < mConfig.getConcurrentCount() && pendingCount > 0) {
                 if (mVideoDownloadQueue.size() == 0)
                     break;
                 if (downloadingCount == mVideoDownloadQueue.size())
