@@ -5,25 +5,27 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.jeffmony.downloader.process.IM3U8MergeListener;
-import com.jeffmony.downloader.process.VideoProcessManager;
 import com.jeffmony.downloader.utils.LogUtils;
+import com.jeffmony.m3u8library.VideoProcessManager;
+import com.jeffmony.m3u8library.listener.IVideoTransformListener;
 import com.jeffmony.videodemo.R;
 
 import java.io.File;
+import java.text.DecimalFormat;
 
 public class VideoMergeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "VideoMergeActivity";
 
-    private EditText mInputVideoPathTxt;
-    private EditText mOutputVideoPathTxt;
-    private Button mVideoMergeBtn;
+    private EditText mSrcTxt;
+    private EditText mDestTxt;
+    private Button mConvertBtn;
+    private TextView mTransformProgressTxt;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,46 +36,58 @@ public class VideoMergeActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void initViews() {
-        mInputVideoPathTxt = findViewById(R.id.m3u8_video_path_txt);
-        mOutputVideoPathTxt = findViewById(R.id.mp4_video_path_txt);
-        mVideoMergeBtn = findViewById(R.id.m3u8_2_mp4_btn);
+        mSrcTxt = findViewById(R.id.src_path_txt);
+        mDestTxt = findViewById(R.id.dest_path_txt);
+        mConvertBtn = findViewById(R.id.convert_btn);
+        mTransformProgressTxt = findViewById(R.id.video_transform_progress_txt);
 
-        mVideoMergeBtn.setOnClickListener(this);
+        mConvertBtn.setOnClickListener(this);
+    }
+
+    private void doConvertVideo(String inputPath, String outputPath) {
+        if (TextUtils.isEmpty(inputPath) || TextUtils.isEmpty(outputPath)) {
+            LogUtils.i(TAG, "InputPath or OutputPath is null");
+            return;
+        }
+        File inputFile = new File(inputPath);
+        if (!inputFile.exists()) {
+            return;
+        }
+        File outputFile = new File(outputPath);
+        if (!outputFile.exists()) {
+            try {
+                outputFile.createNewFile();
+            } catch (Exception e) {
+                LogUtils.w(TAG, "Create file failed, exception = " + e);
+                return;
+            }
+        }
+        LogUtils.i(TAG, "inputPath="+inputPath+", outputPath="+outputPath);
+        VideoProcessManager.getInstance().transformM3U8ToMp4(inputPath, outputPath, new IVideoTransformListener() {
+
+            @Override
+            public void onTransformProgress(float progress) {
+                LogUtils.i(TAG, "onTransformProgress progress="+progress);
+                DecimalFormat format = new DecimalFormat(".00");
+                mTransformProgressTxt.setText("已经转换的进度: " + format.format(progress) + "%");
+            }
+
+            @Override
+            public void onTransformFinished() {
+                LogUtils.i(TAG, "onTransformFinished");
+            }
+
+            @Override
+            public void onTransformFailed(Exception e) {
+                LogUtils.i(TAG, "onTransformFailed, e="+e.getMessage());
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
-        if (v == mVideoMergeBtn) {
-            doMergeM3U8();
+        if (v == mConvertBtn) {
+            doConvertVideo(mSrcTxt.getText().toString(), mDestTxt.getText().toString());
         }
-    }
-
-    private void doMergeM3U8() {
-        String inputFilePath = mInputVideoPathTxt.getText().toString();
-        String outputFilePath = mOutputVideoPathTxt.getText().toString();
-
-        if (TextUtils.isEmpty(inputFilePath) || TextUtils.isEmpty(outputFilePath)) {
-            Toast.makeText(this, "请输入文件路径", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        File inputFile = new File(inputFilePath);
-        if (!inputFile.exists()) {
-            Toast.makeText(this, "输入文件不存在", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        VideoProcessManager.getInstance().mergeTs(inputFilePath, outputFilePath, new IM3U8MergeListener() {
-            @Override
-            public void onMergedFinished() {
-                LogUtils.i(TAG, "onMergedFinished");
-                Toast.makeText(VideoMergeActivity.this, "合并成功", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onMergeFailed(Exception e) {
-                LogUtils.i(TAG, "onMergeFailed, e=" + e.getMessage());
-                Toast.makeText(VideoMergeActivity.this, "合并失败", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

@@ -1,51 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    
+
     <LinearLayout
-        android:layout_margin="20dp"
-        android:orientation="vertical"
+        android:layout_margin="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
-            android:textSize="18sp"
-            android:text="输入M3U8文件路径"
-            android:textColor="@color/black"
-            android:layout_width="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="请输入源文件路径"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <EditText
-            android:textColor="@color/colorPrimary"
-            android:id="@+id/m3u8_video_path_txt"
+            android:id="@+id/src_path_txt"
+            android:hint="请输入原文件"
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
         <TextView
-            android:textSize="18sp"
-            android:text="输出MP4文件路径"
-            android:textColor="@color/black"
-            android:layout_width="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="请输入目标文件路径"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <EditText
-            android:textColor="@color/colorPrimary"
-            android:id="@+id/mp4_video_path_txt"
+            android:id="@+id/dest_path_txt"
+            android:hint="请输出目标文件"
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
         <Button
-            android:textSize="18sp"
-            android:id="@+id/m3u8_2_mp4_btn"
-            android:background="@color/colorPrimary"
-            android:textColor="@color/white"
-            android:text="开始合并"
+            android:id="@+id/convert_btn"
             android:layout_gravity="center"
-            android:layout_width="180dp"
+            android:text="转变封装格式"
+            android:layout_width="200dp"
             android:layout_height="wrap_content" />
 
+        <TextView
+            android:id="@+id/video_transform_progress_txt"
+            android:textColor="@color/colorPrimaryDark"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
-
-</LinearLayout>
+</RelativeLayout>

@@ -20,9 +20,7 @@ import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.model.Video;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
-import com.jeffmony.downloader.process.IM3U8MergeListener;
-import com.jeffmony.downloader.process.IM3U8MergeResultListener;
-import com.jeffmony.downloader.process.VideoProcessManager;
+import com.jeffmony.downloader.listener.IM3U8MergeResultListener;
 import com.jeffmony.downloader.task.BaseVideoDownloadTask;
 import com.jeffmony.downloader.task.M3U8VideoDownloadTask;
 import com.jeffmony.downloader.task.VideoDownloadTask;
@@ -32,6 +30,8 @@ import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
 import com.jeffmony.downloader.utils.VideoStorageUtils;
 import com.jeffmony.downloader.utils.WorkerThreadHandler;
+import com.jeffmony.m3u8library.VideoProcessManager;
+import com.jeffmony.m3u8library.listener.IVideoTransformListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -644,10 +644,26 @@ public class VideoDownloadManager {
             outputFile.delete();
         }
 
-        VideoProcessManager.getInstance().mergeTs(inputPath, outputPath, new IM3U8MergeListener() {
+        VideoProcessManager.getInstance().transformM3U8ToMp4(inputPath, outputPath, new IVideoTransformListener() {
             @Override
-            public void onMergedFinished() {
-                LogUtils.i(TAG, "VideoMerge onMergedFinished outputPath=" + outputPath);
+            public void onTransformProgress(float progress) {
+
+            }
+
+            @Override
+            public void onTransformFailed(Exception e) {
+                LogUtils.i(TAG, "VideoMerge onTransformFailed e=" + e);
+                File outputFile = new File(outputPath);
+                if (outputFile.exists()) {
+                    outputFile.delete();
+                }
+
+                listener.onCallback(taskItem);
+            }
+
+            @Override
+            public void onTransformFinished() {
+                LogUtils.i(TAG, "VideoMerge onTransformFinished outputPath=" + outputPath);
                 taskItem.setFileName(VideoDownloadUtils.OUPUT_VIDEO);
                 taskItem.setFilePath(outputPath);
                 taskItem.setMimeType(Video.Mime.MIME_TYPE_MP4);
@@ -663,17 +679,6 @@ public class VideoDownloadManager {
                         subFile.delete();
                     }
                 }
-            }
-
-            @Override
-            public void onMergeFailed(Exception e) {
-                LogUtils.i(TAG, "VideoMerge onMergeFailed e=" + e);
-                File outputFile = new File(outputPath);
-                if (outputFile.exists()) {
-                    outputFile.delete();
-                }
-
-                listener.onCallback(taskItem);
             }
         });
     }
