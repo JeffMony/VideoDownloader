@@ -11,6 +11,8 @@
 > * 增加视频下载的group-name
 
 #### 版本更新
+##### 5.7.0
+> * 解决合并时的HLS 支持hls-allowed_extensions ALL
 ##### 5.6.0
 > * 裁剪ffmpeg库，从10M降至1M
 > * 优化TS合并逻辑
@@ -44,14 +46,21 @@ allprojects {
 在demo中直接引用
 ```
 dependencies {
-    implementation 'com.github.JeffMony:VideoDownloader:4.2.0'
+    implementation 'com.github.JeffMony:VideoDownloader:5.6.0'
 }
 ```
 
 如果需要使用M3U8合并为MP4的功能，还需要额外引入(因为这个包有点大，如果需要就引入吧)
 ```
 dependencies {
-    implementation 'com.github.JeffMony:JeffFFmpegDemo:1.5.0'
+    implementation 'com.github.JeffMony:JeffFFmpegDemo:1.6.0'
+}
+```
+
+如果想使用的合并库小一点.也可以使用较小的库,可以裁减很大的包
+```
+dependencies {
+    implementation 'com.github.JeffMony:JeffM3U8Lib:1.1.0'
 }
 ```
 
