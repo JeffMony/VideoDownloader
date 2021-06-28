@@ -132,7 +132,12 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
     }
 
     private void notifyDownloadFinish() {
-        mDownloadTaskListener.onTaskFinished(mTotalLength);
+        synchronized (mDownloadLock) {
+            if (!mDownloadFinished) {
+                mDownloadTaskListener.onTaskFinished(mTotalLength);
+                mDownloadFinished = true;
+            }
+        }
     }
 
     private InputStream getResponseBody(String url, long start, long end) throws IOException {

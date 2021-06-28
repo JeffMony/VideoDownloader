@@ -154,25 +154,34 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
         }
         if (mTaskItem.isCompleted()) {
             mCurTs = mTotalTs;
-            mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
-            mPercent = 100.0f;
-            mTotalSize = mCurrentCachedSize;
-            mDownloadTaskListener.onTaskFinished(mTotalSize);
+            synchronized (mDownloadLock) {
+                if (!mDownloadFinished) {
+                    mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
+                    mPercent = 100.0f;
+                    mTotalSize = mCurrentCachedSize;
+                    mDownloadTaskListener.onTaskFinished(mTotalSize);
+                    mDownloadFinished = true;
+                }
+            }
             return;
         }
         if (mCurTs >= mTotalTs) {
             mCurTs = mTotalTs;
         }
-        float percent = mCurTs * 1.0f * 100 / mTotalTs;
-        if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
-            long nowTime = System.currentTimeMillis();
-            if (mCurrentCachedSize > mLastCachedSize && nowTime > mLastInvokeTime) {
-                mSpeed = (mCurrentCachedSize - mLastCachedSize) * 1000 * 1.0f / (nowTime - mLastInvokeTime);
+        synchronized (mDownloadLock) {
+            float percent = mCurTs * 1.0f * 100 / mTotalTs;
+            if (!VideoDownloadUtils.isFloatEqual(percent, mPercent)) {
+                long nowTime = System.currentTimeMillis();
+                if (mCurrentCachedSize > mLastCachedSize && nowTime > mLastInvokeTime) {
+                    mSpeed = (mCurrentCachedSize - mLastCachedSize) * 1000 * 1.0f / (nowTime - mLastInvokeTime);
+                }
+                if (!mDownloadFinished) {
+                    mDownloadTaskListener.onTaskProgressForM3U8(percent, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
+                }
+                mPercent = percent;
+                mLastCachedSize = mCurrentCachedSize;
+                mLastInvokeTime = nowTime;
             }
-            mDownloadTaskListener.onTaskProgressForM3U8(percent, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
-            mPercent = percent;
-            mLastCachedSize = mCurrentCachedSize;
-            mLastInvokeTime = nowTime;
         }
         boolean isCompleted = true;
         for (M3U8Seg ts : mTsList) {
@@ -188,9 +197,14 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
             } catch (Exception e) {
                 notifyDownloadError(e);
             }
-            mTotalSize = mCurrentCachedSize;
-            mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
-            mDownloadTaskListener.onTaskFinished(mTotalSize);
+            synchronized (mDownloadLock) {
+                if (!mDownloadFinished) {
+                    mTotalSize = mCurrentCachedSize;
+                    mDownloadTaskListener.onTaskProgressForM3U8(100.0f, mCurrentCachedSize, mCurTs, mTotalTs, mSpeed);
+                    mDownloadTaskListener.onTaskFinished(mTotalSize);
+                    mDownloadFinished = true;
+                }
+            }
         }
     }
 
@@ -215,7 +229,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private void notifyDownloadFinish(long size) {
         if (mTaskItem.isCompleted()) {
-            mDownloadTaskListener.onTaskFinished(size);
+            synchronized (mDownloadLock) {
+                if (!mDownloadFinished) {
+                    mDownloadTaskListener.onTaskFinished(size);
+                    mDownloadFinished = true;
+                }
+            }
         }
     }
 

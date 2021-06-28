@@ -311,7 +311,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgress(float percent, long cachedSize, long totalSize, float speed) {
-                    if (!taskItem.isPaused() && !taskItem.isErrorState()) {
+                    if (!taskItem.isPaused() && (!taskItem.isErrorState() || !taskItem.isSuccessState())) {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
                         taskItem.setSpeed(speed);
@@ -323,7 +323,7 @@ public class VideoDownloadManager {
 
                 @Override
                 public void onTaskProgressForM3U8(float percent, long cachedSize, int curTs, int totalTs, float speed) {
-                    if (!taskItem.isPaused() && !taskItem.isErrorState()) {
+                    if (!taskItem.isPaused() && (!taskItem.isErrorState() || !taskItem.isSuccessState())) {
                         taskItem.setTaskState(VideoTaskState.DOWNLOADING);
                         taskItem.setPercent(percent);
                         taskItem.setSpeed(speed);
@@ -359,16 +359,19 @@ public class VideoDownloadManager {
                             taskItem.setFileName(taskItem.getFileHash() + VideoDownloadUtils.VIDEO_SUFFIX);
                         }
                         mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_SUCCESS, taskItem).sendToTarget();
+                        mVideoDownloadHandler.removeMessages(DownloadConstants.MSG_DOWNLOAD_PROCESSING);
                     }
                 }
 
                 @Override
                 public void onTaskFailed(Throwable e) {
-                    int errorCode = DownloadExceptionUtils.getErrorCode(e);
-                    taskItem.setErrorCode(errorCode);
-                    taskItem.setTaskState(VideoTaskState.ERROR);
-                    mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
-                    mVideoDownloadHandler.removeMessages(DownloadConstants.MSG_DOWNLOAD_PROCESSING);
+                    if (!taskItem.isSuccessState()) {
+                        int errorCode = DownloadExceptionUtils.getErrorCode(e);
+                        taskItem.setErrorCode(errorCode);
+                        taskItem.setTaskState(VideoTaskState.ERROR);
+                        mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
+                        mVideoDownloadHandler.removeMessages(DownloadConstants.MSG_DOWNLOAD_PROCESSING);
+                    }
                 }
             });
 

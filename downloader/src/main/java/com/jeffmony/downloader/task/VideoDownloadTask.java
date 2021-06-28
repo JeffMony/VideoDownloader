@@ -21,6 +21,8 @@ public abstract class VideoDownloadTask {
     protected String mSaveName;
     protected ThreadPoolExecutor mDownloadExecutor;
     protected IDownloadTaskListener mDownloadTaskListener;
+    protected volatile boolean mDownloadFinished = false;
+    protected final Object mDownloadLock = new Object();
     protected long mLastCachedSize = 0L;
     protected long mCurrentCachedSize = 0L;
     protected long mLastInvokeTime = 0L;
