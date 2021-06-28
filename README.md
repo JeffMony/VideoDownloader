@@ -11,6 +11,9 @@
 > * 增加视频下载的group-name
 
 #### 版本更新
+##### 5.8.0
+> * 解决下载成功回调多次的问题
+> * 解决ffmpeg中合并出现pts异常的问题,测试用例是:https://vod7.wenshibaowenbei.com/20210514/g79ixT00/index.m3u8
 ##### 5.7.0
 > * 解决合并时的HLS 支持hls-allowed_extensions ALL
 ##### 5.6.0
@@ -46,7 +49,7 @@ allprojects {
 在demo中直接引用
 ```
 dependencies {
-    implementation 'com.github.JeffMony:VideoDownloader:5.6.0'
+    implementation 'com.github.JeffMony:VideoDownloader:5.8.0'
 }
 ```
 
@@ -60,7 +63,7 @@ dependencies {
 如果想使用的合并库小一点.也可以使用较小的库,可以裁减很大的包
 ```
 dependencies {
-    implementation 'com.github.JeffMony:JeffM3U8Lib:1.1.0'
+    implementation 'com.github.JeffMony:JeffM3U8Lib:1.2.0'
 }
 ```
 
