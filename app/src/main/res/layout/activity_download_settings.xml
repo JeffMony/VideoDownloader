@@ -11,18 +11,18 @@
         android:layout_height="match_parent" >
         <TextView
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
-            android:text="存储位置"
+            android:text="@string/storage_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/store_loc_txt"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:textColor="@color/black"
             android:layout_width="wrap_content"
@@ -35,12 +35,12 @@
 
             <TextView
                 android:layout_marginTop="5dp"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:padding="5dp"
                 android:background="@color/colorPrimaryDark"
-                android:text="缓存文件大小"
+                android:text="@string/cache_file_size"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
@@ -48,17 +48,17 @@
                 android:layout_marginTop="5dp"
                 android:padding="5dp"
                 android:textSize="18sp"
-                android:text="清理缓存"
+                android:text="@string/clear_cache"
                 android:textColor="@color/white"
                 android:background="@color/colorPrimaryDark"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
 
         <TextView
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:id="@+id/store_size"
             android:textColor="@color/black"
@@ -68,12 +68,12 @@
         <TextView
             android:id="@+id/open_file_txt"
             android:layout_marginTop="5dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
-            android:text="打开存储目录"
+            android:text="@string/open_storage_directory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -88,14 +88,14 @@
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
             android:textColor="@color/white"
-            android:text="最大并发数"
+            android:text="@string/maximum_concurrent_number"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <RadioGroup
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
 
@@ -147,19 +147,19 @@
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
             android:textColor="@color/white"
-            android:text="下载完成是否合并ts分片"
+            android:text="@string/merge_ts_after_download"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <RadioGroup
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
             <RadioButton
                 android:id="@+id/btn11"
                 android:textColor="@color/black"
-                android:text="是"
+                android:text="@string/yes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -167,7 +167,7 @@
                 android:id="@+id/btn12"
                 android:textColor="@color/black"
                 android:checked="true"
-                android:text="否"
+                android:text="@string/no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </RadioGroup>
@@ -183,27 +183,27 @@
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
             android:textColor="@color/white"
-            android:text="是否忽略证书"
+            android:text="@string/ignore_certificate"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <RadioGroup
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
             <RadioButton
                 android:id="@+id/btn13"
                 android:textColor="@color/black"
                 android:checked="true"
-                android:text="是"
+                android:text="@string/yes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/btn14"
                 android:textColor="@color/black"
-                android:text="否"
+                android:text="@string/no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </RadioGroup>
@@ -219,27 +219,27 @@
             android:padding="5dp"
             android:background="@color/colorPrimaryDark"
             android:textColor="@color/white"
-            android:text="移动网络下是否暂停下载"
+            android:text="@string/pause_download_on_mobile_network"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <RadioGroup
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
             <RadioButton
                 android:id="@+id/btn15"
                 android:textColor="@color/black"
                 android:checked="true"
-                android:text="是"
+                android:text="@string/yes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/btn16"
                 android:textColor="@color/black"
-                android:text="否"
+                android:text="@string/no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </RadioGroup>

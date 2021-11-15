@@ -61,42 +61,39 @@ public class VideoDownloadListAdapter extends ArrayAdapter<VideoTaskItem> {
             case VideoTaskState.PENDING:
             case VideoTaskState.PREPARE:
                 playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("等待中");
+                stateView.setText(mContext.getResources().getString(R.string.waiting));
                 break;
             case VideoTaskState.START:
             case VideoTaskState.DOWNLOADING:
-                stateView.setText("下载中...");
+                stateView.setText(mContext.getResources().getString(R.string.downloading));
                 break;
             case VideoTaskState.PAUSE:
                 playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("下载暂停, 已下载=" + item.getDownloadSizeString());
+                stateView.setText(String.format(mContext.getResources().getString(R.string.download_paused_downloaded_size), item.getDownloadSizeString()));
                 break;
             case VideoTaskState.SUCCESS:
                 playBtn.setVisibility(View.VISIBLE);
-                stateView.setText("下载完成, 总大小=" + item.getDownloadSizeString());
+                stateView.setText(String.format(mContext.getResources().getString(R.string.download_completed_total_size), item.getDownloadSizeString()));
                 break;
             case VideoTaskState.ERROR:
                 playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("下载错误");
+                stateView.setText(mContext.getResources().getString(R.string.download_error));
                 break;
             default:
                 playBtn.setVisibility(View.INVISIBLE);
-                stateView.setText("未下载");
+                stateView.setText(mContext.getResources().getString(R.string.not_downloaded));
                 break;
-
         }
     }
 
     private void setDownloadInfoText(TextView infoView, VideoTaskItem item) {
         switch (item.getTaskState()) {
             case VideoTaskState.DOWNLOADING:
-                infoView.setText("进度:" + item.getPercentString() + ", 速度:" + item.getSpeedString() +", 已下载:" + item.getDownloadSizeString());
+                infoView.setText(String.format(mContext.getResources().getString(R.string.progress_speed_downloaded), item.getPercentString(), item.getSpeedString(), item.getDownloadSizeString()));
                 break;
             case VideoTaskState.SUCCESS:
-                infoView.setText("进度:" + item.getPercentString());
-                break;
             case VideoTaskState.PAUSE:
-                infoView.setText("进度:" + item.getPercentString());
+                infoView.setText(String.format(mContext.getResources().getString(R.string.progress), item.getPercentString()));
                 break;
             default:
                 break;

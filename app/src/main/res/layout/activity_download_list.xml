@@ -13,24 +13,24 @@
         android:layout_width="match_parent"
         android:layout_height="60dp">
         <Button
-            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@color/colorPrimaryDark"
             android:id="@+id/pause_task_btn"
             android:textSize="16sp"
             android:textColor="@color/white"
-            android:text="暂停所有下载任务"
+            android:text="@string/pause_all_download_task"
             android:layout_weight="1"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
 
         <Button
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:background="@color/colorPrimaryDark"
             android:id="@+id/start_task_btn"
             android:textSize="16sp"
             android:textColor="@color/white"
-            android:text="恢复所有下载任务"
+            android:text="@string/resume_all_download_task"
             android:layout_weight="1"
             android:gravity="center"
             android:layout_width="match_parent"
