@@ -23,6 +23,7 @@ import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.listener.IM3U8MergeResultListener;
 import com.jeffmony.downloader.task.BaseVideoDownloadTask;
 import com.jeffmony.downloader.task.M3U8VideoDownloadTask;
+import com.jeffmony.downloader.task.MultiSegVideoDownloadTask;
 import com.jeffmony.downloader.task.VideoDownloadTask;
 import com.jeffmony.downloader.utils.ContextUtils;
 import com.jeffmony.downloader.utils.DownloadExceptionUtils;
@@ -294,7 +295,8 @@ public class VideoDownloadManager {
         }
         VideoDownloadTask downloadTask = mVideoDownloadTaskMap.get(taskItem.getUrl());
         if (downloadTask == null) {
-            downloadTask = new BaseVideoDownloadTask(taskItem, headers);
+//            downloadTask = new BaseVideoDownloadTask(taskItem, headers);
+            downloadTask = new MultiSegVideoDownloadTask(taskItem, headers);
             mVideoDownloadTaskMap.put(taskItem.getUrl(), downloadTask);
         }
         startDownloadTask(downloadTask, taskItem);
