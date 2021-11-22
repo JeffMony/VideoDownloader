@@ -11,32 +11,32 @@
 
         <TextView
             android:textColor="@color/colorPrimaryDark"
-            android:text="请输入源文件路径"
+            android:text="@string/enter_source_file_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <EditText
             android:id="@+id/src_path_txt"
-            android:hint="请输入原文件"
+            android:hint="@string/enter_origin_document"
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
         <TextView
             android:textColor="@color/colorPrimaryDark"
-            android:text="请输入目标文件路径"
+            android:text="@string/enter_target_file_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <EditText
             android:id="@+id/dest_path_txt"
-            android:hint="请输出目标文件"
+            android:hint="@string/output_target_file"
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
         <Button
             android:id="@+id/convert_btn"
             android:layout_gravity="center"
-            android:text="转变封装格式"
+            android:text="@string/change_format"
             android:layout_width="200dp"
             android:layout_height="wrap_content" />
 

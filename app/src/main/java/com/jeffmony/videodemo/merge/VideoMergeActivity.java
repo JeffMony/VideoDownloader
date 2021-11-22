@@ -69,7 +69,7 @@ public class VideoMergeActivity extends AppCompatActivity implements View.OnClic
             public void onTransformProgress(float progress) {
                 LogUtils.i(TAG, "onTransformProgress progress="+progress);
                 DecimalFormat format = new DecimalFormat(".00");
-                mTransformProgressTxt.setText("已经转换的进度: " + format.format(progress) + "%");
+                mTransformProgressTxt.setText(String.format(getResources().getString(R.string.convert_progress), format.format(progress)));
             }
 
             @Override

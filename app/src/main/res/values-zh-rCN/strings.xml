@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="not_downloaded">未下载</string>
+    <string name="click_to_play">点击播放</string>
+    <string name="merge">合并</string>
+    <string name="waiting">等待中</string>
+    <string name="downloading">下载中…</string>
+    <string name="enter_source_file_path">请输入源文件路径</string>
+    <string name="enter_origin_document">请输入原文件</string>
+    <string name="enter_target_file_path">请输入目标文件路径</string>
+    <string name="output_target_file">请输出目标文件</string>
+    <string name="change_format">转变封装格式</string>
+    <string name="download_m3u8_file">已下载M3U8文件</string>
+    <string name="download_setting">下载设置</string>
+    <string name="qr_code_scan">二维码扫描</string>
+    <string name="normal_download">普通下载</string>
+    <string name="m3u8_to_mp4">合并M3U8为MP4</string>
+    <string name="pause_all_download_task">暂停所有下载任务</string>
+    <string name="resume_all_download_task">恢复所有下载任务</string>
+    <string name="storage_location">存储位置</string>
+    <string name="cache_file_size">缓存文件大小</string>
+    <string name="clear_cache">清理缓存</string>
+    <string name="open_storage_directory">打开存储目录</string>
+    <string name="maximum_concurrent_number">最大并发数</string>
+    <string name="merge_ts_after_download">下载完成是否合并ts分片</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="ignore_certificate">是否忽略证书</string>
+    <string name="pause_download_on_mobile_network">移动网络下是否暂停下载</string>
+    <string name="convert_progress">已经转换的进度: %s\%</string>
+    <string name="download_paused_downloaded_size">下载暂停, 已下载=%s</string>
+    <string name="download_completed_total_size">下载完成, 总大小=%s</string>
+    <string name="download_error">下载错误</string>
+    <string name="progress_speed_downloaded">进度:%s, 速度:%s, 已下载:%s</string>
+    <string name="progress">进度:%s</string>
+</resources>

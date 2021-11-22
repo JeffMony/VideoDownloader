@@ -1,3 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VideoDownloader</string>
+    <string name="app_name" translatable="false">VideoDownloader</string>
+    <string name="not_downloaded">Not downloaded</string>
+    <string name="click_to_play">Click to play</string>
+    <string name="merge">Merge</string>
+    <string name="waiting">Waiting</string>
+    <string name="downloading">Downloading…</string>
+    <string name="enter_source_file_path">Please enter the source file path</string>
+    <string name="enter_origin_document">Please enter the original document</string>
+    <string name="enter_target_file_path">Please enter the target file path</string>
+    <string name="output_target_file">Please output the target file</string>
+    <string name="change_format">Change packaging format</string>
+    <string name="download_m3u8_file">Downloaded M3U8 file</string>
+    <string name="download_setting">Download settings</string>
+    <string name="qr_code_scan">QR code scanning</string>
+    <string name="normal_download">Normal download</string>
+    <string name="m3u8_to_mp4">Combine M3U8 to MP4</string>
+    <string name="pause_all_download_task">Pause all download tasks</string>
+    <string name="resume_all_download_task">Resume all download tasks</string>
+    <string name="storage_location">Storage location</string>
+    <string name="cache_file_size">Cache file size</string>
+    <string name="clear_cache">Clear cache</string>
+    <string name="open_storage_directory">Open the storage directory</string>
+    <string name="maximum_concurrent_number">Maximum concurrent number</string>
+    <string name="merge_ts_after_download">Whether to merge ts shards after downloading</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="ignore_certificate">Whether to ignore the certificate</string>
+    <string name="pause_download_on_mobile_network">Whether to pause downloading under mobile network</string>
+    <string name="convert_progress">The progress of the conversion: %s\%</string>
+    <string name="download_paused_downloaded_size">Download paused, already downloaded =%s</string>
+    <string name="download_completed_total_size">Download complete, total size =%s</string>
+    <string name="download_error">Download error</string>
+    <string name="progress_speed_downloaded">Progress:%s, Speed:%s, Downloaded:%s</string>
+    <string name="progress">Progress:%s</string>
 </resources>
