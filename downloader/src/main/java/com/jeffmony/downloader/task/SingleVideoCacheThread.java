@@ -88,6 +88,12 @@ public class SingleVideoCacheThread implements Runnable {
 
         long requestStart = mRange.getStart();
         long requestEnd = mRange.getEnd();
+        if (requestStart - 10 > 0) {
+            requestStart = requestStart - 10;
+        }
+        if (requestEnd + 10 < mTotalSize) {
+            requestEnd = requestEnd + 10;
+        }
         long rangeGap = requestEnd - requestStart;
         mHeaders.put("Range", "bytes=" + requestStart + "-" + requestEnd);
         HttpURLConnection connection = null;
@@ -118,9 +124,10 @@ public class SingleVideoCacheThread implements Runnable {
                 notifyOnProgress(cachedSize);
 
                 if (cachedSize >= rangeGap) {
+                    LogUtils.i(TAG, "Exceed cachedSize=" + cachedSize +", Range[start=" + requestStart +", end="+requestEnd+"]");
                     notifyOnRangeCompleted();
+                    break;
                 }
-
             }
 
             mIsRunning = false;

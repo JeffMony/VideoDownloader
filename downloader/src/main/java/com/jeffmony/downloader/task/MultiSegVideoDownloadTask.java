@@ -84,6 +84,7 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
             thread.setId(i);
 
             thread.setCacheListener(new IVideoCacheListener() {
+
                 @Override
                 public void onFailed(VideoRange range, int id, Exception e) {
                     notifyDownloadError(e);
@@ -98,11 +99,12 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
 
                 @Override
                 public void onRangeCompleted(VideoRange range, int id) {
-                    LogUtils.i(TAG, "onRangeCompleted Range=" + range);
+                    LogUtils.i(TAG, "onRangeCompleted Range=" + range +", completeMap size=" + completedMap.size());
                     completedMap.put(id, true);
 
                     boolean completed = true;
                     for (boolean tag : completedMap.values()) {
+                        LogUtils.i(TAG, "onRangeCompleted tag = " + tag);
                         if (!tag) {
                             completed = false;
                             break;
