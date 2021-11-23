@@ -1,14 +1,19 @@
 package com.jeffmony.downloader.utils;
 
-
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
 import com.jeffmony.downloader.VideoDownloadConfig;
+import com.jeffmony.downloader.model.MultiRangeInfo;
 import com.jeffmony.downloader.model.Video;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
@@ -25,6 +30,9 @@ public class VideoDownloadUtils {
     public static final String OUPUT_VIDEO = "merged.mp4";
     public static final String SEGMENT_PREFIX = "video_";
     public static final String INIT_SEGMENT_PREFIX = "init_video_";
+    public static final String INFO_FILE = "range.info";
+
+    private static final Object sInfoFileLock = new Object();
 
     private static VideoDownloadConfig mDownloadConfig;
 
@@ -170,6 +178,44 @@ public class VideoDownloadUtils {
         }
         int dotIndex = name.lastIndexOf('.');
         return (dotIndex >= 0 && dotIndex < name.length()) ? name.substring(dotIndex) : "";
+    }
+
+    public static MultiRangeInfo readRangeInfo(File dir) {
+        LogUtils.i(TAG, "readVideoCacheInfo : dir=" + dir.getAbsolutePath());
+        File file = new File(dir, INFO_FILE);
+        if (!file.exists()) {
+            LogUtils.i(TAG,"readProxyCacheInfo failed, file not exist.");
+            return null;
+        }
+        ObjectInputStream fis = null;
+        try {
+            synchronized (sInfoFileLock) {
+                fis = new ObjectInputStream(new FileInputStream(file));
+                MultiRangeInfo info = (MultiRangeInfo) fis.readObject();
+                return info;
+            }
+        } catch (Exception e) {
+            LogUtils.w(TAG,"readVideoCacheInfo failed, exception=" + e.getMessage());
+        } finally {
+            close(fis);
+        }
+        return null;
+    }
+
+    public static void saveRangeInfo(MultiRangeInfo info, File dir) {
+        File file = new File(dir, INFO_FILE);
+        ObjectOutputStream fos = null;
+        try {
+            synchronized (sInfoFileLock) {
+                fos = new ObjectOutputStream(new FileOutputStream(file));
+                fos.writeObject(info);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.w(TAG,"saveVideoCacheInfo failed, exception=" + e.getMessage());
+        } finally {
+            close(fos);
+        }
     }
 
 }
