@@ -87,6 +87,15 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
         mBtn12.setOnClickListener(this);
         mBtn13.setOnClickListener(this);
         mBtn14.setOnClickListener(this);
+
+        mShouldM3U8Merged = VideoDownloadManager.getInstance().downloadConfig().shouldM3U8Merged();
+        if (mShouldM3U8Merged) {
+            mBtn11.setChecked(true);
+            mBtn12.setChecked(false);
+        } else {
+            mBtn11.setChecked(false);
+            mBtn12.setChecked(true);
+        }
     }
 
     @Override

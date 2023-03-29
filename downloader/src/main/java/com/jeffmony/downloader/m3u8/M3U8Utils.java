@@ -8,6 +8,8 @@ import com.jeffmony.downloader.utils.VideoDownloadUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -314,20 +316,17 @@ public class M3U8Utils {
                     if (m3u8Ts.getKeyUri() != null) {
                         String keyUri = m3u8Ts.getKeyUri();
                         key += ",URI=\"" + keyUri + "\"";
-                        URL keyURL = new URL(keyUri);
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(keyURL.openStream()));
-                        StringBuilder textBuilder = new StringBuilder();
-                        String line;
-                        while ((line = bufferedReader.readLine()) != null) {
-                            textBuilder.append(line);
-                        }
-                        boolean isMessyStr = VideoDownloadUtils.isMessyCode(textBuilder.toString());
-                        m3u8Ts.setIsMessyKey(isMessyStr);
+                        HttpURLConnection connection = HttpUtils.getConnection(keyUri, null, true);
+                        DataInputStream dis = new DataInputStream(connection.getInputStream());
                         File keyFile = new File(dir, m3u8Ts.getLocalKeyUri());
-                        FileOutputStream outputStream = new FileOutputStream(keyFile);
-                        outputStream.write(textBuilder.toString().getBytes());
-                        bufferedReader.close();
-                        outputStream.close();
+                        DataOutputStream dos = new DataOutputStream(new FileOutputStream(keyFile));
+                        byte[] buffer = new byte[4096];
+                        int count = 0;
+                        while ((count = dis.read(buffer)) > 0) {
+                            dos.write(buffer, 0, count);
+                        }
+                        dis.close();
+                        dos.close();
                         if (m3u8Ts.getKeyIV() != null) {
                             key += ",IV=" + m3u8Ts.getKeyIV();
                         }

@@ -385,11 +385,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                         String key = "METHOD=" + m3u8Ts.getMethod();
                         if (m3u8Ts.getKeyUri() != null) {
                             File keyFile = new File(mSaveDir, m3u8Ts.getLocalKeyUri());
-                            if (!m3u8Ts.isMessyKey() && keyFile.exists()) {
-                                key += ",URI=\"" + keyFile.getAbsolutePath() + "\"";
-                            } else {
-                                key += ",URI=\"" + m3u8Ts.getKeyUri() + "\"";
-                            }
+                            key += ",URI=\"" + keyFile.getAbsolutePath() + "\"";
                         }
                         if (m3u8Ts.getKeyIV() != null) {
                             key += ",IV=" + m3u8Ts.getKeyIV();
