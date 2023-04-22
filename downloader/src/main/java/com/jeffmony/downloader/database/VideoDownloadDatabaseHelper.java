@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -13,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VideoDownloadDatabaseHelper {
-
-    private static final String TAG = "VideoDownloadDatabaseHelper";
     private VideoDownloadSQLiteHelper mSQLiteHelper;
 
     public VideoDownloadDatabaseHelper(Context context) {
@@ -100,7 +99,7 @@ public class VideoDownloadDatabaseHelper {
             db.update(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, values, whereClause, whereArgs);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG, "updateVideoDownloadInfo failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "updateVideoDownloadInfo failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
         }
@@ -131,7 +130,7 @@ public class VideoDownloadDatabaseHelper {
             db.insert(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG, "insertVideoDownloadInfo failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "insertVideoDownloadInfo failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
             item.setIsInDatabase(true);
@@ -154,7 +153,7 @@ public class VideoDownloadDatabaseHelper {
                 return false;
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "isTaskInfoExistInTable query failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "isTaskInfoExistInTable query failed, exception = " + e.getMessage());
             return false;
         } finally {
             if (cursor != null) {
@@ -200,7 +199,7 @@ public class VideoDownloadDatabaseHelper {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "getDownloadInfos failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "getDownloadInfos failed, exception = " + e.getMessage());
             return null;
         } finally {
             if (cursor != null) {
@@ -220,7 +219,7 @@ public class VideoDownloadDatabaseHelper {
             db.delete(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, null, null);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG, "deleteAllDownloadInfos failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "deleteAllDownloadInfos failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
         }
@@ -238,7 +237,7 @@ public class VideoDownloadDatabaseHelper {
             db.delete(VideoDownloadSQLiteHelper.TABLE_VIDEO_DOWNLOAD_INFO, whereClause, whereArgs);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            LogUtils.w(TAG, "deleteDownloadItemByUrl failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "deleteDownloadItemByUrl failed, exception = " + e.getMessage());
         } finally {
             db.endTransaction();
         }

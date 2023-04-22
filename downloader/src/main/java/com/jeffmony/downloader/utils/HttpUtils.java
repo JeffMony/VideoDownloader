@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.jeffmony.downloader.common.DownloadConstants;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.NoRouteToHostException;
@@ -22,9 +24,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class HttpUtils {
-
-    private static final String TAG = "HttpUtils";
-
     public static final int MAX_RETRY_COUNT = 100;
     public static final int MAX_REDIRECT = 20;
     public static final int RESPONSE_200 = 200;
@@ -131,7 +130,7 @@ public class HttpUtils {
                 }}, null);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"SSLContext init failed");
+            LogUtils.w(DownloadConstants.TAG,"SSLContext init failed");
         }
         // Cannot do ssl checkl.
         if (sslContext == null) {

@@ -1,5 +1,6 @@
 package com.jeffmony.downloader;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -11,9 +12,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Custom Download Queue.
  */
 public class VideoDownloadQueue {
-
-    private static final String TAG = "VideoDownloadQueue";
-
     private CopyOnWriteArrayList<VideoTaskItem> mQueue;
 
     public VideoDownloadQueue() {
@@ -40,7 +38,7 @@ public class VideoDownloadQueue {
                 mQueue.remove(0);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue remove failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue remove failed.");
         }
         return null;
     }
@@ -51,7 +49,7 @@ public class VideoDownloadQueue {
                 return mQueue.get(0);
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue get failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue get failed.");
         }
         return null;
     }
@@ -77,7 +75,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue getTaskItem failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue getTaskItem failed.");
         }
         return null;
     }
@@ -105,7 +103,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return count;
     }
@@ -119,7 +117,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return count;
     }
@@ -133,7 +131,7 @@ public class VideoDownloadQueue {
                 }
             }
         } catch (Exception e) {
-            LogUtils.w(TAG, "DownloadQueue getDownloadingCount failed.");
+            LogUtils.w(DownloadConstants.TAG, "DownloadQueue getDownloadingCount failed.");
         }
         return null;
     }

@@ -1,7 +1,6 @@
 package com.jeffmony.downloader;
 
 public class VideoDownloadConfig {
-
     private String mCacheRoot;
     private int mReadTimeOut;
     private int mConnTimeOut;

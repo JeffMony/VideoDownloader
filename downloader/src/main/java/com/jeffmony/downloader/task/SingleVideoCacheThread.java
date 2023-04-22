@@ -2,6 +2,7 @@ package com.jeffmony.downloader.task;
 
 import android.os.Handler;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.listener.IVideoCacheListener;
 import com.jeffmony.downloader.model.VideoRange;
 import com.jeffmony.downloader.utils.HttpUtils;
@@ -16,8 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SingleVideoCacheThread implements Runnable {
-
-    private static final String TAG = "SingleVideoCacheThread";
 
     private final VideoRange mRange;
     private final String mUrl;
@@ -62,7 +61,7 @@ public class SingleVideoCacheThread implements Runnable {
     }
 
     public void pause() {
-        LogUtils.i(TAG, "Pause task");
+        LogUtils.i(DownloadConstants.TAG, "Pause task");
         mIsRunning = false;
     }
 
@@ -104,10 +103,10 @@ public class SingleVideoCacheThread implements Runnable {
             randomAccessFile = new RandomAccessFile(videoFile.getAbsoluteFile(), "rw");
             randomAccessFile.seek(requestStart);
             long cachedSize = 0;
-            LogUtils.i(TAG, "Request range = " + mRange);
+            LogUtils.i(DownloadConstants.TAG, "Request range = " + mRange);
             connection = HttpUtils.getConnection(mUrl, mHeaders, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
             inputStream = connection.getInputStream();
-            LogUtils.i(TAG, "Receive response");
+            LogUtils.i(DownloadConstants.TAG, "Receive response");
 
             byte[] buffer = new byte[VideoDownloadUtils.DEFAULT_BUFFER_SIZE];
             int readLength;
@@ -124,7 +123,7 @@ public class SingleVideoCacheThread implements Runnable {
                 notifyOnProgress(cachedSize);
 
                 if (cachedSize >= rangeGap) {
-                    LogUtils.i(TAG, "Exceed cachedSize=" + cachedSize +", Range[start=" + requestStart +", end="+requestEnd+"]");
+                    LogUtils.i(DownloadConstants.TAG, "Exceed cachedSize=" + cachedSize +", Range[start=" + requestStart +", end="+requestEnd+"]");
                     notifyOnRangeCompleted();
                     break;
                 }

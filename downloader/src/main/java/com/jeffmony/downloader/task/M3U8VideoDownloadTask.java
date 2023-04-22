@@ -3,6 +3,7 @@ package com.jeffmony.downloader.task;
 import android.text.TextUtils;
 
 import com.jeffmony.downloader.VideoDownloadException;
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.m3u8.M3U8;
 import com.jeffmony.downloader.m3u8.M3U8Constants;
 import com.jeffmony.downloader.m3u8.M3U8Seg;
@@ -30,8 +31,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class M3U8VideoDownloadTask extends VideoDownloadTask {
-
-    private static final String TAG = "M3U8VideoDownloadTask";
     private static final int CONTINUOUS_SUCCESS_TS_THRESHOLD = 6;
     private final Object mFileLock = new Object();
 
@@ -87,12 +86,12 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
 
     private void startDownload(int curDownloadTs) {
         if (mTaskItem.isCompleted()) {
-            LogUtils.i(TAG, "M3U8VideoDownloadTask local file.");
+            LogUtils.i(DownloadConstants.TAG, "M3U8VideoDownloadTask local file.");
             notifyDownloadFinish();
             return;
         }
         mCurTs = curDownloadTs;
-        LogUtils.i(TAG, "startDownload curDownloadTs = " + curDownloadTs);
+        LogUtils.i(DownloadConstants.TAG, "startDownload curDownloadTs = " + curDownloadTs);
         mDownloadExecutor = new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT, 0L,
                 TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.DiscardOldestPolicy());
@@ -102,7 +101,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                 try {
                     downloadTsTask(ts);
                 } catch (Exception e) {
-                    LogUtils.w(TAG, "M3U8TsDownloadThread download failed, exception=" + e);
+                    LogUtils.w(DownloadConstants.TAG, "M3U8TsDownloadThread download failed, exception=" + e);
                     notifyDownloadError(e);
                 }
             });
@@ -294,7 +293,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                     }
                 }
             } else {
-                LogUtils.w(TAG, "downloadFile failed, exception="+e.getMessage());
+                LogUtils.w(DownloadConstants.TAG, "downloadFile failed, exception="+e.getMessage());
                 throw e;
             }
         } finally {
@@ -332,7 +331,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                         if (ts.getRetryCount() < HttpUtils.MAX_RETRY_COUNT) {
                             downloadFile(ts, file, videoUrl);
                         } else {
-                            LogUtils.w(TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
+                            LogUtils.w(DownloadConstants.TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
                             if (file.exists()) {
                                 file.delete();
                             }
@@ -342,7 +341,7 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                         ts.setContentLength(totalLength);
                     }
                 } else {
-                    LogUtils.w(TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
+                    LogUtils.w(DownloadConstants.TAG, file.getAbsolutePath() + ", length=" + file.length() + ", saveFile failed, exception=" + e);
                     if (file.exists()) {
                         file.delete();
                     }

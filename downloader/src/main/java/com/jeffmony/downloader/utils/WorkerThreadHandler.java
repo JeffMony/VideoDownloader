@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 
+import com.jeffmony.downloader.common.DownloadConstants;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -14,9 +16,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class WorkerThreadHandler {
-
-    private static final String TAG = "WorkerThreadHandler";
-
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
     private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
@@ -67,7 +66,7 @@ public class WorkerThreadHandler {
             long startTime = System.currentTimeMillis();
             super.run();
             long endTime = System.currentTimeMillis();
-            LogUtils.i(TAG, "MediaWorkerThread execution time: " + (endTime - startTime));
+            LogUtils.i(DownloadConstants.TAG, "MediaWorkerThread execution time: " + (endTime - startTime));
         }
     }
 

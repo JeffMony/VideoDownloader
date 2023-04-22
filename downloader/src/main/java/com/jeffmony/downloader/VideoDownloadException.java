@@ -1,7 +1,6 @@
 package com.jeffmony.downloader;
 
 public class VideoDownloadException extends Exception {
-
     private String mMsg;
 
     public VideoDownloadException(String message) {

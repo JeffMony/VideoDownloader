@@ -2,6 +2,7 @@ package com.jeffmony.downloader;
 
 import android.text.TextUtils;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.listener.IVideoInfoListener;
 import com.jeffmony.downloader.listener.IVideoInfoParseListener;
 import com.jeffmony.downloader.m3u8.M3U8;
@@ -23,9 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VideoInfoParserManager {
-
-    private static final String TAG = "VideoInfoParserManager";
-
     private static volatile VideoInfoParserManager sInstance;
 
     public static VideoInfoParserManager getInstance() {
@@ -69,7 +67,7 @@ public class VideoInfoParserManager {
             }
 
             String finalUrl = taskItem.getUrl();
-            LogUtils.i(TAG, "doParseVideoInfoTask url="+finalUrl);
+            LogUtils.i(DownloadConstants.TAG, "doParseVideoInfoTask url="+finalUrl);
 
             HttpURLConnection connection = null;
             // Redirect is enabled, send redirect request to get final location.

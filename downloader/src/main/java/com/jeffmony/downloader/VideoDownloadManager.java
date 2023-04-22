@@ -19,7 +19,6 @@ import com.jeffmony.downloader.model.Video;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.model.VideoTaskState;
 import com.jeffmony.downloader.listener.IM3U8MergeResultListener;
-import com.jeffmony.downloader.task.BaseVideoDownloadTask;
 import com.jeffmony.downloader.task.M3U8VideoDownloadTask;
 import com.jeffmony.downloader.task.MultiSegVideoDownloadTask;
 import com.jeffmony.downloader.task.VideoDownloadTask;
@@ -40,8 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VideoDownloadManager {
-    private static final String TAG = "VideoDownloadManager";
-
     private static volatile VideoDownloadManager sInstance = null;
     private DownloadListener mGlobalDownloadListener = null;
     private VideoDownloadDatabaseHelper mVideoDatabaseHelper = null;
@@ -116,7 +113,7 @@ public class VideoDownloadManager {
 
     public void setShouldM3U8Merged(boolean enable) {
         if (mConfig != null) {
-            LogUtils.w(TAG, "setShouldM3U8Merged = " + enable);
+            LogUtils.w(DownloadConstants.TAG, "setShouldM3U8Merged = " + enable);
             mConfig.setShouldM3U8Merged(enable);
         }
     }
@@ -231,7 +228,7 @@ public class VideoDownloadManager {
 
             @Override
             public void onBaseVideoInfoFailed(Throwable error) {
-                LogUtils.w(TAG, "onInfoFailed error=" + error);
+                LogUtils.w(DownloadConstants.TAG, "onInfoFailed error=" + error);
                 int errorCode = DownloadExceptionUtils.getErrorCode(error);
                 taskItem.setErrorCode(errorCode);
                 taskItem.setTaskState(VideoTaskState.ERROR);
@@ -246,7 +243,7 @@ public class VideoDownloadManager {
 
             @Override
             public void onLiveM3U8Callback(VideoTaskItem info) {
-                LogUtils.w(TAG, "onLiveM3U8Callback cannot be cached.");
+                LogUtils.w(DownloadConstants.TAG, "onLiveM3U8Callback cannot be cached.");
                 taskItem.setErrorCode(DownloadExceptionUtils.LIVE_M3U8_ERROR);
                 taskItem.setTaskState(VideoTaskState.ERROR);
                 mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_ERROR, taskItem).sendToTarget();
@@ -254,7 +251,7 @@ public class VideoDownloadManager {
 
             @Override
             public void onM3U8InfoFailed(Throwable error) {
-                LogUtils.w(TAG, "onM3U8InfoFailed : " + error);
+                LogUtils.w(DownloadConstants.TAG, "onM3U8InfoFailed : " + error);
                 int errorCode = DownloadExceptionUtils.getErrorCode(error);
                 taskItem.setErrorCode(errorCode);
                 taskItem.setTaskState(VideoTaskState.ERROR);
@@ -393,14 +390,14 @@ public class VideoDownloadManager {
             mVideoDownloadTaskMap.clear();
             mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DELETE_ALL_FILES).sendToTarget();
         } catch (Exception e) {
-            LogUtils.w(TAG, "clearVideoCacheDir failed, exception = " + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG, "clearVideoCacheDir failed, exception = " + e.getMessage());
         }
     }
 
     public void pauseAllDownloadTasks() {
         synchronized (mQueueLock) {
             List<VideoTaskItem> taskList = mVideoDownloadQueue.getDownloadList();
-            LogUtils.i(TAG, "pauseAllDownloadTasks queue size="+taskList.size());
+            LogUtils.i(DownloadConstants.TAG, "pauseAllDownloadTasks queue size="+taskList.size());
             List<String> pausedUrlList = new ArrayList<>();
             for (VideoTaskItem taskItem : taskList) {
                 if (taskItem.isPendingTask()) {
@@ -467,7 +464,7 @@ public class VideoDownloadManager {
                 taskItem.reset();
                 mVideoDownloadHandler.obtainMessage(DownloadConstants.MSG_DOWNLOAD_DEFAULT, taskItem).sendToTarget();
             } catch (Exception e) {
-                LogUtils.w(TAG, "Delete file: " + file + " failed, exception=" + e.getMessage());
+                LogUtils.w(DownloadConstants.TAG, "Delete file: " + file + " failed, exception=" + e.getMessage());
             }
         }
     }
@@ -498,7 +495,7 @@ public class VideoDownloadManager {
     private void removeDownloadQueue(VideoTaskItem taskItem) {
         synchronized (mQueueLock) {
             mVideoDownloadQueue.remove(taskItem);
-            LogUtils.w(TAG, "removeDownloadQueue size=" + mVideoDownloadQueue.size() + "," + mVideoDownloadQueue.getDownloadingCount() + "," + mVideoDownloadQueue.getPendingCount());
+            LogUtils.w(DownloadConstants.TAG, "removeDownloadQueue size=" + mVideoDownloadQueue.size() + "," + mVideoDownloadQueue.getDownloadingCount() + "," + mVideoDownloadQueue.getPendingCount());
             int pendingCount = mVideoDownloadQueue.getPendingCount();
             int downloadingCount = mVideoDownloadQueue.getDownloadingCount();
             while (downloadingCount < mConfig.getConcurrentCount() && pendingCount > 0) {
@@ -619,7 +616,7 @@ public class VideoDownloadManager {
     private void handleOnDownloadSuccess(VideoTaskItem taskItem) {
         removeDownloadQueue(taskItem);
 
-        LogUtils.i(TAG, "handleOnDownloadSuccess shouldM3U8Merged="+mConfig.shouldM3U8Merged() + ", isHlsType="+taskItem.isHlsType());
+        LogUtils.i(DownloadConstants.TAG, "handleOnDownloadSuccess shouldM3U8Merged="+mConfig.shouldM3U8Merged() + ", isHlsType="+taskItem.isHlsType());
         if (mConfig.shouldM3U8Merged() && taskItem.isHlsType()) {
             doMergeTs(taskItem, taskItem1 -> {
                 mGlobalDownloadListener.onDownloadSuccess(taskItem1);
@@ -636,7 +633,7 @@ public class VideoDownloadManager {
             listener.onCallback(taskItem);
             return;
         }
-        LogUtils.i(TAG, "VideoMerge doMergeTs taskItem=" + taskItem);
+        LogUtils.i(DownloadConstants.TAG, "VideoMerge doMergeTs taskItem=" + taskItem);
         String inputPath = taskItem.getFilePath();
         if (TextUtils.isEmpty(taskItem.getFileHash())) {
             taskItem.setFileHash(VideoDownloadUtils.computeMD5(taskItem.getUrl()));
@@ -655,7 +652,7 @@ public class VideoDownloadManager {
 
             @Override
             public void onTransformFailed(Exception e) {
-                LogUtils.i(TAG, "VideoMerge onTransformFailed e=" + e);
+                LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFailed e=" + e);
                 File outputFile = new File(outputPath);
                 if (outputFile.exists()) {
                     outputFile.delete();
@@ -666,7 +663,7 @@ public class VideoDownloadManager {
 
             @Override
             public void onTransformFinished() {
-                LogUtils.i(TAG, "VideoMerge onTransformFinished outputPath=" + outputPath);
+                LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFinished outputPath=" + outputPath);
                 taskItem.setFileName(VideoDownloadUtils.OUPUT_VIDEO);
                 taskItem.setFilePath(outputPath);
                 taskItem.setMimeType(Video.Mime.MIME_TYPE_MP4);

@@ -3,6 +3,7 @@ package com.jeffmony.downloader.task;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.listener.IVideoCacheListener;
 import com.jeffmony.downloader.model.MultiRangeInfo;
 import com.jeffmony.downloader.model.VideoRange;
@@ -20,8 +21,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class MultiSegVideoDownloadTask extends VideoDownloadTask {
-
-    private static final String TAG = "MultiSegVideoDownloadTask";
 
     private HandlerThread mMultiMsgThread;
     private Handler mMultiMsgHandler;
@@ -54,7 +53,7 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
 
     private void startDownloadVideo() {
         if (mTaskItem.isCompleted()) {
-            LogUtils.i(TAG, "BaseVideoDownloadTask local file.");
+            LogUtils.i(DownloadConstants.TAG, "BaseVideoDownloadTask local file.");
             notifyDownloadFinish();
             return;
         }
@@ -128,19 +127,19 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
                 @Override
                 public void onProgress(VideoRange range, int id, long cachedSize) {
                     long size = startList.get(id) +  cachedSize;
-                    LogUtils.i(TAG, "onProgress ID="+id+", size=" + size);
+                    LogUtils.i(DownloadConstants.TAG, "onProgress ID="+id+", size=" + size);
                     cachedMap.put(id, size);
                     notifyOnProgress(cachedMap);
                 }
 
                 @Override
                 public void onRangeCompleted(VideoRange range, int id) {
-                    LogUtils.i(TAG, "onRangeCompleted Range=" + range +", completeMap size=" + completedMap.size());
+                    LogUtils.i(DownloadConstants.TAG, "onRangeCompleted Range=" + range +", completeMap size=" + completedMap.size());
                     completedMap.put(id, true);
 
                     boolean completed = true;
                     for (boolean tag : completedMap.values()) {
-                        LogUtils.i(TAG, "onRangeCompleted tag = " + tag);
+                        LogUtils.i(DownloadConstants.TAG, "onRangeCompleted tag = " + tag);
                         if (!tag) {
                             completed = false;
                             break;
@@ -148,7 +147,7 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
                     }
 
                     if (completed) {
-                        LogUtils.i(TAG, "TotalSize=" + mTotalLength);
+                        LogUtils.i(DownloadConstants.TAG, "TotalSize=" + mTotalLength);
                         notifyDownloadFinish();
                     }
                 }
@@ -194,7 +193,7 @@ public class MultiSegVideoDownloadTask extends VideoDownloadTask {
             int id = (int) entry.getKey();
             long cachedSize = (long) entry.getValue();
             cachedSizes.add(id, cachedSize);
-            LogUtils.i(TAG, "saveCacheInfo id="+id+", cachedSize=" + cachedSize);
+            LogUtils.i(DownloadConstants.TAG, "saveCacheInfo id="+id+", cachedSize=" + cachedSize);
         }
 
         MultiRangeInfo rangeInfo = new MultiRangeInfo();

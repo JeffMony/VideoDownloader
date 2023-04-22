@@ -2,6 +2,7 @@ package com.jeffmony.downloader.common;
 
 public class DownloadConstants {
 
+    public static final String TAG = "video_downloader";
     public static final int READ_TIMEOUT = 2 * 60 * 1000;
     public static final int CONN_TIMEOUT = 2 * 60 * 1000;
     public static final int CONCURRENT = 3;

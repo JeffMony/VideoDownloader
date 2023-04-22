@@ -3,6 +3,7 @@ package com.jeffmony.downloader.utils;
 import android.text.TextUtils;
 
 import com.jeffmony.downloader.VideoDownloadConfig;
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.model.MultiRangeInfo;
 import com.jeffmony.downloader.model.Video;
 
@@ -16,8 +17,6 @@ import java.security.MessageDigest;
 import java.text.DecimalFormat;
 
 public class VideoDownloadUtils {
-
-    private static final String TAG = "VideoDownloadUtils";
     public static final long DEFAULT_CONTENT_LENGTH = -1;
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     public static final String VIDEO_SUFFIX = ".video";
@@ -112,7 +111,7 @@ public class VideoDownloadUtils {
             try {
                 closeable.close();
             } catch (Exception e) {
-                LogUtils.w(TAG, "VideoProxyCacheUtils close " + closeable + " failed, exception = " + e);
+                LogUtils.w(DownloadConstants.TAG, "VideoProxyCacheUtils close " + closeable + " failed, exception = " + e);
             }
         }
     }
@@ -138,10 +137,10 @@ public class VideoDownloadUtils {
     }
 
     public static MultiRangeInfo readRangeInfo(File dir) {
-        LogUtils.i(TAG, "readVideoCacheInfo : dir=" + dir.getAbsolutePath());
+        LogUtils.i(DownloadConstants.TAG, "readVideoCacheInfo : dir=" + dir.getAbsolutePath());
         File file = new File(dir, INFO_FILE);
         if (!file.exists()) {
-            LogUtils.i(TAG,"readProxyCacheInfo failed, file not exist.");
+            LogUtils.i(DownloadConstants.TAG,"readProxyCacheInfo failed, file not exist.");
             return null;
         }
         ObjectInputStream fis = null;
@@ -152,7 +151,7 @@ public class VideoDownloadUtils {
                 return info;
             }
         } catch (Exception e) {
-            LogUtils.w(TAG,"readVideoCacheInfo failed, exception=" + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG,"readVideoCacheInfo failed, exception=" + e.getMessage());
         } finally {
             close(fis);
         }
@@ -169,7 +168,7 @@ public class VideoDownloadUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtils.w(TAG,"saveVideoCacheInfo failed, exception=" + e.getMessage());
+            LogUtils.w(DownloadConstants.TAG,"saveVideoCacheInfo failed, exception=" + e.getMessage());
         } finally {
             close(fos);
         }

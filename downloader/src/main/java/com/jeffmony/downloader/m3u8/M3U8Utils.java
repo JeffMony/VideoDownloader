@@ -2,6 +2,7 @@ package com.jeffmony.downloader.m3u8;
 
 import android.text.TextUtils;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -24,8 +25,6 @@ import java.util.regex.Pattern;
 
 public class M3U8Utils {
 
-    private static final String TAG = "M3U8Utils";
-
     /**
      * parse network M3U8 file.
      *
@@ -38,7 +37,7 @@ public class M3U8Utils {
         try {
             HttpURLConnection connection = HttpUtils.getConnection(videoUrl, headers, VideoDownloadUtils.getDownloadConfig().shouldIgnoreCertErrors());
             int responseCode = connection.getResponseCode();
-            LogUtils.i(TAG, "parseNetworkM3U8Info responseCode="+responseCode);
+            LogUtils.i(DownloadConstants.TAG, "parseNetworkM3U8Info responseCode="+responseCode);
             if (responseCode == HttpUtils.RESPONSE_503 && retryCount < HttpUtils.MAX_RETRY_COUNT) {
                 return parseNetworkM3U8Info(videoUrl, headers, retryCount+1);
             }
@@ -65,7 +64,7 @@ public class M3U8Utils {
                 if (TextUtils.isEmpty(line)) {
                     continue;
                 }
-                LogUtils.i(TAG, "line = " + line);
+                LogUtils.i(DownloadConstants.TAG, "line = " + line);
                 if (line.startsWith(M3U8Constants.TAG_PREFIX)) {
                     if (line.startsWith(M3U8Constants.TAG_MEDIA_DURATION)) {
                         String ret = parseStringAttr(line, M3U8Constants.REGEX_MEDIA_DURATION);
@@ -125,7 +124,7 @@ public class M3U8Utils {
                     }
                     continue;
                 }
-                // It has '#EXT-X-STREAM-INF' tag;
+                // It has '#EXT-X-STREAM-INF' DownloadConstants.TAG;
                 if (hasStreamInfo) {
                     return parseNetworkM3U8Info(getM3U8AbsoluteUrl(videoUrl, line), headers, retryCount);
                 }
@@ -188,7 +187,7 @@ public class M3U8Utils {
             String segmentByteRange = null;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                LogUtils.i(TAG, "line = " + line);
+                LogUtils.i(DownloadConstants.TAG, "line = " + line);
                 if (line.startsWith(M3U8Constants.TAG_PREFIX)) {
                     if (line.startsWith(M3U8Constants.TAG_MEDIA_DURATION)) {
                         String ret = parseStringAttr(line, M3U8Constants.REGEX_MEDIA_DURATION);

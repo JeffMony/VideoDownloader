@@ -1,5 +1,6 @@
 package com.jeffmony.downloader.task;
 
+import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.HttpUtils;
 import com.jeffmony.downloader.utils.LogUtils;
@@ -18,8 +19,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class BaseVideoDownloadTask extends VideoDownloadTask {
-
-    private static final String TAG = "BaseVideoDownloadTask";
 
     private long mTotalLength;
 
@@ -40,7 +39,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
 
     private void startDownload(long curLength) {
         if (mTaskItem.isCompleted()) {
-            LogUtils.i(TAG, "BaseVideoDownloadTask local file.");
+            LogUtils.i(DownloadConstants.TAG, "BaseVideoDownloadTask local file.");
             notifyDownloadFinish();
             return;
         }
@@ -60,7 +59,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                     mCurrentCachedSize = videoFile.length();
                 }
             } catch (Exception e) {
-                LogUtils.w(TAG, "BaseDownloadTask createNewFile failed, exception=" + e.getMessage());
+                LogUtils.w(DownloadConstants.TAG, "BaseDownloadTask createNewFile failed, exception=" + e.getMessage());
                 return;
             }
 
@@ -84,7 +83,7 @@ public class BaseVideoDownloadTask extends VideoDownloadTask {
                     notifyDownloadProgress();
                 }
             } catch (Exception e) {
-                LogUtils.w(TAG, "FAILED, exception=" + e.getMessage());
+                LogUtils.w(DownloadConstants.TAG, "FAILED, exception=" + e.getMessage());
                 e.printStackTrace();
                 notifyDownloadError(e);
             } finally {
