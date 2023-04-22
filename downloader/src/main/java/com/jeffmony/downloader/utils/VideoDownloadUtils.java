@@ -2,8 +2,6 @@ package com.jeffmony.downloader.utils;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import com.jeffmony.downloader.VideoDownloadConfig;
 import com.jeffmony.downloader.model.MultiRangeInfo;
 import com.jeffmony.downloader.model.Video;
@@ -34,7 +32,7 @@ public class VideoDownloadUtils {
 
     private static VideoDownloadConfig mDownloadConfig;
 
-    public static void setDownloadConfig(@NonNull VideoDownloadConfig config) {
+    public static void setDownloadConfig(VideoDownloadConfig config) {
         mDownloadConfig = config;
     }
 

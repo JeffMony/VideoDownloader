@@ -1,7 +1,5 @@
 package com.jeffmony.downloader.task;
 
-import androidx.annotation.NonNull;
-
 import com.jeffmony.downloader.listener.IDownloadTaskListener;
 import com.jeffmony.downloader.model.VideoTaskItem;
 import com.jeffmony.downloader.utils.VideoDownloadUtils;
@@ -41,7 +39,7 @@ public abstract class VideoDownloadTask {
         mTaskItem.setSaveDir(mSaveDir.getAbsolutePath());
     }
 
-    public void setDownloadTaskListener(@NonNull IDownloadTaskListener listener) {
+    public void setDownloadTaskListener(IDownloadTaskListener listener) {
         mDownloadTaskListener = listener;
     }
 

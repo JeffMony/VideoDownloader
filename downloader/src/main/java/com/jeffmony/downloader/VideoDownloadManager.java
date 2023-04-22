@@ -7,8 +7,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import com.jeffmony.downloader.common.DownloadConstants;
 import com.jeffmony.downloader.database.VideoDownloadDatabaseHelper;
 import com.jeffmony.downloader.listener.DownloadListener;
@@ -64,7 +62,7 @@ public class VideoDownloadManager {
         private int mConcurrentCount = 3;
         private boolean mShouldM3U8Merged = false;
 
-        public Build(@NonNull Context context) {
+        public Build(Context context) {
             ContextUtils.initApplicationContext(context);
         }
 
@@ -138,7 +136,7 @@ public class VideoDownloadManager {
         mVideoDownloadQueue = new VideoDownloadQueue();
     }
 
-    public void initConfig(@NonNull VideoDownloadConfig config) {
+    public void initConfig(VideoDownloadConfig config) {
         //如果为null, 会crash
         mConfig = config;
         VideoDownloadUtils.setDownloadConfig(config);
@@ -161,7 +159,7 @@ public class VideoDownloadManager {
         mDownloadInfoCallbacks.remove(callback);
     }
 
-    public void setGlobalDownloadListener(@NonNull DownloadListener downloadListener) {
+    public void setGlobalDownloadListener(DownloadListener downloadListener) {
         mGlobalDownloadListener = downloadListener;
     }
 
@@ -524,7 +522,7 @@ public class VideoDownloadManager {
         }
 
         @Override
-        public void handleMessage(@NonNull Message msg) {
+        public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.what == DownloadConstants.MSG_FETCH_DOWNLOAD_INFO) {
                 dispatchDownloadInfos();
@@ -633,7 +631,7 @@ public class VideoDownloadManager {
         }
     }
 
-    private void doMergeTs(VideoTaskItem taskItem, @NonNull IM3U8MergeResultListener listener) {
+    private void doMergeTs(VideoTaskItem taskItem, IM3U8MergeResultListener listener) {
         if (taskItem == null || TextUtils.isEmpty(taskItem.getFilePath())) {
             listener.onCallback(taskItem);
             return;
