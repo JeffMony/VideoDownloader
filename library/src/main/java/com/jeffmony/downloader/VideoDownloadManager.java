@@ -638,7 +638,7 @@ public class VideoDownloadManager {
         if (TextUtils.isEmpty(taskItem.getFileHash())) {
             taskItem.setFileHash(VideoDownloadUtils.computeMD5(taskItem.getUrl()));
         }
-        String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.OUPUT_VIDEO;
+        String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.OUTPUT_VIDEO;
         File outputFile = new File(outputPath);
         if (outputFile.exists()) {
             outputFile.delete();
@@ -651,31 +651,81 @@ public class VideoDownloadManager {
             }
 
             @Override
-            public void onTransformFailed(Exception e) {
-                LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFailed e=" + e);
+            public void onTransformFailed(int err) {
+                retryMerge(taskItem, listener);
+                // LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFailed err=" + err);
+                // File outputFile = new File(outputPath);
+                // if (outputFile.exists()) {
+                //     outputFile.delete();
+                // }
+                // listener.onCallback(taskItem);
+            }
+
+            @Override
+            public void onTransformFinished() {
+                LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFinished outputPath=" + outputPath);
+                taskItem.setFileName(VideoDownloadUtils.OUTPUT_VIDEO);
+                taskItem.setFilePath(outputPath);
+                taskItem.setMimeType(Video.Mime.MIME_TYPE_MP4);
+                taskItem.setVideoType(Video.Type.MP4_TYPE);
+                listener.onCallback(taskItem);
+
+                /// delete source file
+                File outputFile = new File(outputPath);
+                File[] files = outputFile.getParentFile().listFiles();
+                for (File subFile : files) {
+                    String subFilePath = subFile.getAbsolutePath();
+                    if (!subFilePath.endsWith(VideoDownloadUtils.OUTPUT_VIDEO)) {
+                        subFile.delete();
+                    }
+                }
+            }
+        });
+    }
+
+    private void retryMerge(VideoTaskItem taskItem, IM3U8MergeResultListener listener) {
+        LogUtils.i(DownloadConstants.TAG, "VideoMerge retryMerge taskItem=" + taskItem);
+        String inputPath = taskItem.getFilePath();
+        if (TextUtils.isEmpty(taskItem.getFileHash())) {
+            taskItem.setFileHash(VideoDownloadUtils.computeMD5(taskItem.getUrl()));
+        }
+        String outputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.OUTPUT_VIDEO;
+        File outputFile = new File(outputPath);
+        if (outputFile.exists()) {
+            outputFile.delete();
+        }
+        inputPath = inputPath.substring(0, inputPath.lastIndexOf("/")) + File.separator + taskItem.getFileHash() + "_" + VideoDownloadUtils.LOCAL_M3U8_WITH_KEY;
+        VideoProcessManager.getInstance().transformM3U8ToMp4(inputPath, outputPath, new IVideoTransformListener() {
+            @Override
+            public void onTransformProgress(float progress) {
+
+            }
+
+            @Override
+            public void onTransformFailed(int err) {
+                LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFailed err=" + err);
                 File outputFile = new File(outputPath);
                 if (outputFile.exists()) {
                     outputFile.delete();
                 }
-
                 listener.onCallback(taskItem);
             }
 
             @Override
             public void onTransformFinished() {
                 LogUtils.i(DownloadConstants.TAG, "VideoMerge onTransformFinished outputPath=" + outputPath);
-                taskItem.setFileName(VideoDownloadUtils.OUPUT_VIDEO);
+                taskItem.setFileName(VideoDownloadUtils.OUTPUT_VIDEO);
                 taskItem.setFilePath(outputPath);
                 taskItem.setMimeType(Video.Mime.MIME_TYPE_MP4);
                 taskItem.setVideoType(Video.Type.MP4_TYPE);
                 listener.onCallback(taskItem);
 
-                //delete source file
+                /// delete source file
                 File outputFile = new File(outputPath);
                 File[] files = outputFile.getParentFile().listFiles();
                 for (File subFile : files) {
                     String subFilePath = subFile.getAbsolutePath();
-                    if (!subFilePath.endsWith(VideoDownloadUtils.OUPUT_VIDEO)) {
+                    if (!subFilePath.endsWith(VideoDownloadUtils.OUTPUT_VIDEO)) {
                         subFile.delete();
                     }
                 }

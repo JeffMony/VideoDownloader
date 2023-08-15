@@ -21,8 +21,9 @@ public class VideoDownloadUtils {
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     public static final String VIDEO_SUFFIX = ".video";
     public static final String LOCAL_M3U8 = "local.m3u8";
+    public static final String LOCAL_M3U8_WITH_KEY = "local_key_url.m3u8";
     public static final String REMOTE_M3U8 = "remote.m3u8";
-    public static final String OUPUT_VIDEO = "merged.mp4";
+    public static final String OUTPUT_VIDEO = "merged.mp4";
     public static final String SEGMENT_PREFIX = "video_";
     public static final String INIT_SEGMENT_PREFIX = "init_video_";
     public static final String INFO_FILE = "range.info";

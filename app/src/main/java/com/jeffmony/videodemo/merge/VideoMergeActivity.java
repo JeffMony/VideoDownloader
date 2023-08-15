@@ -1,5 +1,6 @@
 package com.jeffmony.videodemo.merge;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -65,6 +66,7 @@ public class VideoMergeActivity extends AppCompatActivity implements View.OnClic
         LogUtils.i(TAG, "inputPath="+inputPath+", outputPath="+outputPath);
         VideoProcessManager.getInstance().transformM3U8ToMp4(inputPath, outputPath, new IVideoTransformListener() {
 
+            @SuppressLint("StringFormatInvalid")
             @Override
             public void onTransformProgress(float progress) {
                 LogUtils.i(TAG, "onTransformProgress progress="+progress);
@@ -78,8 +80,8 @@ public class VideoMergeActivity extends AppCompatActivity implements View.OnClic
             }
 
             @Override
-            public void onTransformFailed(Exception e) {
-                LogUtils.i(TAG, "onTransformFailed, e="+e.getMessage());
+            public void onTransformFailed(int err) {
+                LogUtils.i(TAG, "onTransformFailed, err="+err);
             }
         });
     }

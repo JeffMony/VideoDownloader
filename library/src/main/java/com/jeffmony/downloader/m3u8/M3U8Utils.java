@@ -48,6 +48,7 @@ public class M3U8Utils {
             int tsIndex = 0;
             int version = 0;
             int sequence = 0;
+            int initSequence = 0;
             boolean hasDiscontinuity = false;
             boolean hasEndList = false;
             boolean hasStreamInfo = false;
@@ -85,6 +86,7 @@ public class M3U8Utils {
                         String ret = parseStringAttr(line, M3U8Constants.REGEX_MEDIA_SEQUENCE);
                         if (!TextUtils.isEmpty(ret)) {
                             sequence = Integer.parseInt(ret);
+                            initSequence = sequence;
                         }
                     } else if (line.startsWith(M3U8Constants.TAG_STREAM_INF)) {
                         hasStreamInfo = true;
@@ -154,7 +156,7 @@ public class M3U8Utils {
             }
             m3u8.setTargetDuration(targetDuration);
             m3u8.setVersion(version);
-            m3u8.setSequence(sequence);
+            m3u8.setSequence(initSequence);
             m3u8.setHasEndList(hasEndList);
             return m3u8;
         } catch (IOException e) {
@@ -320,7 +322,7 @@ public class M3U8Utils {
                         File keyFile = new File(dir, m3u8Ts.getLocalKeyUri());
                         DataOutputStream dos = new DataOutputStream(new FileOutputStream(keyFile));
                         byte[] buffer = new byte[4096];
-                        int count = 0;
+                        int count;
                         while ((count = dis.read(buffer)) > 0) {
                             dos.write(buffer, 0, count);
                         }
