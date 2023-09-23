@@ -16,6 +16,7 @@ public class M3U8Constants {
     public static final String TAG_ENDLIST = "#EXT-X-ENDLIST"; // It is not live if hls has '#EXT-X-ENDLIST' tag; Or it is.
     public static final String TAG_KEY = "#EXT-X-KEY"; // Optional
     public static final String TAG_INIT_SEGMENT = "#EXT-X-MAP";
+    public static final String TAG_BYTERANGE = "#EXT-X-BYTERANGE";
 
     // extra hls tag:
 
@@ -29,6 +30,8 @@ public class M3U8Constants {
     public static final Pattern REGEX_MEDIA_DURATION = Pattern.compile(TAG_MEDIA_DURATION + ":([\\d\\.]+)\\b");
     public static final Pattern REGEX_VERSION = Pattern.compile(TAG_VERSION + ":(\\d+)\\b");
     public static final Pattern REGEX_MEDIA_SEQUENCE = Pattern.compile(TAG_MEDIA_SEQUENCE + ":(\\d+)\\b");
+    public static final Pattern REGEX_PLAYLIST_TYPE = Pattern.compile(TAG_PLAYLIST_TYPE + ":(.+)\\b");
+    public static final Pattern REGEX_BYTERANGE = Pattern.compile(TAG_BYTERANGE + ":(\\d+(?:@\\d+)?)\\b");
 
     public static final String METHOD_NONE = "NONE";
     public static final String METHOD_AES_128 = "AES-128";

@@ -44,6 +44,7 @@ public class M3U8Utils {
             bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             M3U8 m3u8 = new M3U8(videoUrl);
             float tsDuration = 0;
+            String byteRange = "";
             int targetDuration = 0;
             int tsIndex = 0;
             int version = 0;
@@ -72,6 +73,8 @@ public class M3U8Utils {
                         if (!TextUtils.isEmpty(ret)) {
                             tsDuration = Float.parseFloat(ret);
                         }
+                    } else if (line.startsWith(M3U8Constants.TAG_BYTERANGE)) {
+                        byteRange = parseStringAttr(line, M3U8Constants.REGEX_BYTERANGE);
                     } else if (line.startsWith(M3U8Constants.TAG_TARGET_DURATION)) {
                         String ret = parseStringAttr(line, M3U8Constants.REGEX_TARGET_DURATION);
                         if (!TextUtils.isEmpty(ret)) {
@@ -134,7 +137,7 @@ public class M3U8Utils {
                     continue;
                 }
                 M3U8Seg ts = new M3U8Seg();
-                ts.initTsAttributes(getM3U8AbsoluteUrl(videoUrl, line), tsDuration, tsIndex, sequence++, hasDiscontinuity);
+                ts.initTsAttributes(getM3U8AbsoluteUrl(videoUrl, line), tsDuration, tsIndex, sequence++, hasDiscontinuity, byteRange);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
@@ -175,6 +178,7 @@ public class M3U8Utils {
             bufferedReader = new BufferedReader(inputStreamReader);
             M3U8 m3u8 = new M3U8();
             float tsDuration = 0;
+            String byteRange = "";
             int targetDuration = 0;
             int tsIndex = 0;
             int version = 0;
@@ -196,6 +200,8 @@ public class M3U8Utils {
                         if (!TextUtils.isEmpty(ret)) {
                             tsDuration = Float.parseFloat(ret);
                         }
+                    }  else if (line.startsWith(M3U8Constants.TAG_BYTERANGE)) {
+                        byteRange = parseStringAttr(line, M3U8Constants.REGEX_BYTERANGE);
                     } else if (line.startsWith(M3U8Constants.TAG_TARGET_DURATION)) {
                         String ret = parseStringAttr(line, M3U8Constants.REGEX_TARGET_DURATION);
                         if (!TextUtils.isEmpty(ret)) {
@@ -242,7 +248,7 @@ public class M3U8Utils {
                     continue;
                 }
                 M3U8Seg ts = new M3U8Seg();
-                ts.initTsAttributes(line, tsDuration, tsIndex, sequence++, hasDiscontinuity);
+                ts.initTsAttributes(line, tsDuration, tsIndex, sequence++, hasDiscontinuity, byteRange);
                 if (hasKey) {
                     ts.setKeyConfig(method, encryptionKeyUri, encryptionIV);
                 }
@@ -339,6 +345,10 @@ public class M3U8Utils {
                 bfw.write(M3U8Constants.TAG_DISCONTINUITY + "\n");
             }
             bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() + ",\n");
+            String byteRange = m3u8Ts.getByteRange();
+            if (!TextUtils.isEmpty(byteRange)) {
+                bfw.write(M3U8Constants.TAG_BYTERANGE + ":" + byteRange + "\n");
+            }
             bfw.write(m3u8Ts.getUrl());
             bfw.newLine();
         }

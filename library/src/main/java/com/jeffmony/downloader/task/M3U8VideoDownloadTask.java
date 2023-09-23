@@ -397,6 +397,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                     bfw.write(M3U8Constants.TAG_DISCONTINUITY + "\n");
                 }
                 bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() + ",\n");
+                String byteRange = m3u8Ts.getByteRange();
+                if (!TextUtils.isEmpty(byteRange)) {
+                    bfw.write(M3U8Constants.TAG_BYTERANGE + ":" + byteRange + "\n");
+                }
                 bfw.write(mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getIndexName());
                 bfw.newLine();
             }
@@ -453,6 +457,10 @@ public class M3U8VideoDownloadTask extends VideoDownloadTask {
                     bfw.write(M3U8Constants.TAG_DISCONTINUITY + "\n");
                 }
                 bfw.write(M3U8Constants.TAG_MEDIA_DURATION + ":" + m3u8Ts.getDuration() + ",\n");
+                String byteRange = m3u8Ts.getByteRange();
+                if (!TextUtils.isEmpty(byteRange)) {
+                    bfw.write(M3U8Constants.TAG_BYTERANGE + ":" + byteRange + "\n");
+                }
                 bfw.write(mSaveDir.getAbsolutePath() + File.separator + m3u8Ts.getIndexName());
                 bfw.newLine();
             }
