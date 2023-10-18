@@ -35,7 +35,7 @@ public class DownloadSettingsActivity extends AppCompatActivity implements View.
     private RadioButton mBtn13;
     private RadioButton mBtn14;
 
-    private int mConcurrentNum = 3;
+    private int mConcurrentNum = 1;
     private boolean mIgnoreCertErrors = true;
     private boolean mShouldM3U8Merged = false;
 

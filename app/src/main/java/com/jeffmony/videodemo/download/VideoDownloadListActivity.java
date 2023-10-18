@@ -44,10 +44,10 @@ public class VideoDownloadListActivity extends AppCompatActivity implements View
     private void initDatas() {
         VideoTaskItem item1 = new VideoTaskItem("https://v3.cdtlas.com/20221119/zimPf0a2/1100kb/hls/index.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test1", "group-1");
         VideoTaskItem item2 = new VideoTaskItem("https://vip.lzcdn2.com/20230508/25854_bd9c0e3c/index.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test2", "group-1");
-        VideoTaskItem item3 = new VideoTaskItem("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test3", "group-1");
+        VideoTaskItem item3 = new VideoTaskItem("https://47.242.4.90/前任小叔他又宠又撩（89集）/第2集.mp4", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test3", "group-1");
         VideoTaskItem item4 = new VideoTaskItem("https://cf-st.sc-cdn.net/d/1awUye1IRuft6Nr1iIy1o.85.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test3", "group-1");
         VideoTaskItem item5 = new VideoTaskItem("http://videoconverter.vivo.com.cn/201706/655_1498479540118.mp4.main.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test4", "group-2");
-        VideoTaskItem item6 = new VideoTaskItem("https://europe.olemovienews.com/hlstimeofffmp4/20210226/fICqcpqr/mp4/fICqcpqr.mp4/master.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test5", "group-2");
+        VideoTaskItem item6 = new VideoTaskItem("https://vip.lz-cdn3.com/20230811/20991_834743a8/index.m3u8", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test5", "group-2");
         VideoTaskItem item7 = new VideoTaskItem("https://rrsp-1252816746.cos.ap-shanghai.myqcloud.com/0c1f023caa3bbefbe16a5ce564142bbe.mp4", "https://i.loli.net/2021/04/18/WuAUZc85meB6D2Q.jpg", "test6", "group-2");
 
         items[0] = item1;
